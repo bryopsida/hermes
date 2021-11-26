@@ -1,0 +1,45 @@
+{
+  "name": "data-source-watch",
+  "version": "0.1.0",
+  "description": "Define data sources that will be perodicially fetched, and proccesed against GraphQL watch conditions",
+  "main": "build/monoApp.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "node_modules/typescript/bin/tsc --project ./",
+    "start": "node build/src/monoApp.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bryopsida/data-source-watch.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/bryopsida/data-source-watch/issues"
+  },
+  "homepage": "https://github.com/bryopsida/data-source-watch#readme",
+  "dependencies": {
+    "knex": "^0.95.14",
+    "pg": "^8.7.1",
+    "pino": "^7.4.1"
+  },
+  "devDependencies": {
+    "@types/node": "^16.11.10",
+    "fastify": "^3.24.0",
+    "ts-node": "^10.1.0",
+    "typescript": "^4.3.5"
+  },
+  "nyc": {
+    "extension": [
+      ".ts",
+      ".tsx"
+    ],
+    "exclude": [
+      "**/*.d.ts"
+    ],
+    "reporter": [
+      "lcov"
+    ],
+    "all": true
+  }
+}
