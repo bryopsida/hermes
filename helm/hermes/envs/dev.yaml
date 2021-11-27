@@ -1,0 +1,34 @@
+imagePullPolicy: Always
+elastic:
+  master:
+    replicas: 1
+  coordinating:
+    replicas: 1
+  data:
+    replicas: 1
+kafka:
+  replicaCount: 1
+  defaultReplicationFactor: 1
+  offsetsTopicReplicationFactor: 1
+  transactionStateLogReplicationFactor: 1
+  nodeSelector:
+    kubernetes.io/arch: amd64
+  zookeeper:
+    replicaCount: 1
+    kubernetes.io/arch: amd64
+postgres:
+  postgresql:
+    replicaCount: 1
+    nodeSelector:
+      kubernetes.io/arch: amd64
+  pgpool:
+    nodeSelector:
+      kubernetes.io/arch: amd64
+redis:
+  updateJob:
+    nodeSelector:
+      kubernetes.io/arch: amd64
+  redis:
+    nodeSelector:
+      kubernetes.io/arch: amd64
+  

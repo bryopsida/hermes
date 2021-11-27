@@ -1,0 +1,46 @@
+{
+  // Use IntelliSense to learn about possible attributes.
+  // Hover to view descriptions of existing attributes.
+  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Launch Hermes (Mono)",
+      "skipFiles": [
+        "<node_internals>/**"
+      ],
+      "env": {
+        "USE_CLUSTERING": "true"
+      },
+      "console":"integratedTerminal",
+      "preLaunchTask": [
+        "start_services",
+        "build"
+      ],
+      "postDebugTask": [
+        "stop_services"
+      ],
+      "program": "${workspaceFolder}/build/src/monoApp.js",
+      "outFiles": [
+        "${workspaceFolder}/**/*.js"
+      ]
+    },
+    {
+      "type": "node",
+      "name": "Launch Nodemon Hermes (Mono)",
+      "preLaunchTask": "start_services",
+      "postDebugTask": "stop_services",
+      "console":"integratedTerminal",
+      "cwd": "${workspaceRoot}",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+          "run-script", "start:dev"
+      ],
+      "env": {
+        "USE_CLUSTERING": "true"
+      }
+    }
+  ]
+}

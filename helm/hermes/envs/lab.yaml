@@ -1,0 +1,20 @@
+ ## TODO
+kafka:
+  nodeSelector:
+    kubernetes.io/arch: amd64
+  zookeeper:
+    kubernetes.io/arch: amd64
+redis:
+  updateJob:
+    nodeSelector:
+      kubernetes.io/arch: amd64
+  redis:
+    nodeSelector:
+      kubernetes.io/arch: amd64
+postgres:
+  postgresql:
+    nodeSelector:
+      kubernetes.io/arch: amd64
+  pgpool:
+    nodeSelector:
+      kubernetes.io/arch: amd64

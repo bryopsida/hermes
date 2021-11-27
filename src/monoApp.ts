@@ -1,65 +1,99 @@
 // runs all of the components in one node process with clustering to spread across cores, not ideal but decent for testing
 // for production use components will be deployed in k8s via helm chart as individuall containers
-import {fastify} from 'fastify';
-import cluster from 'cluster';
-import {cpus} from 'os';
-import { DataSourceService } from './services/dataSources/dataSourceService';
-import createLogger from './common/logger/factory';
+import { fastify, FastifyInstance } from 'fastify'
+import cluster from 'cluster'
+import { cpus } from 'os'
+import { DataSourceService } from './services/dataSources/dataSourceService'
+import createLogger from './common/logger/factory'
+import { TaskRunnerService } from './services/taskRunner/taskRunnerService'
+import computedConstants from './common/computedConstants'
+import { WatchManagementService } from './services/watchManagement/watchManagementService'
+import { TheatreService } from './services/theatre/theatreService'
+import { IService } from './common/interfaces/service'
+import { BullBoardService } from './services/bullBoard/bullboardServices'
+import { Primary } from './primary'
+import { HermesWorker } from './worker'
+import fastifyHelmet from 'fastify-helmet'
 
-
-const cpuCount = cpus().length;
-
-if (cluster.isPrimary) {
-    const logger = createLogger({
-        serviceName: 'primary-runner', 
-        level: 'debug'
-    });
-
-    logger.info('Detected Primary Node, forking workers');
-    for (let i = 0; i < cpuCount; i++) {
-        cluster.fork();
-    }
-    
-    cluster.on('exit', (worker, code, signal) => {
-        logger.info(`worker ${worker.process.pid} died, code ${code}, signal ${signal}`);
-    });
-    cluster.on('error', (err) => {
-        logger.error('worker error: ', err);
-    })
-} else {
-    const logger = createLogger({
-        serviceName: `worker-${process.pid}-runner`, 
-        level: 'debug'
-    });
-    logger.info('Worker node, spinning up http server');
-
-    // create fastify instance
-    const app = fastify({
-        logger: createLogger({
-            serviceName: `worker-${process.pid}-fastify`,
-            level: 'debug'
-        })
-    });
-
-    const services = [
-        new DataSourceService(app)
-    ]
-
-    logger.info('Starting sub services');
-
-    const startAllServices = async () => {
-        for (const service of services) {
-            await service.start();
-        }
-    };
-
-    startAllServices().then(() => {
-        logger.info('Finished creating sub services');
-        app.listen(3000);
-        logger.info('Application listening on port 3000');
-    }).catch((err) => {
-        logger.error('Error during application startup', err);
-        process.exit(1);
-    });
+const cpuCount = cpus().length
+const queueOptions = {
+  redis: {
+    host: process.env.REDIS_HOST || 'localhost',
+    port: process.env.REDIS_PORT ? parseInt(process.env.REDIS_PORT) : 6379,
+    password: process.env.REDIS_PASSWORD || ''
+  }
 }
 
+if (cluster.isPrimary && process.env.USE_CLUSTERING === 'true') {
+  const primary = new Primary(process.env.WORKER_COUNT ? parseInt(process.env.WORKER_COUNT) : cpuCount)
+  primary.start()
+
+  process.on('SIGINT', async () => {
+    await primary.stop()
+    process.exit(0)
+  })
+  process.on('SIGTERM', async () => {
+    await primary.stop()
+    process.exit(0)
+  })
+} else {
+  const logger = createLogger({
+    serviceName: `worker-${computedConstants.id}`,
+    level: 'debug'
+  })
+
+  // create fastify instance
+  const app :FastifyInstance = fastify({
+    logger: createLogger({
+      serviceName: `worker-${computedConstants.id}-fastify`,
+      level: 'debug'
+    })
+  })
+
+  app.register(fastifyHelmet)
+
+  // TODO: fix as any cast
+  // define services managed by this mono app entry point
+  const services : Array<IService> = [
+    new DataSourceService(app as any),
+    new TaskRunnerService(queueOptions),
+    new WatchManagementService(app),
+    new TheatreService(),
+    new BullBoardService(app)
+  ]
+
+  const worker = new HermesWorker(services, app)
+
+  const stop = async () => {
+    logger.info('Stopping services')
+    await Promise.all([
+      worker.stop(),
+      worker.destroy()
+    ]).catch(err => {
+      logger.error(`Error while shutting down: ${err}})`)
+    })
+  }
+
+  process.on('SIGINT', async () => {
+    await stop()
+    process.exit(0)
+  })
+
+  process.on('uncaughtException', async (err) => {
+    logger.error(`Uncaught exception: ${JSON.stringify(err, null, 2)}`)
+    await stop()
+    process.exit(1)
+  })
+
+  process.on('unhandledRejection', async (reason, p) => {
+    logger.error(`Unhandled rejection at: reason: ${reason}`)
+    await stop()
+    process.exit(1)
+  })
+
+  worker.start().catch(async (err) => {
+    logger.error('Failed to start worker: ', err)
+    await stop()
+    process.exit(1)
+  })
+}

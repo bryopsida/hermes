@@ -1,0 +1,2 @@
+# Tasks
+Tasks can occur on a schedule or on demand, currently only on schedule tasks are used. Tasks are used to ingest data into kafka for processing when a persistent event/stream based solution isn't available.

@@ -1,6 +1,7 @@
 module.exports = {
     development: {
         client: 'pg',
+        searchPath: ['data_sources'],
         connection: {
              user: 'postgres', 
              database: '',
@@ -9,7 +10,8 @@ module.exports = {
         }
     },
     production: { 
-        client: 'pg', 
+        client: 'pg',
+        searchPath: ['data_sources'],
         connection: {
             user: process.env.PG_USER,
             database: process.env.PG_DATABASE,

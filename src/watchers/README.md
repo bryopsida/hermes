@@ -1,0 +1,2 @@
+# Watchers
+Watchers are queries, logic, and other mechanisms to determine if data matches a certain condition. They are designed to evaluate input data and return a boolean value indicating a match or not along with a optional confidence score, ideally these watches should be able to determine all of this without connecting to any external database and leverage only in memory data structures.

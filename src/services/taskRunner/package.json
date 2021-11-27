@@ -1,0 +1,23 @@
+{
+    "name": "task-runner-service",
+    "version": "0.1.0",
+    "description": "Execute defined tasks",
+    "main": "build/monoApp.ts",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/bryopsida/data-source-watch.git"
+    },
+    "author": "",
+    "license": "ISC",
+    "bugs": {
+        "url": "https://github.com/bryopsida/data-source-watch/issues"
+    },
+    "homepage": "https://github.com/bryopsida/data-source-watch#readme",
+    "dependencies": {
+        "bull": "^4.1.1",
+        "pino": "^7.4.1"
+    }
+}
