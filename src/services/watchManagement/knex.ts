@@ -2,7 +2,7 @@ import {knex} from 'knex';
 
 const knexInstance = knex({
     client: 'pg',
-    searchPath: 'data_source',
+    searchPath: 'watches',
     connection: {
         host: process.env.PG_HOST  || 'localhost',
         user: process.env.PG_USER || 'postgres',
@@ -12,7 +12,7 @@ const knexInstance = knex({
     },
     migrations: {
         tableName: 'migrations',
-        directory: './build/src/services/dataSources/migrations',
+        directory: './build/src/services/watchManagement/migrations',
         loadExtensions: ['.js']
     }
 });

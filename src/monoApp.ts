@@ -1,23 +1,27 @@
 // runs all of the components in one node process with clustering to spread across cores, not ideal but decent for testing
 // for production use components will be deployed in k8s via helm chart as individuall containers
 import {fastify} from 'fastify';
-import cluster from 'cluster';
-import {cpus} from 'os';
+import cluster, {Worker} from 'cluster';
+import {cpus, hostname} from 'os';
 import { DataSourceService } from './services/dataSources/dataSourceService';
 import createLogger from './common/logger/factory';
-
+import { TaskRunnerService } from './services/taskRunner/taskRunnerService';
+import computedConstants from './common/computedConstants';
+import { TaskManagementService } from './services/taskManagement/taskManagementService';
+import { WatchManagementService } from './services/watchManagement/watchManagementService';
 
 const cpuCount = cpus().length;
 
 if (cluster.isPrimary) {
+    const workers: Array<Worker> = [];
     const logger = createLogger({
         serviceName: 'primary-runner', 
         level: 'debug'
     });
 
-    logger.info('Detected Primary Node, forking workers');
+    logger.info(`Detected Primary Node, forking workers to create ${cpuCount} workers`);
     for (let i = 0; i < cpuCount; i++) {
-        cluster.fork();
+        workers.push(cluster.fork());
     }
     
     cluster.on('exit', (worker, code, signal) => {
@@ -25,10 +29,13 @@ if (cluster.isPrimary) {
     });
     cluster.on('error', (err) => {
         logger.error('worker error: ', err);
-    })
+    });
 } else {
+
+    //TODO: start breaking up into smaller pieces
+
     const logger = createLogger({
-        serviceName: `worker-${process.pid}-runner`, 
+        serviceName: `worker-${computedConstants.id}-runner`, 
         level: 'debug'
     });
     logger.info('Worker node, spinning up http server');
@@ -36,13 +43,29 @@ if (cluster.isPrimary) {
     // create fastify instance
     const app = fastify({
         logger: createLogger({
-            serviceName: `worker-${process.pid}-fastify`,
+            serviceName: `worker-${computedConstants.id}-fastify`,
             level: 'debug'
         })
     });
 
+    // define services managed by this mono app entry point
     const services = [
-        new DataSourceService(app)
+        new DataSourceService(app),
+        new TaskRunnerService({
+            redis: {
+                host: process.env.REDIS_HOST || 'redis',
+                port: process.env.REDIS_PORT ? parseInt(process.env.REDIS_PORT) : 6379,
+                password: process.env.REDIS_PASSWORD || ''
+            }
+        }),
+        new TaskManagementService(app, {
+            redis: {
+                host: process.env.REDIS_HOST || 'redis',
+                port: process.env.REDIS_PORT ? parseInt(process.env.REDIS_PORT) : 6379,
+                password: process.env.REDIS_PASSWORD || ''
+            }
+        }),
+        new WatchManagementService(app)
     ]
 
     logger.info('Starting sub services');
@@ -61,5 +84,13 @@ if (cluster.isPrimary) {
         logger.error('Error during application startup', err);
         process.exit(1);
     });
+
+    const stop = async () => {
+        logger.info('Received exit signal, stopping services');
+        await Promise.all(services.map(service => service.stop()));
+    };
+
+    process.on('SIGTERM', stop);
+    process.on('SIGINT', stop);
 }
 

@@ -1,0 +1,24 @@
+{
+    "name": "task-management-service",
+    "version": "0.1.0",
+    "description": "Manage the collection of scheduled tasks",
+    "main": "build/monoApp.ts",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/bryopsida/data-source-watch.git"
+    },
+    "author": "",
+    "license": "ISC",
+    "bugs": {
+        "url": "https://github.com/bryopsida/data-source-watch/issues"
+    },
+    "homepage": "https://github.com/bryopsida/data-source-watch#readme",
+    "dependencies": {
+        "fastify": "^3.24.0",
+        "pg": "^8.7.1",
+        "pino": "^7.4.1"
+    }
+}
