@@ -6,7 +6,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "node_modules/typescript/bin/tsc --project ./",
-    "start": "node build/src/monoApp.js"
+    "start": "node build/src/monoApp.js",
+    "start:dev": "nodemon"
   },
   "repository": {
     "type": "git",
@@ -21,6 +22,7 @@
   "dependencies": {
     "bull": "^4.1.1",
     "knex": "^0.95.14",
+    "node-rdkafka": "^2.12.0",
     "pg": "^8.7.1",
     "pino": "^7.4.1",
     "pino-pretty": "^7.2.0"
@@ -29,6 +31,7 @@
     "@types/bull": "^3.15.6",
     "@types/node": "^16.11.10",
     "fastify": "^3.24.0",
+    "nodemon": "^2.0.15",
     "ts-node": "^10.1.0",
     "typescript": "^4.3.5"
   },

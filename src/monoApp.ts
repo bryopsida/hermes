@@ -1,19 +1,19 @@
 // runs all of the components in one node process with clustering to spread across cores, not ideal but decent for testing
 // for production use components will be deployed in k8s via helm chart as individuall containers
 import {fastify} from 'fastify';
-import cluster, {Worker} from 'cluster';
-import {cpus, hostname} from 'os';
+import cluster from 'cluster';
+import {cpus} from 'os';
 import { DataSourceService } from './services/dataSources/dataSourceService';
 import createLogger from './common/logger/factory';
 import { TaskRunnerService } from './services/taskRunner/taskRunnerService';
 import computedConstants from './common/computedConstants';
 import { TaskManagementService } from './services/taskManagement/taskManagementService';
 import { WatchManagementService } from './services/watchManagement/watchManagementService';
+import { TheatreService } from './services/theatre/theatreService';
 
 const cpuCount = cpus().length;
 
 if (cluster.isPrimary) {
-    const workers: Array<Worker> = [];
     const logger = createLogger({
         serviceName: 'primary-runner', 
         level: 'debug'
@@ -21,7 +21,7 @@ if (cluster.isPrimary) {
 
     logger.info(`Detected Primary Node, forking workers to create ${cpuCount} workers`);
     for (let i = 0; i < cpuCount; i++) {
-        workers.push(cluster.fork());
+        cluster.fork();
     }
     
     cluster.on('exit', (worker, code, signal) => {
@@ -65,7 +65,8 @@ if (cluster.isPrimary) {
                 password: process.env.REDIS_PASSWORD || ''
             }
         }),
-        new WatchManagementService(app)
+        new WatchManagementService(app),
+        new TheatreService()
     ]
 
     logger.info('Starting sub services');

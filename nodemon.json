@@ -1,0 +1,7 @@
+{
+    "watch": ["src"],
+    "ext": "ts,json",
+    "exec": "ts-node ./src/monoApp.ts",
+    "delay": 2,
+    "signal": "SIGTERM"
+}
