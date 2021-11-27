@@ -92,5 +92,15 @@ if (cluster.isPrimary) {
 
     process.on('SIGTERM', stop);
     process.on('SIGINT', stop);
+
+    process.on('uncaughtException', (err) => {
+        logger.error('Uncaught exception: ', err);
+        process.exit(1);
+    });
+
+    process.on('unhandledRejection', (reason, p) => {
+        logger.error('Unhandled rejection at: Promise ', p, ' reason: ', reason);
+        process.exit(1);
+    });
 }
 

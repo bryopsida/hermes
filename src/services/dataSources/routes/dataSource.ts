@@ -3,7 +3,7 @@ import { IQeuryLimit } from "../../../common/interfaces/commonRest";
 import { DataSource } from "../dao/dataSource";
 import { DataSourceDTO } from "../dto/dataSource";
 
-const routeMountPoint = 'api/data_sources/v1';
+const routeMountPoint = '/api/data_sources/v1';
 
 export default function registerDataSourceRoute(fastify: FastifyInstance): void {
     

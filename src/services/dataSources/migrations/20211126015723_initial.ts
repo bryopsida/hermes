@@ -2,7 +2,6 @@ import {Knex} from 'knex';
 
 exports.up = function(knex: Knex) {
     return knex.schema
-    .createSchemaIfNotExists('data_sources')
     .createTable('data_sources', function (table) {
        table.increments('id');
        table.string('type', 255).notNullable();
@@ -13,5 +12,4 @@ exports.up = function(knex: Knex) {
 
 exports.down = function(knex: Knex) {
     return knex.schema.dropTable('data_sources')
-        .dropSchemaIfExists('data_sources');
 };

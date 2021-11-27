@@ -1,8 +1,9 @@
 import { FastifyInstance } from "fastify";
 import { IQeuryLimit } from "../../../common/interfaces/commonRest";
 import { WatchDTO } from "../dto/watch";
+import { Watch } from "../dao/watch";
 
-const routeMountPoint = 'api/watch_management/v1';
+const routeMountPoint = '/api/watch_management/v1';
 
 export default function registerWatchRoutes(fastify: FastifyInstance): void {
     
@@ -10,7 +11,7 @@ export default function registerWatchRoutes(fastify: FastifyInstance): void {
         Querystring: IQeuryLimit,
         Reply: Array<WatchDTO>
     }>(`${routeMountPoint}/watches`, async (request, reply) => {
-
+        reply.send(await Watch.findAll(request.query.offset, request.query.limit));
     });
 
     fastify.put<{
@@ -20,6 +21,6 @@ export default function registerWatchRoutes(fastify: FastifyInstance): void {
             id: string
         }
     }>(`${routeMountPoint}/watches/:id`, async (request, reply) => {
-
+        reply.send(await Watch.upsert(Watch.fromDTO(request.body)));
     });
 }
