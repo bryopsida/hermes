@@ -28,8 +28,8 @@ export class TaskRunnerService  implements IService {
         this._queues.set(QueueNames.FETCH_QUEUE, new bull(QueueNames.FETCH_QUEUE.toString(), this._queueOptions));
 
         // TODO: this smells, evaluate and refactor
-        const discoverTask = new DiscoverTask(this._queues.get(QueueNames.DISCOVER_QUEUE) as Queue);
-        const fetchTask = new FetchTask(this._queues.get(QueueNames.FETCH_QUEUE) as Queue);
+        new DiscoverTask(this._queues.get(QueueNames.DISCOVER_QUEUE) as Queue);
+        new FetchTask(this._queues.get(QueueNames.FETCH_QUEUE) as Queue);
         return Promise.resolve();
     }
 

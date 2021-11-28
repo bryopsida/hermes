@@ -16,7 +16,7 @@ export class Task implements ITask {
     id: number;
     cron: string;
     name: string;
-    description?: string | undefined;
+    description?: string;
     task_params?: unknown; 
 
     constructor(dataSource: ITask | null = null) {
