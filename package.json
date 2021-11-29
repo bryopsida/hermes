@@ -24,7 +24,7 @@
     "knex": "^0.95.14",
     "node-rdkafka": "^2.12.0",
     "pg": "^8.7.1",
-    "pino": "^7.4.1",
+    "pino": "^7.5.0",
     "pino-pretty": "^7.2.0"
   },
   "devDependencies": {
