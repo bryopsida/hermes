@@ -25,3 +25,7 @@ const migrationPromise = knexInstance.schema.createSchemaIfNotExists('data_sourc
 })
 
 export default migrationPromise;
+
+export function cleanupKnex() : Promise<void> {
+    return knexInstance.destroy();
+}

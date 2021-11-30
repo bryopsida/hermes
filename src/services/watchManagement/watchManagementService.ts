@@ -1,5 +1,6 @@
 import { FastifyInstance } from "fastify";
 import { IService } from "../../common/interfaces/service";
+import { cleanupKnex } from "./knex";
 import registerWatchRoutes from "./routes/watchRoutes";
 
 export class WatchManagementService implements IService {
@@ -16,5 +17,8 @@ export class WatchManagementService implements IService {
         // cannot remove routes from fastify as of yet, also wouldn't be appropriate to stop the server instance.
         // could set a flag to 404 on all routes and remove it if started again.
         return Promise.resolve();
+    }
+    async destroy(): Promise<void> {
+        return cleanupKnex();
     }
 }

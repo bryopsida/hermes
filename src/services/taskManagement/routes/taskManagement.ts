@@ -1,4 +1,4 @@
-import { FastifyInstance } from "fastify";
+import { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import { IQeuryLimit } from "../../../common/interfaces/commonRest";
 import { Task } from "../dao/task";
 import { TaskDTO } from "../dto/task";
@@ -22,5 +22,23 @@ export default function registerTaskRoutes(fastify: FastifyInstance): void {
         }
     }>(`${routeMountPoint}/tasks/:id`, async (request, reply) => {
         reply.send(await Task.upsert(Task.fromDTO(request.body)));
+    });
+
+    //TODO: fix this type coercion, its ugly
+    fastify.delete<{
+        Reply: FastifyReply,
+        Parameters: {
+            id: number
+        }
+    }>(`${routeMountPoint}/tasks/:id`, async (request : FastifyRequest, reply: FastifyReply) => {
+        const req:FastifyRequest = request;
+        const params = req.params as {id: number};
+        const hasRecord = await Task.has(params.id);
+        
+        if(!hasRecord) {
+            reply.send(404);
+        } else {
+            reply.send(await Task.delete(params.id));
+        }
     });
 }

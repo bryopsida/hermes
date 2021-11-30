@@ -1,5 +1,5 @@
 export interface DataSourceDTO {
-    id: string;
+    id: number;
     type: string;
     name: string;
     uri: string;

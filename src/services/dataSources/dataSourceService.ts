@@ -1,6 +1,7 @@
 import {IService} from '../../common/interfaces/service';
 import {FastifyInstance} from 'fastify';
 import registerDataSourceRoute from './routes/dataSource';
+import { cleanupKnex } from './knex';
 
 export class DataSourceService implements IService {
     
@@ -19,5 +20,8 @@ export class DataSourceService implements IService {
     stop(): Promise<void> {
         return Promise.resolve();
     } 
+    async destroy(): Promise<void> {
+        return cleanupKnex();
+    }
     
 }

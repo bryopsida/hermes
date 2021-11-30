@@ -39,4 +39,6 @@ export class TaskRunnerService  implements IService {
             return Promise.resolve();
         });
     }
+    async destroy(): Promise<void> {
+    }
 }

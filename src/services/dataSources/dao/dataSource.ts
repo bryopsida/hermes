@@ -4,7 +4,7 @@ import knex from '../knex';
 const tableName = 'data_sources';
 
 export interface IDataSource {
-    id: string;
+    id: number;
     type: string;
     name: string;
     uri: string;
@@ -13,7 +13,7 @@ export interface IDataSource {
 
 export class DataSource implements IDataSource {
     
-    public id: string;
+    public id: number;
     public type: string;
     public name: string;
     public uri: string;
@@ -21,7 +21,7 @@ export class DataSource implements IDataSource {
 
     constructor(dataSource: IDataSource | null = null) {
         if ( dataSource == null) {
-            this.id = '';
+            this.id = 0;
             this.type = '';
             this.name = '';
             this.uri = '';
@@ -52,6 +52,16 @@ export class DataSource implements IDataSource {
                   RETURNING *;`,
             [(await knex)(tableName).insert(dataSource)],
           );
+    }
+
+    static async has(id: number): Promise<boolean> {
+        return (await knex).from(tableName).where({ id }).count('* as count').then(function(rows) {
+            return rows.length > 0;
+        });
+    }
+    
+    static async delete(id: number): Promise<void> {
+        return (await knex).from(tableName).where({ id }).del();
     }
     
     toDTO(): DataSourceDTO {

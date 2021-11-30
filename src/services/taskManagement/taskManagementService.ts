@@ -1,6 +1,7 @@
 import { QueueOptions } from "bull";
 import { FastifyInstance } from "fastify";
 import { IService } from "../../common/interfaces/service";
+import { cleanupKnex } from "./knex";
 import registerTaskRoutes from "./routes/taskManagement";
 
 export class TaskManagementService implements IService {
@@ -21,5 +22,8 @@ export class TaskManagementService implements IService {
     
     stop(): Promise<void> {
         return Promise.resolve();
-    } 
+    }
+    async destroy(): Promise<void> {
+        return cleanupKnex();
+    }
 }

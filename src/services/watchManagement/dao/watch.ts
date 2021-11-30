@@ -52,6 +52,16 @@ export class Watch implements IWatch {
           );
     }
     
+    static async delete(id: number): Promise<void> {
+        await (await knex).from(tableName).where({ id: id }).delete();
+    }
+
+    static async has(id: number): Promise<boolean> {
+        return (await knex).from(tableName).where({ id: id }).then(function(rows) {
+            return rows.length > 0;
+        });
+    }
+
     toDTO(): WatchDTO {
         return {
             id: this.id,

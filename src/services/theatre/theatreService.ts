@@ -35,4 +35,8 @@ export class TheatreService implements IService {
         this.log.info('Theatre service stopped');
     }
 
+    async destroy(): Promise<void> {
+        this.log.warn('Theatre service destoryed');
+    }
+
 }

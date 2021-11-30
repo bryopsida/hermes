@@ -10,6 +10,7 @@ import computedConstants from './common/computedConstants';
 import { TaskManagementService } from './services/taskManagement/taskManagementService';
 import { WatchManagementService } from './services/watchManagement/watchManagementService';
 import { TheatreService } from './services/theatre/theatreService';
+import { IService } from './common/interfaces/service';
 
 const cpuCount = cpus().length;
 
@@ -88,7 +89,10 @@ if (cluster.isPrimary) {
 
     const stop = async () => {
         logger.info('Received exit signal, stopping services');
-        await Promise.all(services.map(service => service.stop()));
+        await Promise.all(services.map(async (service: IService) => {
+            await service.stop();
+            await service.destroy();
+        }));
     };
 
     process.on('SIGTERM', stop);
@@ -100,7 +104,7 @@ if (cluster.isPrimary) {
     });
 
     process.on('unhandledRejection', (reason, p) => {
-        logger.error('Unhandled rejection at: Promise ', p, ' reason: ', reason);
+        logger.error(`Unhandled rejection at: reason: ${reason}`);
         process.exit(1);
     });
 }

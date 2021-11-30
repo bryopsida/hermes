@@ -55,6 +55,16 @@ export class Task implements ITask {
             [(await knex)(tableName).insert(dataSource)],
           );
     }
+
+    static async has(id: number) : Promise<boolean> {
+        return (await knex).from(tableName).where({ id }).count('* as count').then(function(rows) {
+            return rows.length > 0;
+        });
+    }
+
+    static async delete(id: number): Promise<void>  {
+        await (await knex).delete().from(tableName).where({ id });
+    }
     
     toDTO(): TaskDTO {
         return {
