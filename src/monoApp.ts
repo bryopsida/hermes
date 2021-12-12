@@ -11,22 +11,34 @@ import { TaskManagementService } from './services/taskManagement/taskManagementS
 import { WatchManagementService } from './services/watchManagement/watchManagementService';
 import { TheatreService } from './services/theatre/theatreService';
 import { IService } from './common/interfaces/service';
+import { BullBoardService } from './services/bullBoard/bullboardServices';
+import Bull from 'bull';
+import { QueueNames } from './common/queues/queueNameConstants';
+
 
 const cpuCount = cpus().length;
+const queueOptions ={
+    redis: {
+        host: process.env.REDIS_HOST || 'localhost',
+        port: process.env.REDIS_PORT ? parseInt(process.env.REDIS_PORT) : 6379,
+        password: process.env.REDIS_PASSWORD || ''
+    }
+};
+
 
 if (cluster.isPrimary) {
     const logger = createLogger({
         serviceName: 'primary-runner', 
         level: 'debug'
     });
-
     logger.info(`Detected Primary Node, forking workers to create ${cpuCount} workers`);
     for (let i = 0; i < cpuCount; i++) {
         cluster.fork();
     }
-    
+
     cluster.on('exit', (worker, code, signal) => {
-        logger.info(`worker ${worker.process.pid} died, code ${code}, signal ${signal}`);
+        logger.warn(`worker ${worker.process.pid} died, code ${code}, signal ${signal}`);
+        // TODO: does restart logic to respawn workers make sense here?
     });
     cluster.on('error', (err) => {
         logger.error('worker error: ', err);
@@ -52,22 +64,11 @@ if (cluster.isPrimary) {
     // define services managed by this mono app entry point
     const services = [
         new DataSourceService(app),
-        new TaskRunnerService({
-            redis: {
-                host: process.env.REDIS_HOST || 'redis',
-                port: process.env.REDIS_PORT ? parseInt(process.env.REDIS_PORT) : 6379,
-                password: process.env.REDIS_PASSWORD || ''
-            }
-        }),
-        new TaskManagementService(app, {
-            redis: {
-                host: process.env.REDIS_HOST || 'redis',
-                port: process.env.REDIS_PORT ? parseInt(process.env.REDIS_PORT) : 6379,
-                password: process.env.REDIS_PASSWORD || ''
-            }
-        }),
+        new TaskRunnerService(queueOptions),
+        new TaskManagementService(app, queueOptions),
         new WatchManagementService(app),
-        new TheatreService()
+        new TheatreService(),
+        new BullBoardService(app)
     ]
 
     logger.info('Starting sub services');

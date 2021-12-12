@@ -1,3 +1,4 @@
+import { HeartbeatActor } from "../../actors/heartbeat/heartbeatActor";
 import { JsonWatchActor } from "../../actors/jsonWatch/jsonWatchActor";
 import COMPUTED_CONSTANTS from "../../common/computedConstants";
 import { IActor } from "../../common/interfaces/actor";
@@ -15,6 +16,7 @@ export class TheatreService implements IService {
     constructor() {
         this.log.info('Theatre service created');
         this.actors.push(new JsonWatchActor());
+        this.actors.push(new HeartbeatActor());
     }
 
     async start(): Promise<void> {

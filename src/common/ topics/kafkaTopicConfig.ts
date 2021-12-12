@@ -1,3 +1,4 @@
 export default {
-    'json-data': {}
+    'json-data': {},
+    'heartbeat': {}
 }

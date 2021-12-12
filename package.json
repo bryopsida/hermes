@@ -1,7 +1,7 @@
 {
-  "name": "data-source-watch",
+  "name": "hermes",
   "version": "0.1.0",
-  "description": "Define data sources that will be perodicially fetched, and proccesed against GraphQL watch conditions",
+  "description": "Collects and receives data which is ingested to a processing pipeline which normalizes to prep for watch evaluations, watches trigger alerts",
   "main": "build/monoApp.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -11,17 +11,19 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/bryopsida/data-source-watch.git"
+    "url": "git+https://github.com/bryopsida/hermes.git"
   },
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/bryopsida/data-source-watch/issues"
+    "url": "https://github.com/bryopsida/hermes/issues"
   },
-  "homepage": "https://github.com/bryopsida/data-source-watch#readme",
+  "homepage": "https://github.com/bryopsida/hermes#readme",
   "dependencies": {
+    "@bull-board/fastify": "^3.8.1",
     "bull": "^4.1.1",
     "knex": "^0.95.14",
+    "librdkafka": "^0.0.0",
     "node-rdkafka": "^2.12.0",
     "pg": "^8.7.1",
     "pino": "^7.4.1",

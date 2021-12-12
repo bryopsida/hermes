@@ -1,15 +1,14 @@
 import { IService } from "../../common/interfaces/service";
-import bull, { Queue, QueueOptions } from 'bull';
+import BullQueue, { Queue, QueueOptions } from 'bull';
 import createLogger from "../../common/logger/factory";
 import cluster from "cluster";
 import os from 'os';
-import { DiscoverTask } from "../../tasks/discover/discoverTask";
 import { FetchTask } from "../../tasks/fetch/fetchTask";
+import { HeartbeatTask } from "../../tasks/heartbeat/heartbeatTask";
+import { QueueNames } from "../../common/queues/queueNameConstants";
+import kafkaTopicConfig from "../../common/ topics/kafkaTopicConfig";
+import { Producer } from 'node-rdkafka';
 
-export enum QueueNames {
-    DISCOVER_QUEUE = 'discover-queue',
-    FETCH_QUEUE = 'fetch-queue'
-}
 
 export class TaskRunnerService  implements IService {
 
@@ -22,14 +21,33 @@ export class TaskRunnerService  implements IService {
 
     constructor(private _queueOptions: QueueOptions) {}
 
-    public start(): Promise<void> {
+    public async start(): Promise<void> {
         this.log.info('Starting task runner service');
-        this._queues.set(QueueNames.DISCOVER_QUEUE, new bull(QueueNames.DISCOVER_QUEUE.toString(), this._queueOptions));
-        this._queues.set(QueueNames.FETCH_QUEUE, new bull(QueueNames.FETCH_QUEUE.toString(), this._queueOptions));
+        
+        // TODO: refactor be clean, generic
+        const FETCH_QUEUE = new BullQueue(QueueNames.FETCH_QUEUE, this._queueOptions);
+        FETCH_QUEUE.on('error', (error) => {
+            this.log.error('Error in fetch queue', error);
+        });
+        
+        const HEARTBEAT_QUEUE = new BullQueue(QueueNames.HEARTBEAT_QUEUE, this._queueOptions);
+        HEARTBEAT_QUEUE.on('Error in heartbeat queue', (error) => {
+            this.log.error(error);
+        });
+        HEARTBEAT_QUEUE.add('heartbeat', {}, { repeat: { cron: '*/1 * * * *' } });
+        
+        this._queues.set(QueueNames.FETCH_QUEUE, FETCH_QUEUE);
+        this._queues.set(QueueNames.HEARTBEAT_QUEUE, HEARTBEAT_QUEUE);
+
+        // load seed tasks from json file
 
         // TODO: this smells, evaluate and refactor
-        new DiscoverTask(this._queues.get(QueueNames.DISCOVER_QUEUE) as Queue);
         new FetchTask(this._queues.get(QueueNames.FETCH_QUEUE) as Queue);
+        new HeartbeatTask(this._queues.get(QueueNames.HEARTBEAT_QUEUE) as Queue, new Producer({
+            'metadata.broker.list': 'localhost:29092',
+        }, kafkaTopicConfig.heartbeat));
+
+
         return Promise.resolve();
     }
 
@@ -40,5 +58,6 @@ export class TaskRunnerService  implements IService {
         });
     }
     async destroy(): Promise<void> {
+        await this.stop();
     }
 }
