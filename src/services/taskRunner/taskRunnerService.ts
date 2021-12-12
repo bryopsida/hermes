@@ -7,7 +7,7 @@ import { FetchTask } from "../../tasks/fetch/fetchTask";
 import { HeartbeatTask } from "../../tasks/heartbeat/heartbeatTask";
 import { QueueNames } from "../../common/queues/queueNameConstants";
 import kafkaTopicConfig from "../../common/ topics/kafkaTopicConfig";
-import { Producer } from 'node-rdkafka';
+import { ConsumerTopicConfig, Producer, ProducerTopicConfig } from 'node-rdkafka';
 
 
 export class TaskRunnerService  implements IService {
@@ -45,7 +45,7 @@ export class TaskRunnerService  implements IService {
         new FetchTask(this._queues.get(QueueNames.FETCH_QUEUE) as Queue);
         new HeartbeatTask(this._queues.get(QueueNames.HEARTBEAT_QUEUE) as Queue, new Producer({
             'metadata.broker.list': 'localhost:29092',
-        }, kafkaTopicConfig.heartbeat));
+        }, kafkaTopicConfig.heartbeats.producer as ProducerTopicConfig));
 
 
         return Promise.resolve();

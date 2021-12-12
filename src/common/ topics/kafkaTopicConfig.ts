@@ -1,4 +1,12 @@
 export default {
     'json-data': {},
-    'heartbeat': {}
+    'heartbeats': {
+        'producer': {
+
+        },
+        'consumer': {
+            'auto.commit.interval.ms': 1000,
+            'auto.offset.reset': 'earliest'
+        }
+    }
 }

@@ -3,6 +3,7 @@ import  cluster from "cluster";
 import os from 'os';
 import createLogger from "../../common/logger/factory";
 import { Producer } from 'node-rdkafka';
+import COMPUTED_CONSTANTS from "../../common/computedConstants";
 export interface HeartbeatTaskParams {}
 
 export class HeartbeatTask {
@@ -31,6 +32,7 @@ export class HeartbeatTask {
         this.kafkaProducer.connect();
     }
 
+    // TODO: pick a better key value or leave as null
     private processJob(job: Job<HeartbeatTaskParams>, done: DoneCallback) {
         this.log.debug(`Processing job ${job.id} on queue ${job.queue.name}`);
         this.kafkaProducer.produce('heartbeats', null, Buffer.from(JSON.stringify({
@@ -38,7 +40,7 @@ export class HeartbeatTask {
             sourceQueue: job.queue.name,
             timestamp: job.timestamp,
             data: job.data
-        })), Date(), new Date().getTime());
+        })),COMPUTED_CONSTANTS.id as string, new Date().getTime());
         done();
     }
 }

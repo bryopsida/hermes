@@ -1,7 +1,7 @@
 import COMPUTED_CONSTANTS from "../../common/computedConstants";
 import { IActor } from "../../common/interfaces/actor";
 import createLogger from "../../common/logger/factory";
-import { Assignment, KafkaConsumer, LibrdKafkaError, Message } from 'node-rdkafka';
+import { ConsumerTopicConfig, KafkaConsumer, LibrdKafkaError, Message } from 'node-rdkafka';
 import kafkaTopicConfig from "../../common/ topics/kafkaTopicConfig";
 import { IHeartbeat } from "../../common/interfaces/heartbeat";
 
@@ -42,15 +42,16 @@ export class HeartbeatActor implements IActor<IHeartbeat, boolean> {
             return Promise.resolve();
         }
         const message: IHeartbeat = JSON.parse(data.value.toString());
-        this.log.debug(`${this.name} actor received message`);
+        this.log.debug(`${this.name} actor received message, key: ${data.key}, value: ${data.value}, timestamp: ${message.timestamp}, topic: ${data.topic}`);
         await this.actOn(message);
     }
     
     startProcessing(): Promise<void> {
         this.kafkaConsumer = new KafkaConsumer({
             'group.id': this.name,
+            'enable.auto.commit': true,
             'metadata.broker.list': process.env.KAFKA_BROKER_LIST || 'localhost:29092'
-        }, kafkaTopicConfig["json-data"]);
+        }, kafkaTopicConfig.heartbeats.consumer as ConsumerTopicConfig);
         
         this.kafkaConsumer.on('ready', this.onReady.bind(this));
         this.kafkaConsumer.on('data', this.onData.bind(this));
