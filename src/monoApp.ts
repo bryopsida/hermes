@@ -12,8 +12,7 @@ import { WatchManagementService } from './services/watchManagement/watchManageme
 import { TheatreService } from './services/theatre/theatreService';
 import { IService } from './common/interfaces/service';
 import { BullBoardService } from './services/bullBoard/bullboardServices';
-import Bull from 'bull';
-import { QueueNames } from './common/queues/queueNameConstants';
+import { randomInt } from 'crypto';
 
 
 const cpuCount = cpus().length;
@@ -38,7 +37,13 @@ if (cluster.isPrimary) {
 
     cluster.on('exit', (worker, code, signal) => {
         logger.warn(`worker ${worker.process.pid} died, code ${code}, signal ${signal}`);
-        // TODO: does restart logic to respawn workers make sense here?
+        // if a worker dies lets go a head and restart (re-fork) but do it with a delay that can be 
+        // cancelled on SIGINT, SIGTERM, etc
+        const delay = randomInt(60000, 300000);
+        logger.info(`Restarting worker in ${delay}ms`);
+        setTimeout(() => {
+            cluster.fork();
+        }, delay);
     });
     cluster.on('error', (err) => {
         logger.error('worker error: ', err);
