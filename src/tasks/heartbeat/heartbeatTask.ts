@@ -1,34 +1,42 @@
 import { Queue, Job, DoneCallback } from "bull";
-import  cluster from "cluster";
-import os from 'os';
 import createLogger from "../../common/logger/factory";
-import { Producer } from 'node-rdkafka';
+import { DeliveryReport, LibrdKafkaError, Producer } from 'node-rdkafka';
 import COMPUTED_CONSTANTS from "../../common/computedConstants";
+import { ITask } from "../../common/interfaces/task";
 export interface HeartbeatTaskParams {}
 
-export class HeartbeatTask {
+export class HeartbeatTask implements ITask {
+    
+    id = 'heartbeat';
+
     private readonly log = createLogger({
-        serviceName: `heartbeat-task-${cluster.worker ? cluster.worker.id : os.hostname()}`,
+        serviceName: `heartbeat-task-${COMPUTED_CONSTANTS.id}`,
         level: 'debug'
     })
+
+    private onDeliveryReport(err: LibrdKafkaError, report: DeliveryReport) { 
+        if (err) {
+            this.log.error(`Kafka producer delivery report error: ${err}`);
+        } else {
+            this.log.debug(`Kafka producer delivery report: ${report}`);
+        }
+    }
+
+    private onError(err: LibrdKafkaError) {
+        this.log.error(`Kafka producer error: ${err}`);
+    }
+
+    private onReady() {
+        this.log.debug('Kafka producer ready');
+    }
 
     constructor(private queue: Queue, private kafkaProducer: Producer) {
         this.log.debug(`Heartbeat task initialized on queue ${queue.name}`);
         queue.process('heartbeat', this.processJob.bind(this));
-        this.kafkaProducer.on('ready', () => {
-            this.log.debug('Kafka producer ready');
-        });
-        this.kafkaProducer.on('event.error', (err) => {
-            this.log.error(`Kafka producer error: ${err}`);
-        });
-        this.kafkaProducer.on('delivery-report', (err, report) => {
-            if (err) {
-                this.log.error(`Kafka producer delivery report error: ${err}`);
-            } else {
-                this.log.debug(`Kafka producer delivery report: ${report}`);
-            }
-        });
-        this.kafkaProducer.setPollInterval(1000);
+
+        this.kafkaProducer.on('ready', this.onReady.bind(this));
+        this.kafkaProducer.on('event.error', this.onError.bind(this));
+        this.kafkaProducer.on('delivery-report', this.onDeliveryReport.bind(this));
         this.kafkaProducer.connect();
     }
 
@@ -42,5 +50,13 @@ export class HeartbeatTask {
             data: job.data
         })),COMPUTED_CONSTANTS.id as string, new Date().getTime());
         done();
+    }
+
+    async stop() : Promise<void> {
+        this.kafkaProducer.removeAllListeners();
+        if(this.kafkaProducer.isConnected()) {
+            this.kafkaProducer.disconnect();
+        }
+        await this.queue.close(true);
     }
 }

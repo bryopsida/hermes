@@ -59,9 +59,9 @@ export class JsonWatchActor implements IActor<IWatchedJsonData, IJsonWatchResult
     
     stopProcessing(): Promise<void> {
         this.log.debug(`${this.name} actor stopped`);
+        this.kafkaConsumer?.unsubscribe();
+        this.kafkaConsumer?.removeAllListeners();
         this.kafkaConsumer?.disconnect();
-        this.kafkaConsumer?.off('ready', this.onReady.bind(this));
-        this.kafkaConsumer?.off('data', this.onData.bind(this));
         // clean up kafka consumer
         return Promise.resolve();
     }

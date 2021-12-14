@@ -1,7 +1,7 @@
 import cluster from 'cluster';
-import os from 'os';
+import { randomUUID } from 'crypto';
 
 const COMPUTED_CONSTANTS = {
-    id: cluster.worker ? cluster.worker.id : os.hostname(),
+    id: cluster.worker ? cluster.worker.id : randomUUID()
 }
 export default COMPUTED_CONSTANTS;

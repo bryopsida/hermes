@@ -1,6 +1,6 @@
 import { Queue, Job, DoneCallback } from "bull";
-import  cluster from "cluster";
-import os from 'os';
+import COMPUTED_CONSTANTS from "../../common/computedConstants";
+import { ITask } from "../../common/interfaces/task";
 import createLogger from "../../common/logger/factory";
 
 export interface FetchTaskParams {
@@ -10,9 +10,10 @@ export interface FetchTaskParams {
     properties: Record<string, unknown>;
 }
 
-export class FetchTask {
+export class FetchTask implements ITask {
+    id = 'fetch';
     private readonly log = createLogger({
-        serviceName: `fetch-task-${cluster.worker ? cluster.worker.id : os.hostname()}`,
+        serviceName: `fetch-task-${COMPUTED_CONSTANTS.id}`,
         level: 'debug'
     })
 
@@ -32,5 +33,9 @@ export class FetchTask {
         //TODO: if we have new data publish it to the stream for processing
 
         //Long term TODO: for big datasets determine mechanisms for publishing incremental values, perhaps by specifying queries that reduce the data set to an array in a way that can be processed incrementally
+    }
+
+    public async stop(): Promise<void> {
+        await this.queue.close();
     }
 }

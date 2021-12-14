@@ -12,7 +12,8 @@ import { WatchManagementService } from './services/watchManagement/watchManageme
 import { TheatreService } from './services/theatre/theatreService';
 import { IService } from './common/interfaces/service';
 import { BullBoardService } from './services/bullBoard/bullboardServices';
-import { randomInt } from 'crypto';
+import { Primary } from './primary';
+import { HermesWorker } from './worker';
 
 
 const cpuCount = cpus().length;
@@ -25,38 +26,23 @@ const queueOptions ={
 };
 
 
-if (cluster.isPrimary) {
+if (cluster.isPrimary && process.env.USE_CLUSTERING === 'true') {
+    const primary = new Primary(process.env.WORKER_COUNT ? parseInt(process.env.WORKER_COUNT) : cpuCount);
+    primary.start();
+
+    process.on('SIGINT', async () => {
+        await primary.stop();
+        process.exit(0);
+    });
+    process.on('SIGTERM', async () => {
+        await primary.stop();
+        process.exit(0);
+    });
+} else {    
     const logger = createLogger({
-        serviceName: 'primary-runner', 
+        serviceName: `worker-${computedConstants.id}`, 
         level: 'debug'
     });
-    logger.info(`Detected Primary Node, forking workers to create ${cpuCount} workers`);
-    for (let i = 0; i < cpuCount; i++) {
-        cluster.fork();
-    }
-
-    cluster.on('exit', (worker, code, signal) => {
-        logger.warn(`worker ${worker.process.pid} died, code ${code}, signal ${signal}`);
-        // if a worker dies lets go a head and restart (re-fork) but do it with a delay that can be 
-        // cancelled on SIGINT, SIGTERM, etc
-        const delay = randomInt(60000, 300000);
-        logger.info(`Restarting worker in ${delay}ms`);
-        setTimeout(() => {
-            cluster.fork();
-        }, delay);
-    });
-    cluster.on('error', (err) => {
-        logger.error('worker error: ', err);
-    });
-} else {
-
-    //TODO: start breaking up into smaller pieces
-
-    const logger = createLogger({
-        serviceName: `worker-${computedConstants.id}-runner`, 
-        level: 'debug'
-    });
-    logger.info('Worker node, spinning up http server');
 
     // create fastify instance
     const app = fastify({
@@ -67,7 +53,7 @@ if (cluster.isPrimary) {
     });
 
     // define services managed by this mono app entry point
-    const services = [
+    const services : Array<IService> = [
         new DataSourceService(app),
         new TaskRunnerService(queueOptions),
         new TaskManagementService(app, queueOptions),
@@ -76,41 +62,38 @@ if (cluster.isPrimary) {
         new BullBoardService(app)
     ]
 
-    logger.info('Starting sub services');
-
-    const startAllServices = async () => {
-        for (const service of services) {
-            await service.start();
-        }
-    };
-
-    startAllServices().then(() => {
-        logger.info('Finished creating sub services');
-        app.listen(3000);
-        logger.info('Application listening on port 3000');
-    }).catch((err) => {
-        logger.error('Error during application startup', err);
-        process.exit(1);
-    });
+    const worker = new HermesWorker(services, app);
 
     const stop = async () => {
-        logger.info('Received exit signal, stopping services');
-        await Promise.all(services.map(async (service: IService) => {
-            await service.stop();
-            await service.destroy();
-        }));
+        logger.info('Stopping services');
+        await Promise.all([
+            worker.stop(),
+            worker.destroy()
+        ]).catch(err => {
+            logger.error(`Error while shutting down: ${err}})`);
+        })
     };
 
-    process.on('SIGTERM', stop);
-    process.on('SIGINT', stop);
+    process.on('SIGINT', async () => {
+        await stop();
+        process.exit(0);
+    });
 
-    process.on('uncaughtException', (err) => {
-        logger.error('Uncaught exception: ', err);
+    process.on('uncaughtException', async (err) => {
+        logger.error(`Uncaught exception: ${JSON.stringify(err, null, 2)}`);
+        await stop();
         process.exit(1);
     });
 
-    process.on('unhandledRejection', (reason, p) => {
+    process.on('unhandledRejection', async (reason, p) => {
         logger.error(`Unhandled rejection at: reason: ${reason}`);
+        await stop();
+        process.exit(1);
+    });
+
+    worker.start().catch(async (err) => {
+        logger.error('Failed to start worker: ', err);
+        await stop();
         process.exit(1);
     });
 }

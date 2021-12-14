@@ -8,9 +8,6 @@ export interface ILoggerOptions {
 export default function createLogger(opts: ILoggerOptions) : pino.Logger {
     return pino({
         name: opts.serviceName,
-        level: opts.level,
-        transport: {
-            target: 'pino-pretty'
-        }
+        level: opts.level
     });
 }

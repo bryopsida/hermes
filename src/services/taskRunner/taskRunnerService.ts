@@ -1,21 +1,21 @@
 import { IService } from "../../common/interfaces/service";
 import BullQueue, { Queue, QueueOptions } from 'bull';
 import createLogger from "../../common/logger/factory";
-import cluster from "cluster";
-import os from 'os';
 import { FetchTask } from "../../tasks/fetch/fetchTask";
 import { HeartbeatTask } from "../../tasks/heartbeat/heartbeatTask";
 import { QueueNames } from "../../common/queues/queueNameConstants";
 import kafkaTopicConfig from "../../common/ topics/kafkaTopicConfig";
-import { ConsumerTopicConfig, Producer, ProducerTopicConfig } from 'node-rdkafka';
-
+import { Producer, ProducerTopicConfig } from 'node-rdkafka';
+import { ITask } from "../../common/interfaces/task";
+import COMPUTED_CONSTANTS from "../../common/computedConstants";
 
 export class TaskRunnerService  implements IService {
 
     private readonly _queues: Map<QueueNames, Queue> = new Map();
+    private readonly _tasks: Map<string, ITask> = new Map();
 
     private readonly log = createLogger({
-        serviceName: `task-runner-${cluster.worker ? cluster.worker.id : os.hostname()}`,
+        serviceName: `task-runner-${COMPUTED_CONSTANTS.id}`,
         level: 'debug'
     })
 
@@ -42,21 +42,25 @@ export class TaskRunnerService  implements IService {
         // load seed tasks from json file
 
         // TODO: this smells, evaluate and refactor
-        new FetchTask(this._queues.get(QueueNames.FETCH_QUEUE) as Queue);
-        new HeartbeatTask(this._queues.get(QueueNames.HEARTBEAT_QUEUE) as Queue, new Producer({
+        const fetchTask: ITask = new FetchTask(this._queues.get(QueueNames.FETCH_QUEUE) as Queue);
+        const heartbeatTask: ITask = new HeartbeatTask(this._queues.get(QueueNames.HEARTBEAT_QUEUE) as Queue, new Producer({
             'metadata.broker.list': 'localhost:29092',
         }, kafkaTopicConfig.heartbeats.producer as ProducerTopicConfig));
+        this._tasks.set(fetchTask.id, fetchTask);
+        this._tasks.set(heartbeatTask.id, heartbeatTask);
 
 
         return Promise.resolve();
     }
 
-    public stop(): Promise<void> {
+    async stop(): Promise<void> {
         this.log.info('Stopping task runner service');
-        return Promise.all(Array.from(this._queues.values()).map(queue => queue.close())).then(() => {
-            return Promise.resolve();
-        });
+        await Promise.all(Array.from(this._queues.values()).map(queue => {
+            queue.removeAllListeners();
+            return queue.close(true)
+        }).concat(Array.from(this._tasks.values()).map(task => task.stop())));
     }
+
     async destroy(): Promise<void> {
         await this.stop();
     }
