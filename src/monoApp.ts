@@ -1,6 +1,6 @@
 // runs all of the components in one node process with clustering to spread across cores, not ideal but decent for testing
 // for production use components will be deployed in k8s via helm chart as individuall containers
-import {fastify} from 'fastify';
+import {fastify, FastifyInstance} from 'fastify';
 import cluster from 'cluster';
 import {cpus} from 'os';
 import { DataSourceService } from './services/dataSources/dataSourceService';
@@ -45,7 +45,7 @@ if (cluster.isPrimary && process.env.USE_CLUSTERING === 'true') {
     });
 
     // create fastify instance
-    const app = fastify({
+    const app: FastifyInstance = fastify({
         logger: createLogger({
             serviceName: `worker-${computedConstants.id}-fastify`,
             level: 'debug'
@@ -54,7 +54,6 @@ if (cluster.isPrimary && process.env.USE_CLUSTERING === 'true') {
 
     // define services managed by this mono app entry point
     const services : Array<IService> = [
-        new DataSourceService(app),
         new TaskRunnerService(queueOptions),
         new TaskManagementService(app, queueOptions),
         new WatchManagementService(app),

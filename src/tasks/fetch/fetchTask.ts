@@ -27,6 +27,7 @@ export class FetchTask implements ITask {
         this.log.debug(`Checking if there is new data sources for ${job.data.name} at ${job.data.uri}`);
 
         //TODO: check headers etc to see if there is new data
+        
 
         //TODO: if there is new data fetch it
 

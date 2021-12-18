@@ -55,6 +55,27 @@ services:
       KAFKA_DEFAULT_REPLICATION_FACTOR: 1
     volumes: 
       - kafka:/var/lib/kafka/data
+  elastic:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.16.1
+    environment:
+      - node.name=es01
+      - cluster.name=es-docker-cluster
+      - cluster.initial_master_nodes=es01
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - elastic:/usr/share/elasticsearch/data
+    ports:
+      - 9200:9200
+    networks:
+      - elastic
+networks:
+  elastic:
+    driver: bridge
 volumes:
   postgres:
   pgadmin:
@@ -62,3 +83,4 @@ volumes:
   zookeeperdata:
   zookeeperlog:
   kafka:
+  elastic:

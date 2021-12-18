@@ -7,6 +7,16 @@
       "command": "npm run build"
     },
     {
+      "label": "start_services",
+      "type": "shell",
+      "command": "npm run start:services"
+    },
+    {
+      "label": "stop_services",
+      "type": "shell",
+      "command": "npm run stop:services"
+    },
+    {
       "label": "test",
       "type": "shell",
       "command": "npm run test"

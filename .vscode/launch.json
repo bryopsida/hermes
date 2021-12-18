@@ -15,11 +15,32 @@
         "USE_CLUSTERING": "true"
       },
       "console":"integratedTerminal",
-      "preLaunchTask": "build",
+      "preLaunchTask": [
+        "start_services",
+        "build"
+      ],
+      "postDebugTask": [
+        "stop_services"
+      ],
       "program": "${workspaceFolder}/build/src/monoApp.js",
       "outFiles": [
         "${workspaceFolder}/**/*.js"
       ]
+    },
+    {
+      "type": "node",
+      "name": "Launch Nodemon Hermes (Mono)",
+      "preLaunchTask": "start_services",
+      "postDebugTask": "stop_services",
+      "console":"integratedTerminal",
+      "cwd": "${workspaceRoot}",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+          "run-script", "start:dev"
+      ],
+      "env": {
+        "USE_CLUSTERING": "true"
+      }
     }
   ]
 }
