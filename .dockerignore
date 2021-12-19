@@ -17,3 +17,4 @@ postman
 tests
 docker-compose.yml
 nodemon.json
+kind-config.yaml

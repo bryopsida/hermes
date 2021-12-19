@@ -6,7 +6,7 @@ on:
     branches: [ main ]
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}
+  IMAGE_NAME: ${{ github.repository }}-mono
 jobs:
   unit-test:
     runs-on: ubuntu-latest
@@ -34,6 +34,9 @@ jobs:
   build-container:
     needs: [ unit-test ]
     runs-on: ubuntu-latest
+    outputs:
+      tags: ${{ .steps.meta.outputs.tags }}
+      labels: ${{ .steps.meta.outputs.labels }}
     permissions:
       contents: read
       packages: write
@@ -59,7 +62,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@98669ae865ea3cffbcbaa878cf57c20bbf1c6c38
         with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-mono
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
       - name: Build and push Docker image
         id: build-and-push
         uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
@@ -72,4 +75,40 @@ jobs:
         if: ${{ github.event_name != 'pull_request' }}
         env:
           COSIGN_EXPERIMENTAL: "true"
-        run: cosign sign ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-mono@${{ steps.build-and-push.outputs.digest }}
+        run: cosign sign ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}@${{ steps.build-and-push.outputs.digest }}
+      - name: Export Container TAR
+        if: ${{ github.event_name == 'pull_request' }}
+        run: |
+          set -e
+          set -x
+          mkdir -p /tmp/artifacts
+          docker save ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}@${{ steps.build-and-push.outputs.digest }} | gzip > /tmp/artifacts/${{ env.IMAGE_NAME }}.tar.gz
+      - name: Upload Container TAR
+        if: ${{ github.event_name == 'pull_request' }}
+        uses: actions/upload-artifact@v1
+        with:
+          path: /tmp/artifacts/${{ env.IMAGE_NAME }}.tar.gz
+          name: ${{ env.IMAGE_NAME }}.tar.gz
+          retention-days: 1
+          if-no-files-found: error
+  test-deploy:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+    - name: Download Container TAR
+      if: ${{ github.event_name == 'pull_request' }}
+      uses: actions/download-artifact@v1
+      with:
+        path: ${{ env.IMAGE_NAME }}.tar.gz
+        name: ${{ env.IMAGE_NAME }}.tar.gz
+    - name: Import Container TAR
+      if: ${{ github.event_name == 'pull_request' }}
+      uses: docker/import-action@f9c8f8f8f9f9f9f9
+      with:
+        path: ${{ env.IMAGE_NAME }}.tar.gz
+    - name: Create KIND Cluster
+      run: |
+        set -e
+        set -x
+        kind create cluster --name ${{ env.IMAGE_NAME }} --config kind-config.yaml
