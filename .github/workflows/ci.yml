@@ -111,8 +111,8 @@ jobs:
         set -e
         set -x
         mkdir -p /tmp/artifacts
-        gzip -c < image.tar.gz > /tmp/artifacts/image.tar.gz
-        docker load -i /tmp/artifacts/image.tar.gz
+        gzip -c < image.tar.gz > /tmp/artifacts/image.tar
+        docker load -i /tmp/artifacts/image.tar
     - name: Create KIND Cluster
       run: |
         set -e
