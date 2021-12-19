@@ -1,0 +1,12 @@
+name: Test Deploy
+on:
+  workflow_call:
+jobs:
+  validate-chart:
+    runs-on: ubuntu-latest
+    steps: 
+      - uses: actions/checkout@v2
+  test-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
