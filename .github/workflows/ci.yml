@@ -28,6 +28,7 @@ jobs:
     - run: npm run build --if-present
     - run: npm test
   build-container:
+    needs: [ unit-test ]
     env:
       REGISTRY: ghcr.io
       IMAGE_NAME: ${{ github.repository }}
