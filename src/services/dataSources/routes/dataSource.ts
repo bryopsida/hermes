@@ -1,5 +1,6 @@
 import { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import { IQeuryLimit } from "../../../common/interfaces/commonRest";
+import { IPaginatedResponse } from "../../../common/models/paginatedResponse";
 import { DataSource } from "../dao/dataSource";
 import { DataSourceDTO } from "../dto/dataSource";
 
@@ -9,10 +10,16 @@ export default function registerDataSourceRoute(fastify: FastifyInstance): void 
     
     fastify.get<{
         Querystring: IQeuryLimit,
-        Reply: Array<DataSourceDTO>
+        Reply: IPaginatedResponse<DataSourceDTO>
     }>(`${routeMountPoint}/sources`, async (request, reply) => {
         const dataSource = await DataSource.findAll(request.query.offset, request.query.limit);
-        reply.send(dataSource);
+        const count = await DataSource.count();
+        reply.send({
+            offset: request.query.offset,
+            limit: request.query.limit,
+            totalCount: count,
+            items: dataSource.map(d => d.toDTO())
+        });
     });
 
     fastify.put<{

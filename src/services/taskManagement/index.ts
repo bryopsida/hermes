@@ -1,2 +1,0 @@
-
-//TODO make standalone runner

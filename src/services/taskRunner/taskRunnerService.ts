@@ -8,6 +8,7 @@ import kafkaTopicConfig from "../../common/ topics/kafkaTopicConfig";
 import { Producer, ProducerTopicConfig } from 'node-rdkafka';
 import { ITask } from "../../common/interfaces/task";
 import COMPUTED_CONSTANTS from "../../common/computedConstants";
+import { QueueFetchesTask } from "../../tasks/queueFetches/queueFetchesTask";
 
 export class TaskRunnerService  implements IService {
 
@@ -35,6 +36,10 @@ export class TaskRunnerService  implements IService {
             this.log.error(error);
         });
         HEARTBEAT_QUEUE.add('heartbeat', {}, { repeat: { cron: '*/1 * * * *' } });
+        FETCH_QUEUE.add('queue_fetches', {
+            baseUrl: 'http://localhost:3000/api/data_sources/v1',
+            batchSize: 1000
+        }, { repeat: { cron: '*/5 * * * *' } });
         
         this._queues.set(QueueNames.FETCH_QUEUE, FETCH_QUEUE);
         this._queues.set(QueueNames.HEARTBEAT_QUEUE, HEARTBEAT_QUEUE);
@@ -46,8 +51,10 @@ export class TaskRunnerService  implements IService {
         const heartbeatTask: ITask = new HeartbeatTask(this._queues.get(QueueNames.HEARTBEAT_QUEUE) as Queue, new Producer({
             'metadata.broker.list': 'localhost:29092',
         }, kafkaTopicConfig.heartbeats.producer as ProducerTopicConfig));
+        const queueFetchTask: ITask = new QueueFetchesTask(this._queues.get(QueueNames.FETCH_QUEUE) as Queue);
         this._tasks.set(fetchTask.id, fetchTask);
         this._tasks.set(heartbeatTask.id, heartbeatTask);
+        this._tasks.set(queueFetchTask.id, queueFetchTask);
 
 
         return Promise.resolve();

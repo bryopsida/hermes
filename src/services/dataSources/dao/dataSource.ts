@@ -1,3 +1,5 @@
+import COMPUTED_CONSTANTS from "../../../common/computedConstants";
+import createLogger from "../../../common/logger/factory";
 import { DataSourceDTO } from "../dto/dataSource"
 import knex from '../knex';
 
@@ -19,6 +21,11 @@ export class DataSource implements IDataSource {
     public uri: string;
     public tags: Array<string>;
 
+    private static readonly log = createLogger({
+        serviceName: `data-source-dao-${COMPUTED_CONSTANTS.id}`,
+        level: 'debug'
+    })
+
     constructor(dataSource: IDataSource | null = null) {
         if ( dataSource == null) {
             this.id = 0;
@@ -35,7 +42,12 @@ export class DataSource implements IDataSource {
         }
     }
 
+    static async count() : Promise<number> {
+        return (await knex).from(tableName).count('* as count');
+    }
+
     static async findAll(offset: number, count: number): Promise<Array<DataSource>> {
+        DataSource.log.debug(`Fetching data sources from offset: ${offset} and count: ${count}`);
         return (await knex).from(tableName).select('*').offset(offset).limit(count).then(function(rows) {
             return rows.map(row => {
                 return new DataSource(row);

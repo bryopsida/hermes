@@ -19,7 +19,7 @@ export class FetchTask implements ITask {
 
     constructor(private queue: Queue) {
         this.log.debug(`Fetch task initialized on queue ${queue.name}`);
-        queue.process(this.processJob);
+        queue.process('fetch', this.processJob);
     }
 
     private processJob(job: Job<FetchTaskParams>, done: DoneCallback) {

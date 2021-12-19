@@ -7,13 +7,13 @@ import { DataSourceService } from './services/dataSources/dataSourceService';
 import createLogger from './common/logger/factory';
 import { TaskRunnerService } from './services/taskRunner/taskRunnerService';
 import computedConstants from './common/computedConstants';
-import { TaskManagementService } from './services/taskManagement/taskManagementService';
 import { WatchManagementService } from './services/watchManagement/watchManagementService';
 import { TheatreService } from './services/theatre/theatreService';
 import { IService } from './common/interfaces/service';
 import { BullBoardService } from './services/bullBoard/bullboardServices';
 import { Primary } from './primary';
 import { HermesWorker } from './worker';
+import fastifyHelmet from 'fastify-helmet';
 
 
 const cpuCount = cpus().length;
@@ -45,17 +45,20 @@ if (cluster.isPrimary && process.env.USE_CLUSTERING === 'true') {
     });
 
     // create fastify instance
-    const app: FastifyInstance = fastify({
+    const app :FastifyInstance= fastify({
         logger: createLogger({
             serviceName: `worker-${computedConstants.id}-fastify`,
             level: 'debug'
         })
     });
 
+    app.register(fastifyHelmet);
+
+    // TODO: fix as any cast
     // define services managed by this mono app entry point
     const services : Array<IService> = [
+        new DataSourceService(app as any),
         new TaskRunnerService(queueOptions),
-        new TaskManagementService(app, queueOptions),
         new WatchManagementService(app),
         new TheatreService(),
         new BullBoardService(app)

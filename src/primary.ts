@@ -100,7 +100,7 @@ export class Primary {
   private printState() {
     for(const workerId in cluster.workers) {
       const worker = cluster.workers[workerId];
-      this.logger.info(`Worker ${workerId}, pid = ${worker?.process.pid} is ${worker?.isDead() ? 'dead' : 'alive'}`);
+      this.logger.trace(`Worker ${workerId}, pid = ${worker?.process.pid} is ${worker?.isDead() ? 'dead' : 'alive'}`);
     }
   }
 }
