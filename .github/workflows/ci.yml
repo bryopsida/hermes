@@ -92,6 +92,7 @@ jobs:
           retention-days: 1
           if-no-files-found: error
   test-deploy:
+    needs: [ build-container ]
     runs-on: ubuntu-latest
     steps:
     - name: Checkout repository
