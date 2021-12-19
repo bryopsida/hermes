@@ -35,8 +35,8 @@ jobs:
     needs: [ unit-test ]
     runs-on: ubuntu-latest
     outputs:
-      tags: ${{ .steps.meta.outputs.tags }}
-      labels: ${{ .steps.meta.outputs.labels }}
+      tags: ${{ steps.meta.outputs.tags }}
+      labels: ${{ steps.meta.outputs.labels }}
     permissions:
       contents: read
       packages: write
