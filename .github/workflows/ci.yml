@@ -82,7 +82,7 @@ jobs:
           set -e
           set -x
           mkdir -p /tmp/artifacts
-          docker save ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}@${{ steps.build-and-push.outputs.digest }} | gzip > /tmp/artifacts/${{ env.IMAGE_NAME }}.tar.gz
+          docker save ${{ steps.meta.outputs.tags }} | gzip > /tmp/artifacts/${{ env.IMAGE_NAME }}.tar.gz
       - name: Upload Container TAR
         if: ${{ github.event_name == 'pull_request' }}
         uses: actions/upload-artifact@v1
