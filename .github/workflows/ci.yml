@@ -83,13 +83,14 @@ jobs:
           set -e
           set -x
           mkdir -p /tmp/artifacts
-          docker save ${{ steps.meta.outputs.tags }} | gzip > /tmp/artifacts/${{ env.IMAGE_NAME }}.tar.gz
+          docker save ${{ steps.meta.outputs.tags }} -o /tmp/artifacts/image.tar
+          gzip -c /tmp/artifacts/image.tar > /tmp/artifacts/image.tar.gz
       - name: Upload Container TAR
         if: ${{ github.event_name == 'pull_request' }}
         uses: actions/upload-artifact@v1
         with:
-          path: /tmp/artifacts/${{ env.IMAGE_NAME }}.tar.gz
-          name: ${{ env.IMAGE_NAME }}.tar.gz
+          path: /tmp/artifacts/image.tar.gz
+          name: image.tar.gz
           retention-days: 1
           if-no-files-found: error
   test-deploy:
