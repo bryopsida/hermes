@@ -87,7 +87,7 @@ jobs:
           gzip -c /tmp/artifacts/image.tar > /tmp/artifacts/image.tar.gz
       - name: Upload Container TAR
         if: ${{ github.event_name == 'pull_request' }}
-        uses: actions/upload-artifact@v1
+        uses: actions/upload-artifact@v2
         with:
           path: /tmp/artifacts/image.tar.gz
           name: image.tar.gz
