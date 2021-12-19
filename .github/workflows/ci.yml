@@ -103,7 +103,7 @@ jobs:
       if: ${{ github.event_name == 'pull_request' }}
       uses: actions/download-artifact@v1
       with:
-        path: /tmp/artifacts/image.tar.gz
+        path: /tmp/artifacts/
         name: image.tar.gz
     - name: Import Container TAR
       if: ${{ github.event_name == 'pull_request' }}
