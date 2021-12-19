@@ -111,7 +111,7 @@ jobs:
         set -e
         set -x
         mkdir -p /tmp/artifacts
-        gzip -c /tmp/artifacts/image.tar.gz > /tmp/artifacts/image.tar
+        gzip --stdout --decompress /tmp/artifacts/image.tar.gz > /tmp/artifacts/image.tar
         docker load -i /tmp/artifacts/image.tar
     - name: Create KIND Cluster
       run: npm run kind-create
