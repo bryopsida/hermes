@@ -11,7 +11,9 @@
     "start:services": "docker-compose -f docker-compose.yml up -d",
     "stop:services": "docker-compose -f docker-compose.yml down",
     "lint": "eslint --ext .ts src/",
-    "lint:fix": "eslint --ext .ts src/ --fix"
+    "lint:fix": "eslint --ext .ts src/ --fix",
+    "kind:create": "kind create cluster --name hermes --config kind-config.yaml",
+    "kind:delete": "kind delete cluster --name hermes"
   },
   "repository": {
     "type": "git",

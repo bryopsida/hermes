@@ -114,7 +114,4 @@ jobs:
         gzip -c < image.tar.gz > /tmp/artifacts/image.tar
         docker load -i /tmp/artifacts/image.tar
     - name: Create KIND Cluster
-      run: |
-        set -e
-        set -x
-        kind create cluster --name ci-${{ github.sha }} --config kind-config.yaml
+      run: npm run kind-create
