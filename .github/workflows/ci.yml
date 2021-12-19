@@ -103,15 +103,18 @@ jobs:
       if: ${{ github.event_name == 'pull_request' }}
       uses: actions/download-artifact@v1
       with:
-        path: ${{ env.IMAGE_NAME }}.tar.gz
-        name: ${{ env.IMAGE_NAME }}.tar.gz
+        path: /tmp/artifacts/image.tar.gz
+        name: image.tar.gz
     - name: Import Container TAR
       if: ${{ github.event_name == 'pull_request' }}
-      uses: docker/import-action@f9c8f8f8f9f9f9f9
-      with:
-        path: ${{ env.IMAGE_NAME }}.tar.gz
+      run: |
+        set -e
+        set -x
+        mkdir -p /tmp/artifacts
+        gzip -c < image.tar.gz > /tmp/artifacts/image.tar.gz
+        docker load -i /tmp/artifacts/image.tar.gz
     - name: Create KIND Cluster
       run: |
         set -e
         set -x
-        kind create cluster --name ${{ env.IMAGE_NAME }} --config kind-config.yaml
+        kind create cluster --name ci-${{ github.sha }} --config kind-config.yaml
