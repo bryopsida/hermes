@@ -28,6 +28,6 @@ jobs:
     - run: npm run build --if-present
     - run: npm test
   build-container:
-    uses: bryopsida/hermes/.github/workflows/docker.yml@main
+    uses: bryopsida/hermes/.github/workflows/docker.yml@44acebc
   test-deploy:
-    uses: bryopsida/hermes/.github/workflows/helm.yml@main
+    uses: bryopsida/hermes/.github/workflows/helm.yml@44acebc
