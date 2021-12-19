@@ -7,3 +7,13 @@ Dockerfile
 .gitignore
 .npmrc
 .eslintrc
+coverage
+helm
+build
+.idea
+.vscode
+.github
+postman
+tests
+docker-compose.yml
+nodemon.json
