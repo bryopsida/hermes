@@ -1,7 +1,7 @@
-import cluster from 'cluster';
-import { randomUUID } from 'crypto';
+import cluster from 'cluster'
+import { randomUUID } from 'crypto'
 
 const COMPUTED_CONSTANTS = {
-    id: cluster.worker ? cluster.worker.id : randomUUID()
+  id: cluster.worker ? cluster.worker.id : randomUUID()
 }
-export default COMPUTED_CONSTANTS;
+export default COMPUTED_CONSTANTS

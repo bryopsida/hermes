@@ -11,7 +11,7 @@
     "start:services": "docker-compose -f docker-compose.yml up -d",
     "stop:services": "docker-compose -f docker-compose.yml down",
     "lint": "eslint --ext .ts src/",
-    "lint:fit": "eslint --ext .ts src/ --fix"
+    "lint:fix": "eslint --ext .ts src/ --fix"
   },
   "repository": {
     "type": "git",
