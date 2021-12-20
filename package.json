@@ -15,7 +15,8 @@
     "kind:create": "kind create cluster --name hermes --config kind-config.yaml",
     "kind:delete": "kind delete cluster --name hermes",
     "helm:deploy": "helm upgrade --install --set image.tag=latest hermes ./helm/hermes --debug --wait",
-    "helm:test": "helm test ./helm/hermes hermes",
+    "helm:test": "helm test hermes",
+    "helm:delete": "helm delete hermes",
     "test:e2e": "echo 'todo'"
   },
   "repository": {
