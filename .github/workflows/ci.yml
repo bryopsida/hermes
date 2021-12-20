@@ -114,4 +114,10 @@ jobs:
         gzip --stdout --decompress /tmp/artifacts/image.tar.gz > /tmp/artifacts/image.tar
         docker load -i /tmp/artifacts/image.tar
     - name: Create KIND Cluster
-      run: npm run kind-create
+      run: npm run kind:create
+    - name: Deploy
+      run: npm run helm:deploy
+    - name: Test Deployment
+      run: npm run helm:test
+    - name: E2E Tests
+      run: npm run test:e2e

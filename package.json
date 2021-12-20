@@ -13,7 +13,10 @@
     "lint": "eslint --ext .ts src/",
     "lint:fix": "eslint --ext .ts src/ --fix",
     "kind:create": "kind create cluster --name hermes --config kind-config.yaml",
-    "kind:delete": "kind delete cluster --name hermes"
+    "kind:delete": "kind delete cluster --name hermes",
+    "helm:deploy": "helm upgrade --install --set image.tag=latest hermes ./helm/hermes --debug --wait",
+    "helm:test": "helm test ./helm/hermes hermes",
+    "test:e2e": "echo 'todo'"
   },
   "repository": {
     "type": "git",
