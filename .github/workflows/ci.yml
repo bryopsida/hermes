@@ -121,3 +121,13 @@ jobs:
       run: npm run helm:test
     - name: E2E Tests
       run: npm run test:e2e
+  deploy:
+    needs: [ test-deploy ]
+    runs-on: ubuntu-latest
+    environment: lab
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+    # create connection to the cluster
+    # unpack kubeconfig
+    # deploy to the lab
