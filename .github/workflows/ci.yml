@@ -156,7 +156,7 @@ jobs:
         [Interface]
         PrivateKey = ${{ secrets.WG_PRIVATE_KEY }}
         Address = ${{ secrets.WG_CLIENT_IP }}/32
-        PostUp = printf "nameserver 10.90.0.5\nsearch default.svc.cluster.local svc.cluster.local cluster.local" | resolvconf -a %i
+        PostUp = printf "nameserver ${{ secrets.KUBERNETES_DNS }}\nsearch default.svc.cluster.local svc.cluster.local cluster.local" | resolvconf -a %i
 
         [Peer]
         PublicKey = ${{ secrets.WG_AP_PUBLIC_KEY }}
@@ -173,6 +173,7 @@ jobs:
       timeout-minutes: 5
       run: |
         ping -c 1 -W 1 ${{ secrets.WG_TEST_IP}}
+        ping -c 1 -W 1 ${{ secrets.KUBERNETES_DNS }}
     - name: Create KUBECONFIG
       timeout-minutes: 2
       run: |
