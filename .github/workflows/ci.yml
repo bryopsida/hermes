@@ -164,7 +164,7 @@ jobs:
     - name: Connect To Wireguard
       timeout-minutes: 5
       run: |
-        wg-quick up wg0
+        sudo wg-quick up wg0 || exit 1
     - name: Check Wireguard Connection
       timeout-minutes: 5
       run: |
