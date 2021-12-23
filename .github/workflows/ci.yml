@@ -149,7 +149,7 @@ jobs:
     - name: Install Wireguard
       run: |
         sudo apt-get update
-        sudo apt-get install -y wireguard
+        sudo apt-get install -y wireguard resolvconf
     - name: Create Wireguard Config
       run: |
         cat <<EOF >> ./wg0.conf
