@@ -129,5 +129,28 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v2
     # create connection to the cluster
+    - name: Install Wireguard
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y wireguard
+    - name: Create Wireguard Config
+      run: |
+        cat <<EOF >> /etc/wireguard/wg0.conf
+        [Interface]
+        PrivateKey = ${{ secrets.WG_PRIVATE_KEY }}
+        Address = ${{ secrets.WG_CLIENT_IP }}/32
+
+        [Peer]
+        PublicKey = ${{ secrets.WG_AP_PUBLIC_KEY }}
+        AllowedIPs = ${{ secrets.WG_AP_ALLOWED_IPS}}
+        Endpoint = ${{ secrets.WG_AP_ENDPOINT }}
+        PersistentKeepalive = 25
+        EOF
+    - name: Connect To Wireguard
+      run: |
+        wg-quick up wg0
+    - name: Check Wireguard Connection
+      run: |
+        ping -c 1 -W 1 ${{ secrets.WG_TEST_IP}}
     # unpack kubeconfig
-    # deploy to the lab
+    # deploy to the lab 
