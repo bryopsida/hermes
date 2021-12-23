@@ -135,7 +135,7 @@ jobs:
         sudo apt-get install -y wireguard
     - name: Create Wireguard Config
       run: |
-        sudo cat <<EOF >> /etc/wireguard/wg0.conf
+        cat <<EOF >> ./wg0.conf
         [Interface]
         PrivateKey = ${{ secrets.WG_PRIVATE_KEY }}
         Address = ${{ secrets.WG_CLIENT_IP }}/32
@@ -146,6 +146,7 @@ jobs:
         Endpoint = ${{ secrets.WG_AP_ENDPOINT }}
         PersistentKeepalive = 25
         EOF
+        sudo cp ./wg0.conf /etc/wireguard/wg0.conf
     - name: Connect To Wireguard
       run: |
         wg-quick up wg0
