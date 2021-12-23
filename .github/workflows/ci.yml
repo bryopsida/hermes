@@ -7,6 +7,9 @@ on:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}-mono
+  CLUSTER_NAME: lab
+  KUBERNETES_SERVICE_HOST: kubernetes.default.svc.cluster.local
+  KUBE_NAMESPACE: hermes
 jobs:
   unit-test:
     runs-on: ubuntu-latest
@@ -153,6 +156,7 @@ jobs:
         [Interface]
         PrivateKey = ${{ secrets.WG_PRIVATE_KEY }}
         Address = ${{ secrets.WG_CLIENT_IP }}/32
+        PostUp = printf "nameserver 10.90.0.5\nsearch default.svc.cluster.local svc.cluster.local cluster.local" | resolvconf -a %i
 
         [Peer]
         PublicKey = ${{ secrets.WG_AP_PUBLIC_KEY }}
@@ -169,5 +173,23 @@ jobs:
       timeout-minutes: 5
       run: |
         ping -c 1 -W 1 ${{ secrets.WG_TEST_IP}}
-    # unpack kubeconfig
+    - name: Create KUBECONFIG
+      timeout-minutes: 2
+      run: |
+        kubectl config set-cluster ${{ env.CLUSTER_NAME }} --server=${{ env.KUBERNETES_SERVICE_HOST }} --insecure-skip-tls-verify=true
+        kubectl config set-credentials ${{ env.CLUSTER_NAME }} --token=${{ secrets.KUBERNETES_TOKEN }}
+        kubectl config set-context ${{ env.CLUSTER_NAME }} --cluster=${{ env.CLUSTER_NAME }} --user=${{ env.CLUSTER_NAME }}
+        kubectl config use-context ${{ env.CLUSTER_NAME }}
+    - name: Check Kubectl Access
+      timeout-minutes: 2
+      run: |
+        kubectl -n ${{ env.KUBE_NAMESPACE }} get pods
     # deploy to the lab 
+    # clean up
+    - name: Cleanup Wireguard
+      timeout-minutes: 4
+      if: always()
+      run: |
+        sudo wg-quick down wg0
+        sudo shred -u /etc/wireguard/wg0.conf
+        shred -u ./wg0.conf
