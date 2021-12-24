@@ -240,6 +240,7 @@ jobs:
     - name: Create Kubernetes Configuration
       timeout-minutes: 2
       run: |
+        mkdir ~/.kube/config
         cat <<EOF >> ~/.kube/config
         apiVersion: v1
         clusters:
