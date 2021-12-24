@@ -141,41 +141,6 @@ jobs:
         uses: actions/checkout@v2
       - name: Lint Helm Chart
         run: npm run helm:lint
-  test-deploy:
-    name: "Test Deploy"
-    needs: [ build-container, helm-lint ]
-    runs-on: ubuntu-latest
-    steps:
-    - name: Checkout repository
-      uses: actions/checkout@v2
-    - name: Download Container TAR
-      if: ${{ github.event_name == 'pull_request' }}
-      timeout-minutes: 4
-      uses: actions/download-artifact@v1
-      with:
-        path: /tmp/artifacts/
-        name: image.tar.gz
-    - name: Import Container TAR
-      timeout-minutes: 4
-      if: ${{ github.event_name == 'pull_request' }}
-      run: |
-        set -e
-        set -x
-        mkdir -p /tmp/artifacts
-        gzip --stdout --decompress /tmp/artifacts/image.tar.gz > /tmp/artifacts/image.tar
-        docker load -i /tmp/artifacts/image.tar
-    - name: Create KIND Cluster
-      timeout-minutes: 10
-      run: npm run kind:create
-    - name: Deploy
-      timeout-minutes: 5
-      run: npm run helm:deploy
-    - name: Test Deployment
-      timeout-minutes: 5
-      run: npm run helm:test
-    - name: E2E Tests
-      timeout-minutes: 10
-      run: npm run test:e2e
   kube-scan:
     name: Kubernetes Security Scan
     runs-on: ubuntu-latest
@@ -213,6 +178,41 @@ jobs:
         uses: github/codeql-action/upload-sarif@v1
         with:
           sarif_file: kubesec-results.sarif
+  test-deploy:
+    name: "Test Deploy"
+    needs: [ build-container, helm-lint, kube-scan ]
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+    - name: Download Container TAR
+      if: ${{ github.event_name == 'pull_request' }}
+      timeout-minutes: 4
+      uses: actions/download-artifact@v1
+      with:
+        path: /tmp/artifacts/
+        name: image.tar.gz
+    - name: Import Container TAR
+      timeout-minutes: 4
+      if: ${{ github.event_name == 'pull_request' }}
+      run: |
+        set -e
+        set -x
+        mkdir -p /tmp/artifacts
+        gzip --stdout --decompress /tmp/artifacts/image.tar.gz > /tmp/artifacts/image.tar
+        docker load -i /tmp/artifacts/image.tar
+    - name: Create KIND Cluster
+      timeout-minutes: 10
+      run: npm run kind:create
+    - name: Deploy
+      timeout-minutes: 5
+      run: npm run helm:deploy
+    - name: Test Deployment
+      timeout-minutes: 5
+      run: npm run helm:test
+    - name: E2E Tests
+      timeout-minutes: 10
+      run: npm run test:e2e
   deploy:
     needs: [ test-deploy, kube-scan ]
     runs-on: ubuntu-latest
