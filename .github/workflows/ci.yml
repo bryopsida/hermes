@@ -92,7 +92,7 @@ jobs:
         if: github.event_name != 'pull_request'
         id: push
         timeout-minutes: 5
-        uses: docker/push-action@f9c8f8f8f9f9f9f9
+        uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
         with:
           image: ${{ steps.meta.outputs.tags }}
           push: true
