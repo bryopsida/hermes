@@ -11,7 +11,7 @@ jobs:
       - name: Install Wireguard
         run: |
           sudo apt-get update
-          sudo apt-get install -y wireguard resolvconf
+          sudo apt-get install -y wireguard-dkms resolvconf
       - name: Create Wireguard Config
         run: |
           cat <<EOF >> ./wg0.conf
