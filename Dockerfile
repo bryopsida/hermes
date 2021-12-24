@@ -1,14 +1,17 @@
-FROM node:lts-alpine AS qa
+FROM node:lts-alpine as build-base
+RUN apk add --update --no-cache python3 make g++ bash
+
+FROM build-base AS qa
 WORKDIR /usr/src/app
 COPY package*.json .
 RUN npm audit && npm ci && npm run lint && npm run build && npm test && npm run sonar --if-present
 
-FROM node:lts-alpine AS build
+FROM build-base AS build
 WORKDIR /usr/src/app
 COPY . .
-RUN npm ci && npm build
+RUN npm ci && npm run build
 
-FROM node:lts-alpine AS libraries
+FROM build-base AS libraries
 WORKDIR /usr/src/app
 COPY package*.json .
 RUN npm ci --only=production
