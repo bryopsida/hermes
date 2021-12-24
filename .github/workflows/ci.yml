@@ -85,7 +85,7 @@ jobs:
       - name: Scan image
         uses: anchore/scan-action@v3
         with:
-          image: ${{ step.meta.outputs.tags }}
+          image: ${{ steps.meta.outputs.tags }}
           fail-build: true
           severity-cutoff: medium
       - name: Push image
