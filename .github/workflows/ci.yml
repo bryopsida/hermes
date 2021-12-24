@@ -237,13 +237,30 @@ jobs:
       run: |
         ping -c 1 -W 1 ${{ secrets.WG_TEST_IP}}
         ping -c 1 -W 1 ${{ secrets.TEST_IP}}
-    - name: Create KUBECONFIG
+    - name: Create Kubernetes Configuration
       timeout-minutes: 2
       run: |
-        kubectl config set-cluster ${{ env.CLUSTER_NAME }} --server=${{ secrets.TEST_IP }} --insecure-skip-tls-verify=true
-        kubectl config set-credentials ${{ env.CLUSTER_NAME }} --token=${{ secrets.KUBERNETES_TOKEN }}
-        kubectl config set-context ${{ env.CLUSTER_NAME }} --cluster=${{ env.CLUSTER_NAME }} --user=${{ env.CLUSTER_NAME }}
-        kubectl config use-context ${{ env.CLUSTER_NAME }}
+        cat <<EOF >> ~/.kube/config
+        apiVersion: v1
+        clusters:
+        - cluster:
+            certificate-authority-data: ${{ secrets.K8S_API_CA }}
+            server: ${{ secrets.LAB_K8S_SERVER}}
+          name: lab
+        contexts:
+        - context:
+            cluster: lab
+            user: deployer
+          name: deployer@lab
+        current-context: deployer@lab
+        kind: Config
+        preferences: {}
+        users:
+        - name: deployer
+          user:
+            token: ${{ secrets.K8S_DEPLOYER_TOKEN }}
+        EOF
+        kubectl config use-context deployer@lab
     - name: Check Kubectl Access
       timeout-minutes: 2
       run: |
