@@ -125,13 +125,6 @@ jobs:
           name: image.tar.gz
           retention-days: 1
           if-no-files-found: error
-  scan-container:
-    needs: [ build-container ]
-    runs-on: ubuntu-latest
-    steps:
-    - name: Checkout repository
-      uses: actions/checkout@v2
-    
   test-deploy:
     needs: [ build-container ]
     runs-on: ubuntu-latest
