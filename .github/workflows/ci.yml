@@ -70,16 +70,37 @@ jobs:
         uses: docker/metadata-action@98669ae865ea3cffbcbaa878cf57c20bbf1c6c38
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-      - name: Build and push Docker image
-        id: build-and-push
+      - name: Build Docker image
+        id: build
         timeout-minutes: 10
         uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
         with:
           context: .
           load: true
-          push: ${{ github.event_name != 'pull_request' }}
+          push: false
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      - name: Scan image
+        uses: anchore/scan-action@v3
+        with:
+          image: ${{ step.meta.outputs.tags }}
+          fail-build: true
+          severity-cutoff: medium
+      - name: Push image
+        if: github.event_name != 'pull_request'
+        id: push
+        timeout-minutes: 5
+        uses: docker/push-action@f9c8f8f8f9f9f9f9
+        with:
+          image: ${{ step.meta.outputs.tags }}
+          push: true
+          load: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
       - name: Sign the published Docker image
         if: ${{ github.event_name != 'pull_request' }}
         timeout-minutes: 4
@@ -104,6 +125,13 @@ jobs:
           name: image.tar.gz
           retention-days: 1
           if-no-files-found: error
+  scan-container:
+    needs: [ build-container ]
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+    
   test-deploy:
     needs: [ build-container ]
     runs-on: ubuntu-latest
@@ -142,6 +170,9 @@ jobs:
     needs: [ test-deploy ]
     runs-on: ubuntu-latest
     environment: lab
+    concurrency: 
+      group: lab
+      cancel-in-progress: false
     steps:
     - name: Checkout repository
       uses: actions/checkout@v2
