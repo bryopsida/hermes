@@ -85,7 +85,7 @@ jobs:
           sudo apt-get install clamav clamav-daemon -y
           sudo systemctl stop clamav-freshclam
           sudo freshclam
-          clamscan --debug /tmp/artifacts/image.tar.gz
+          clamscan --debug --max-filesize=2GB --max-scansize=2GB /tmp/artifacts/image.tar.gz
       - name: Push image
         if: github.event_name != 'pull_request'
         id: push
