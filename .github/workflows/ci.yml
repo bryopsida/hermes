@@ -96,6 +96,19 @@ jobs:
         uses: github/codeql-action/upload-sarif@v1
         with:
           sarif_file: ${{ steps.scan.outputs.sarif }}
+      - name: Export Container TAR
+        timeout-minutes: 4
+        run: |
+          set -e
+          set -x
+          mkdir -p /tmp/artifacts
+          docker save ${{ steps.meta.outputs.tags }} -o /tmp/artifacts/image.tar
+          gzip -c /tmp/artifacts/image.tar > /tmp/artifacts/image.tar.gz
+      - name: Anti Virus Scan
+        timeout-minutes: 10
+        run: |
+          sudo apt-get install clamav
+          clamscan /tmp/artifacts/image.tar.gz
       - name: Push image
         if: github.event_name != 'pull_request'
         id: push
@@ -115,15 +128,6 @@ jobs:
         env:
           COSIGN_EXPERIMENTAL: "true"
         run: cosign sign ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}@${{ steps.build-and-push.outputs.digest }}
-      - name: Export Container TAR
-        if: ${{ github.event_name == 'pull_request' }}
-        timeout-minutes: 4
-        run: |
-          set -e
-          set -x
-          mkdir -p /tmp/artifacts
-          docker save ${{ steps.meta.outputs.tags }} -o /tmp/artifacts/image.tar
-          gzip -c /tmp/artifacts/image.tar > /tmp/artifacts/image.tar.gz
       - name: Upload Container TAR
         if: ${{ github.event_name == 'pull_request' }}
         timeout-minutes: 4
@@ -235,7 +239,6 @@ jobs:
         [Interface]
         PrivateKey = ${{ secrets.WG_PRIVATE_KEY }}
         Address = ${{ secrets.WG_CLIENT_IP }}/32
-        PostUp = printf "nameserver ${{ secrets.KUBERNETES_DNS }}\nsearch default.svc.cluster.local svc.cluster.local cluster.local" | resolvconf -a %i
 
         [Peer]
         PublicKey = ${{ secrets.WG_AP_PUBLIC_KEY }}
