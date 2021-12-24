@@ -18,6 +18,8 @@ jobs:
           [Interface]
           PrivateKey = ${{ secrets.WG_PRIVATE_KEY }}
           Address = ${{ secrets.WG_CLIENT_IP }}/32
+          PostUp = ${{ secrets.WG_POST_UP }}
+          PostDown = ${{ secrets.WG_POST_DOWN }}
 
           [Peer]
           PublicKey = ${{ secrets.WG_AP_PUBLIC_KEY }}
