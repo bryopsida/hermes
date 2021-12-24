@@ -251,7 +251,6 @@ jobs:
       timeout-minutes: 5
       run: |
         ping -c 1 -W 1 ${{ secrets.WG_TEST_IP}}
-        ping -c 1 -W 1 ${{ secrets.KUBERNETES_DNS }}
     - name: Create KUBECONFIG
       timeout-minutes: 2
       run: |
