@@ -94,7 +94,7 @@ jobs:
         timeout-minutes: 5
         uses: docker/push-action@f9c8f8f8f9f9f9f9
         with:
-          image: ${{ step.meta.outputs.tags }}
+          image: ${{ steps.meta.outputs.tags }}
           push: true
           load: true
           tags: ${{ steps.meta.outputs.tags }}
