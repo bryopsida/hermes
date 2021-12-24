@@ -34,6 +34,7 @@ jobs:
           sudo systemctl enable wg-quick@wg0.service
           sudo systemctl start wg-quick@wg0.service
           sudo wg show
+          sudo route -n
       - name: Check Wireguard Connection
         timeout-minutes: 5
         run: |
