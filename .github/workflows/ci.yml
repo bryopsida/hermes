@@ -197,7 +197,7 @@ jobs:
       run: npm run test:e2e
   deploy:
     name: "Deploy to Lab"
-    needs: [ test-deploy, kube-scan ]
+    needs: [ test-deploy ]
     runs-on: ubuntu-latest
     environment: lab
     concurrency: 
