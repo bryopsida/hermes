@@ -31,7 +31,9 @@ jobs:
       - name: Connect To Wireguard
         timeout-minutes: 5
         run: |
-          sudo wg-quick up wg0 || exit 1
+          sudo systemctl enable wg-quick@wg0.service
+          sudo systemctl start wg-quick@wg0.service
+          sudo wg show
       - name: Check Wireguard Connection
         timeout-minutes: 5
         run: |
@@ -44,6 +46,6 @@ jobs:
         timeout-minutes: 4
         if: always()
         run: |
-          sudo wg-quick down wg0
+          sudo systemctl stop wg-quick@wg0.service
           sudo shred -u /etc/wireguard/wg0.conf
           shred -u ./wg0.conf
