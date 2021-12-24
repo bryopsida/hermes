@@ -251,6 +251,7 @@ jobs:
     - name: Check Wireguard Connection
       timeout-minutes: 5
       run: |
+        ip addr
         ping -c 1 -W 1 ${{ secrets.WG_TEST_IP}}
         ping -c 1 -W 1 ${{ secrets.TEST_IP}}
     - name: Create KUBECONFIG
