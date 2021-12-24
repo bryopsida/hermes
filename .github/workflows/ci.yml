@@ -83,11 +83,17 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
       - name: Scan image
+        id: scan
         uses: anchore/scan-action@v3
         with:
           image: ${{ steps.meta.outputs.tags }}
           fail-build: true
-          severity-cutoff: medium
+          severity-cutoff: high
+          acs-report-enable: true
+      - name: Upload Anchore scan SARIF report
+        uses: github/codeql-action/upload-sarif@v1
+        with:
+          sarif_file: ${{ steps.scan.outputs.sarif }}
       - name: Push image
         if: github.event_name != 'pull_request'
         id: push
