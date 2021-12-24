@@ -214,6 +214,7 @@ jobs:
       timeout-minutes: 10
       run: npm run test:e2e
   deploy:
+    name: "Deploy to Lab"
     needs: [ test-deploy, kube-scan ]
     runs-on: ubuntu-latest
     environment: lab
@@ -251,6 +252,7 @@ jobs:
       timeout-minutes: 5
       run: |
         ping -c 1 -W 1 ${{ secrets.WG_TEST_IP}}
+        ping -c 1 -W 1 ${{ secrets.TEST_IP}}
     - name: Create KUBECONFIG
       timeout-minutes: 2
       run: |
