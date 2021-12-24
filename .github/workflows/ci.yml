@@ -1,9 +1,6 @@
 name: Hermes Pipeline
-on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
+on: 
+  workflow_dispatch:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}-mono
