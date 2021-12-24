@@ -36,6 +36,7 @@ jobs:
           sudo wg show
           sudo route -n
           sudo ip route get ${{ secrets.TEST_IP}}
+          sudo ip route get ${{ secrets.WG_TEST_IP}}
       - name: Check Wireguard Connection
         timeout-minutes: 5
         run: |
