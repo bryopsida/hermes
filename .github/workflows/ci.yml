@@ -11,33 +11,8 @@ env:
   KUBERNETES_SERVICE_HOST: kubernetes.default.svc.cluster.local
   KUBE_NAMESPACE: hermes
 jobs:
-  unit-test:
-    name: "Unit Test"
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node-version: [12.x, 14.x, 16.x]
-    steps:
-    - uses: actions/checkout@v2
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v2
-      with:
-        node-version: ${{ matrix.node-version }}
-        cache: 'npm'
-    - uses: actions/cache@v2
-      with:
-        path: ~/.npm
-        key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}-${{ matrix.node-version }}
-        restore-keys: |
-          ${{ runner.os }}-node-
-    - run: npm audit
-    - run: npm ci
-    - run: npm run lint --if-present
-    - run: npm run build --if-present
-    - run: npm test
   build-container:
     name: "Build Container"
-    needs: [ unit-test ]
     runs-on: ubuntu-latest
     outputs:
       tags: ${{ steps.meta.outputs.tags }}
@@ -110,7 +85,7 @@ jobs:
           sudo apt-get install clamav clamav-daemon -y
           sudo systemctl stop clamav-freshclam
           sudo freshclam
-          clamscan /tmp/artifacts/image.tar.gz
+          clamscan --debug /tmp/artifacts/image.tar.gz
       - name: Push image
         if: github.event_name != 'pull_request'
         id: push

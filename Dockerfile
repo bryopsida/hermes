@@ -1,13 +1,18 @@
-FROM node:latest AS build
+FROM node:lts-alpine AS qa
+WORKDIR /usr/src/app
+COPY package*.json .
+RUN npm audit && npm ci && npm run lint && npm run build && npm test && npm run sonar --if-present
+
+FROM node:lts-alpine AS build
 WORKDIR /usr/src/app
 COPY . .
-RUN npm ci
-RUN npm run build
+RUN npm ci && npm build
 
-FROM node:latest AS libraries
+FROM node:lts-alpine AS libraries
 WORKDIR /usr/src/app
 COPY package*.json .
 RUN npm ci --only=production
+
 
 FROM node:lts-alpine
 RUN apk add dumb-init curl
