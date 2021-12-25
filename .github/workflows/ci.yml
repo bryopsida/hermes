@@ -191,7 +191,7 @@ jobs:
       run: npm run kind:create
     - name: Deploy
       timeout-minutes: 5
-      run: npm run helm:deploy
+      run: npm run helm:deploy --helm_namespace={{ env.HELM_NAMESPACE }} --helm_args={{ env.HELM_ARGS }}
     - name: Test Deployment
       timeout-minutes: 5
       run: npm run helm:test
@@ -199,6 +199,7 @@ jobs:
       timeout-minutes: 10
       run: npm run test:e2e
   deploy:
+    #if: ${{ github.event_name != 'pull_request' and github.ref == 'refs/heads/main' }}
     name: "Deploy to Lab"
     needs: [ test-deploy ]
     runs-on: ubuntu-latest
@@ -271,7 +272,7 @@ jobs:
     - name: Deploy To lab
       timeout-minutes: 5
       run: |
-        npm run helm:deploy
+        npm run helm:deploy --helm_namespace={{ env.HELM_NAMESPACE }} --helm_args={{ env.HELM_ARGS }}
     - name: Cleanup Wireguard
       timeout-minutes: 4
       if: always()

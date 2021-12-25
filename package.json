@@ -14,7 +14,7 @@
     "lint:fix": "eslint --ext .ts src/ --fix",
     "kind:create": "kind create cluster --name hermes --config kind-config.yaml",
     "kind:delete": "kind delete cluster --name hermes",
-    "helm:deploy": "helm upgrade --install $HELM_ARGS hermes ./helm/hermes --debug --wait",
+    "helm:deploy": "helm upgrade --install --namespace $npm_config_helm_namespace $npm_config_helm_args hermes ./helm/hermes --debug --wait",
     "helm:test": "helm test hermes",
     "helm:delete": "helm delete hermes",
     "helm:lint": "helm lint ./helm/hermes",
