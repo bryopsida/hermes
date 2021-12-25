@@ -1,0 +1,282 @@
+name: Hermes Pipeline
+on: 
+  push: 
+    branches: 
+      - main
+  pull_request: 
+    branches: 
+      - main
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}-mono
+  CLUSTER_NAME: lab
+  KUBE_NAMESPACE: hermes
+jobs:
+  build-container:
+    name: "Build Container"
+    runs-on: ubuntu-latest
+    outputs:
+      tags: ${{ steps.meta.outputs.tags }}
+      labels: ${{ steps.meta.outputs.labels }}
+      version: ${{ steps.meta.outputs.version }}
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+      - name: Install cosign
+        if: github.event_name != 'pull_request'
+        timeout-minutes: 4
+        uses: sigstore/cosign-installer@1e95c1de343b5b0c23352d6417ee3e48d5bcd422
+        with:
+          cosign-release: 'v1.4.0'
+      - name: Setup Docker buildx
+        timeout-minutes: 4
+        uses: docker/setup-buildx-action@79abd3f86f79a9d68a23c75a09a9a85889262adf
+      - name: Log into registry ${{ env.REGISTRY }}
+        if: github.event_name != 'pull_request'
+        timeout-minutes: 5
+        uses: docker/login-action@28218f9b04b4f3f62068d7b6ce6ca5b26e35336c
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Extract Docker metadata
+        id: meta
+        timeout-minutes: 5
+        uses: docker/metadata-action@98669ae865ea3cffbcbaa878cf57c20bbf1c6c38
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+      - name: Build Docker image
+        id: build
+        timeout-minutes: 10
+        uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
+        with:
+          context: .
+          load: true
+          push: false
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      - name: Scan image
+        id: scan
+        uses: anchore/scan-action@v3
+        with:
+          image: ${{ steps.meta.outputs.tags }}
+          fail-build: false
+          acs-report-enable: true
+      - name: Upload Anchore scan SARIF report
+        if: ${{ env.CODEQL_ENABLED }}
+        uses: github/codeql-action/upload-sarif@v1
+        with:
+          sarif_file: ${{ steps.scan.outputs.sarif }}
+      - name: Export Container TAR
+        timeout-minutes: 4
+        run: |
+          set -e
+          set -x
+          mkdir -p /tmp/artifacts
+          docker save ${{ steps.meta.outputs.tags }} -o /tmp/artifacts/image.tar
+          gzip -c /tmp/artifacts/image.tar > /tmp/artifacts/image.tar.gz
+      - name: Anti Virus Scan
+        timeout-minutes: 10
+        run: |
+          sudo apt-get install clamav clamav-daemon -y
+          sudo systemctl stop clamav-freshclam
+          sudo freshclam
+          clamscan --max-filesize=500M --max-scansize=500M /tmp/artifacts/image.tar.gz
+      - name: Push image
+        if: github.event_name != 'pull_request'
+        id: push
+        timeout-minutes: 5
+        uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
+        with:
+          image: ${{ steps.meta.outputs.tags }}
+          push: true
+          load: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      - name: Sign the published Docker image
+        if: ${{ github.event_name != 'pull_request' }}
+        timeout-minutes: 4
+        env:
+          COSIGN_EXPERIMENTAL: "true"
+        run: cosign sign ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}@${{ steps.build-and-push.outputs.digest }}
+      - name: Upload Container TAR
+        if: ${{ github.event_name == 'pull_request' }}
+        timeout-minutes: 4
+        uses: actions/upload-artifact@v2
+        with:
+          path: /tmp/artifacts/image.tar.gz
+          name: image.tar.gz
+          retention-days: 1
+          if-no-files-found: error
+  helm-lint:
+    name: Lint Helm Chart
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Lint Helm Chart
+        run: npm run helm:lint
+  kube-scan:
+    name: Kubernetes Security Scan
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Create single template for scanning
+        working-directory: helm/hermes
+        run: |
+          helm template . > infra.yaml
+      - name: actions/upload-artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: infra-template-render
+          path: helm/hermes/infra.yaml
+      - name: Run kubesec scanner
+        uses: controlplaneio/kubesec-action@43d0ddff5ffee89a6bb9f29b64cd865411137b14
+        with:
+          input: helm/hermes/infra.yaml # specify configuration file to scan here
+          format: template
+          template: /templates/sarif.tpl
+          output: kubesec-results.sarif
+          exit-code: "0"
+      - name: actions/upload-artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: kubesec-analysis
+          path: kubesec-results.sarif
+      - name: Upload Kubesec scan results to GitHub Security tab
+        if: ${{ env.CODEQL_ENABLED }}
+        uses: github/codeql-action/upload-sarif@v1
+        with:
+          sarif_file: kubesec-results.sarif
+  test-deploy:
+    name: "Test Deploy"
+    needs: [ build-container, helm-lint, kube-scan ]
+    runs-on: ubuntu-latest
+    env: 
+      HELM_NAMESPACE: "hermes"
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+    - name: Download Container TAR
+      if: ${{ github.event_name == 'pull_request' }}
+      timeout-minutes: 4
+      uses: actions/download-artifact@v1
+      with:
+        path: /tmp/artifacts/
+        name: image.tar.gz
+    - name: Import Container TAR
+      timeout-minutes: 4
+      if: ${{ github.event_name == 'pull_request' }}
+      run: |
+        set -e
+        set -x
+        mkdir -p /tmp/artifacts
+        gzip --stdout --decompress /tmp/artifacts/image.tar.gz > /tmp/artifacts/image.tar
+        docker load -i /tmp/artifacts/image.tar
+    - name: Create KIND Cluster
+      timeout-minutes: 10
+      run: npm run kind:create
+    - name: Deploy
+      timeout-minutes: 5
+      run: npm run helm:deploy --helm_namespace=$HELM_NAMESPACE --helm_args="--create-namespace --set image.repository=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }} --set image.tag=${{ needs.build-container.outputs.version }}"
+    - name: Test Deployment
+      timeout-minutes: 5
+      run: npm run helm:test
+    - name: E2E Tests
+      timeout-minutes: 10
+      run: npm run test:e2e
+  # TODO: Add publish helm chart and generate docs here
+  deploy:
+    if: ${{ github.event_name != 'pull_request' && github.ref == 'refs/heads/main' }}
+    name: "Deploy to Lab"
+    needs: [ test-deploy ]
+    runs-on: ubuntu-latest
+    environment: lab
+    env: 
+      HELM_NAMESPACE: "hermes"
+    concurrency: 
+      group: lab
+      cancel-in-progress: false
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+    # create connection to the cluster
+    - name: Install Wireguard
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y wireguard-dkms
+    - name: Create Wireguard Config
+      run: |
+        cat <<EOF >> ./wg0.conf
+        [Interface]
+        PrivateKey = ${{ secrets.WG_PRIVATE_KEY }}
+        Address = ${{ secrets.WG_CLIENT_IP }}/32
+        PostUp = ${{ secrets.WG_POST_UP }}
+        PostDown = ${{ secrets.WG_POST_DOWN }}
+
+        [Peer]
+        PublicKey = ${{ secrets.WG_AP_PUBLIC_KEY }}
+        AllowedIPs = ${{ secrets.WG_AP_ALLOWED_IPS}}
+        Endpoint = ${{ secrets.WG_AP_ENDPOINT }}
+        PersistentKeepalive = 25
+        EOF
+        sudo cp ./wg0.conf /etc/wireguard/wg0.conf
+    - name: Connect To Wireguard
+      timeout-minutes: 5
+      run: |
+        sudo systemctl enable wg-quick@wg0.service
+        sudo systemctl start wg-quick@wg0.service
+    - name: Check Wireguard Connection
+      timeout-minutes: 5
+      run: |
+        ping -c 1 -W 1 ${{ secrets.WG_TEST_IP}}
+        ping -c 1 -W 1 ${{ secrets.TEST_IP}}
+    - name: Create Kubernetes Configuration
+      timeout-minutes: 2
+      run: |
+        mkdir -p ~/.kube
+        cat <<EOF >> ~/.kube/config
+        apiVersion: v1
+        clusters:
+        - cluster:
+            certificate-authority-data: ${{ secrets.K8S_API_CA }}
+            server: ${{ secrets.LAB_K8S_SERVER}}
+          name: lab
+        contexts:
+        - context:
+            cluster: lab
+            user: deployer
+          name: deployer@lab
+        current-context: deployer@lab
+        kind: Config
+        preferences: {}
+        users:
+        - name: deployer
+          user:
+            token: ${{ secrets.K8S_DEPLOYER_TOKEN }}
+        EOF
+        kubectl config use-context deployer@lab
+    - name: Deploy To lab
+      timeout-minutes: 5
+      run: |
+        npm run helm:deploy --helm_namespace=$HELM_NAMESPACE --helm_args="-set image.repository=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }} --set image.tag=${{ needs.build-container.outputs.version }}"
+    - name: Cleanup Wireguard
+      timeout-minutes: 4
+      if: always()
+      run: |
+        sudo systemctl stop wg-quick@wg0.service
+        sudo shred -u /etc/wireguard/wg0.conf
+        shred -u ./wg0.conf
