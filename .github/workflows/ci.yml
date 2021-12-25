@@ -166,7 +166,7 @@ jobs:
     runs-on: ubuntu-latest
     env: 
       HELM_NAMESPACE: "hermes"
-      HELM_ARGS: "--create-namespace --set image.repository={{ env.REGISTRY }}/{{ env.IMAGE_NAME }} --set image.tag={{ needs.build-container.outputs.tags }}"
+      HELM_ARGS: "--create-namespace --set image.repository=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }} --set image.tag=${{ needs.build-container.outputs.tags }}"
     steps:
     - name: Checkout repository
       uses: actions/checkout@v2
@@ -191,7 +191,7 @@ jobs:
       run: npm run kind:create
     - name: Deploy
       timeout-minutes: 5
-      run: npm run helm:deploy --helm_namespace={{ env.HELM_NAMESPACE }} --helm_args={{ env.HELM_ARGS }}
+      run: npm run helm:deploy --helm_namespace=$HELM_NAMESPACE --helm_args=$HELM_ARGS
     - name: Test Deployment
       timeout-minutes: 5
       run: npm run helm:test
@@ -206,7 +206,7 @@ jobs:
     environment: lab
     env: 
       HELM_NAMESPACE: "hermes"
-      HELM_ARGS: "--set image.repository={{ env.REGISTRY }}/{{ env.IMAGE_NAME }} --set image.tag={{ needs.build-container.outputs.tags }}"
+      HELM_ARGS: "--set image.repository=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }} --set image.tag=${{ needs.build-container.outputs.tags }}"
     concurrency: 
       group: lab
       cancel-in-progress: false
@@ -272,7 +272,7 @@ jobs:
     - name: Deploy To lab
       timeout-minutes: 5
       run: |
-        npm run helm:deploy --helm_namespace={{ env.HELM_NAMESPACE }} --helm_args={{ env.HELM_ARGS }}
+        npm run helm:deploy --helm_namespace=$HELM_NAMESPACE --helm_args=$HELM_ARGS
     - name: Cleanup Wireguard
       timeout-minutes: 4
       if: always()
