@@ -164,6 +164,9 @@ jobs:
     name: "Test Deploy"
     needs: [ build-container, helm-lint, kube-scan ]
     runs-on: ubuntu-latest
+    env: 
+      HELM_NAMESPACE: "hermes"
+      HELM_ARGS: "--create-namespace --set image.repository={{ env.REGISTRY }}/{{ env.IMAGE_NAME }} --set image.tag={{ needs.build-container.outputs.tags }}"
     steps:
     - name: Checkout repository
       uses: actions/checkout@v2
@@ -200,6 +203,9 @@ jobs:
     needs: [ test-deploy ]
     runs-on: ubuntu-latest
     environment: lab
+    env: 
+      HELM_NAMESPACE: "hermes"
+      HELM_ARGS: "--set image.repository={{ env.REGISTRY }}/{{ env.IMAGE_NAME }} --set image.tag={{ needs.build-container.outputs.tags }}"
     concurrency: 
       group: lab
       cancel-in-progress: false
@@ -262,12 +268,10 @@ jobs:
             token: ${{ secrets.K8S_DEPLOYER_TOKEN }}
         EOF
         kubectl config use-context deployer@lab
-    - name: Check Kubectl Access
-      timeout-minutes: 2
+    - name: Deploy To lab
+      timeout-minutes: 5
       run: |
-        kubectl -n ${{ env.KUBE_NAMESPACE }} get pods
-    # deploy to the lab 
-    # clean up
+        npm run helm:deploy
     - name: Cleanup Wireguard
       timeout-minutes: 4
       if: always()
