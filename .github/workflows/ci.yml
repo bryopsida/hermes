@@ -18,6 +18,7 @@ jobs:
     outputs:
       tags: ${{ steps.meta.outputs.tags }}
       labels: ${{ steps.meta.outputs.labels }}
+      version: ${{ steps.meta.outputs.version }}
     permissions:
       contents: read
       packages: write
@@ -190,7 +191,7 @@ jobs:
       run: npm run kind:create
     - name: Deploy
       timeout-minutes: 5
-      run: npm run helm:deploy --helm_namespace=$HELM_NAMESPACE --helm_args="--create-namespace --set image.repository=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }} --set image.tag=${{ needs.build-container.outputs.tags }}"
+      run: npm run helm:deploy --helm_namespace=$HELM_NAMESPACE --helm_args="--create-namespace --set image.repository=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }} --set image.tag=${{ needs.build-container.outputs.version }}"
     - name: Test Deployment
       timeout-minutes: 5
       run: npm run helm:test
@@ -270,7 +271,7 @@ jobs:
     - name: Deploy To lab
       timeout-minutes: 5
       run: |
-        npm run helm:deploy --helm_namespace=$HELM_NAMESPACE --helm_args="-set image.repository=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }} --set image.tag=${{ needs.build-container.outputs.tags }}"
+        npm run helm:deploy --helm_namespace=$HELM_NAMESPACE --helm_args="-set image.repository=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }} --set image.tag=${{ needs.build-container.outputs.version }}"
     - name: Cleanup Wireguard
       timeout-minutes: 4
       if: always()
