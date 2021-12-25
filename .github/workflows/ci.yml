@@ -96,7 +96,6 @@ jobs:
         with:
           image: ${{ steps.meta.outputs.tags }}
           push: true
-          load: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
