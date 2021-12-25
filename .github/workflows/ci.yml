@@ -200,7 +200,7 @@ jobs:
       run: npm run test:e2e
   # TODO: Add publish helm chart and generate docs here
   deploy:
-    if: ${{ github.event_name != 'pull_request' and github.ref == 'refs/heads/main' }}
+    if: ${{ github.event_name != 'pull_request' && github.ref == 'refs/heads/main' }}
     name: "Deploy to Lab"
     needs: [ test-deploy ]
     runs-on: ubuntu-latest
