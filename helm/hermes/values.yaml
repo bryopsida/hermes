@@ -2,7 +2,7 @@ replicaCount: 1
 image:
   repository: ghcr.io/bryopsida/hermes-mono
   pullPolicy: IfNotPresent
-  tag: "latest"
+  tag: "main"
 imagePullSecrets: 
   - name: ghcr-credentials
 nameOverride: ""
