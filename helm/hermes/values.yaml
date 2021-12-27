@@ -44,30 +44,16 @@ kafka:
   defaultReplicationFactor: 3
   offsetsTopicReplicationFactor: 3
   transactionStateLogReplicationFactor: 3
-  nodeSelector:
-    kubernetes.io/arch: amd64
   zookeeper:
     replicaCount: 3
-    nodeSelector:
-      kubernetes.io/arch: amd64
 redis:
   enabled: true
   existingSecret: "hermes-internal-redis"
   existingSecretPasswordKey: "redisPassword"
-  updateJob:
-    nodeSelector:
-      kubernetes.io/arch: amd64
-  redis:
-    nodeSelector:
-      kubernetes.io/arch: amd64
 postgres:
   enabled: true
   postgresql:
     replicaCount: 2
     existingSecret: "hermes-internal-postgresql"
-    nodeSelector:
-      kubernetes.io/arch: amd64
   pgpool:
     existingSecret: "hermes-internal-pgpool"
-    nodeSelector:
-      kubernetes.io/arch: amd64

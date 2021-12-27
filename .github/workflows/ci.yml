@@ -182,8 +182,8 @@ jobs:
       timeout-minutes: 10
       run: npm run kind:create
     - name: Deploy
-      timeout-minutes: 5
-      run: npm run helm:deploy --helm_namespace=$HELM_NAMESPACE --helm_args="--create-namespace --set image.repository=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }} --set image.tag=${{ needs.build-container.outputs.version }}"
+      timeout-minutes: 20
+      run: npm run helm:deploy --helm_namespace=$HELM_NAMESPACE --helm_args="--create-namespace -f helm/hermes/envs/ci.yaml--set image.repository=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }} --set image.tag=${{ needs.build-container.outputs.version }} --timeout 15m"
     - name: Test Deployment
       timeout-minutes: 5
       run: npm run helm:test
@@ -262,9 +262,9 @@ jobs:
         EOF
         kubectl config use-context deployer@lab
     - name: Deploy To lab
-      timeout-minutes: 5
+      timeout-minutes: 25
       run: |
-        npm run helm:deploy --helm_namespace=$HELM_NAMESPACE --helm_args="-set image.repository=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }} --set image.tag=${{ needs.build-container.outputs.version }}"
+        npm run helm:deploy --helm_namespace=$HELM_NAMESPACE --helm_args="-f helm/hermes/envs/lab.yaml -set image.repository=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }} --set image.tag=${{ needs.build-container.outputs.version }} --timeout 20m"
     - name: Cleanup Wireguard
       timeout-minutes: 4
       if: always()
