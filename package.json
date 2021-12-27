@@ -16,6 +16,7 @@
     "kind:load": "kind load image-archive $npm_config_tag",
     "kind:delete": "kind delete cluster --name hermes",
     "k8s:createPullSecret": "kubectl --namespace $npm_config_helm_namespace create secret docker-registry ghcr-credentials  --docker-server=ghcr.io --docker-username=$npm_config_registry_username --docker-password=$npm_config_registry_password",
+    "k8s:createNamespace": "kubectl create namespace $npm_config_helm_namespace",
     "helm:deploy": "helm --namespace $npm_config_helm_namespace upgrade --install hermes ./helm/hermes --debug --wait $npm_config_helm_args",
     "helm:test": "helm test hermes",
     "helm:delete": "helm delete hermes",
