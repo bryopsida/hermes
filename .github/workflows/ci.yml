@@ -181,6 +181,12 @@ jobs:
     - name: Create KIND Cluster
       timeout-minutes: 10
       run: npm run kind:create
+    - name: Create Pull Secret
+      if: ${{ github.event_name != 'pull_request' }}
+      run: npm run k8s:createPullSecret --helm_namespace=$HELM_NAMESPACE --registry_username=${{ github.actor }} --registry_password=${{ github.token }}
+    - name: Side Load Image
+      if: ${{ github.event_name == 'pull_request' }}
+      run: npm run kind:load --image="/tmp/artifacts/image.tar"
     - name: Deploy
       timeout-minutes: 20
       run: npm run helm:deploy --helm_namespace=$HELM_NAMESPACE --helm_args="--create-namespace -f helm/hermes/envs/ci.yaml --set image.repository=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }} --set image.tag=${{ needs.build-container.outputs.version }} --timeout 15m"
