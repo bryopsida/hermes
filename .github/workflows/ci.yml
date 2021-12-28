@@ -11,7 +11,30 @@ env:
   IMAGE_NAME: ${{ github.repository }}-mono
   CLUSTER_NAME: lab
   KUBE_NAMESPACE: hermes
+  CODEQL_ENABLED: true
 jobs:
+  analyze:
+    name: Analyze
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [ 'javascript' ]
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+    - name: Initialize CodeQL
+      uses: github/codeql-action/init@v1
+      with:
+        languages: ${{ matrix.language }}
+    - name: Autobuild
+      uses: github/codeql-action/autobuild@v1
+    - name: Perform CodeQL Analysis
+      uses: github/codeql-action/analyze@v1
   build-container:
     name: "Build Container"
     runs-on: ubuntu-latest
@@ -55,7 +78,7 @@ jobs:
             type=semver,pattern={{major}}.{{minor}}
       - name: Build Docker image
         id: build
-        timeout-minutes: 10
+        timeout-minutes: 25
         uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
         with:
           context: .
@@ -95,7 +118,7 @@ jobs:
       - name: Push image
         if: github.event_name != 'pull_request'
         id: push
-        timeout-minutes: 5
+        timeout-minutes: 25
         uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
         with:
           image: ${{ steps.meta.outputs.tags }}
@@ -161,7 +184,7 @@ jobs:
           sarif_file: kubesec-results.sarif
   test-deploy:
     name: "Test Deploy"
-    needs: [ build-container, helm-lint, kube-scan ]
+    needs: [ build-container, helm-lint, kube-scan, analyze ]
     runs-on: ubuntu-latest
     env: 
       HELM_NAMESPACE: "hermes"
@@ -184,9 +207,20 @@ jobs:
         mkdir -p /tmp/artifacts
         gzip --stdout --decompress /tmp/artifacts/image.tar.gz > /tmp/artifacts/image.tar
         docker load -i /tmp/artifacts/image.tar
-    - name: Create KIND Cluster
-      timeout-minutes: 10
-      run: npm run kind:create
+    - name: Create MicroK8S Cluster
+      timeout-minutes: 15
+      run: |
+        sudo snap install microk8s --classic --channel=1.23/stable
+        sudo microk8s enable dns storage registry rbac
+        sudo microk8s status --wait-ready
+        sudo microk8s kubectl rollout status deployment/hostpath-provisioner -n kube-system
+        sudo microk8s kubectl rollout status deployment/registry -n container-registry
+    - name: Set Kube Config
+      run: |
+        mkdir -p ~/.kube
+        sudo microk8s config > ~/.kube/config
+    - name: Test Kube Access
+      run: kubectl get nodes
     - name: Create Namespace
       run: npm run k8s:createNamespace --helm_namespace=$HELM_NAMESPACE
     - name: Create Pull Secret
@@ -194,16 +228,32 @@ jobs:
       run: npm run k8s:createPullSecret --helm_namespace=$HELM_NAMESPACE --registry_username=${{ github.actor }} --registry_password=${{ github.token }}
     - name: Side Load Image
       if: ${{ github.event_name == 'pull_request' }}
-      run: npm run kind:load --image="/tmp/artifacts/image.tar"
+      run: |
+        docker tag ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ needs.build-container.outputs.version }} localhost:32000/hermes-mono:latest
+        docker push localhost:32000/hermes-mono:latest
     - name: Deploy
       timeout-minutes: 25
-      run: npm run helm:deploy --helm_namespace=$HELM_NAMESPACE --helm_args="-f helm/hermes/envs/ci.yaml --set image.repository=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }} --set image.tag=${{ needs.build-container.outputs.version }} --timeout 20m"
+      run: npm run helm:deploy --helm_namespace=$HELM_NAMESPACE --helm_args="-f helm/hermes/envs/ci.yaml --set image.repository=localhost:32000/hermes-mono --set image.tag=latest --timeout 20m"
     - name: Test Deployment
       timeout-minutes: 5
       run: npm run helm:test
     - name: E2E Tests
       timeout-minutes: 10
       run: npm run test:e2e
+    - name: Collect Info On Failure
+      if: failure()
+      run: |
+        mkdir /tmp/microk8s-hermes/
+        sudo snap logs microk8s > /tmp/microk8s-hermes/microk8s.log
+        inspectTarball=$(sudo microk8s inspect | grep -Po "/var/snap/microk8s/.*\.tar\.gz")
+        sudo cp $inspectTarball /tmp/microk8s-hermes/
+    - name: Upload Info On Failure
+      uses: actions/upload-artifact@v2
+      if: failure()
+      with:
+        name: test-deploy-logs
+        path: /tmp/microk8s-hermes/
+        retention-days: 1
   # TODO: Add publish helm chart and generate docs here
   deploy:
     if: ${{ github.event_name != 'pull_request' && github.ref == 'refs/heads/main' }}

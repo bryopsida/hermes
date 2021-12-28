@@ -38,14 +38,18 @@ tolerations: []
 affinity: {}
 elastic:
   enabled: true
+  data:
+    heapSize: "512m"
 kafka:
   enabled: true
   replicaCount: 5
   defaultReplicationFactor: 3
   offsetsTopicReplicationFactor: 3
   transactionStateLogReplicationFactor: 3
+  heapOpts: "-Xmx256m -Xms256m"
   zookeeper:
     replicaCount: 3
+    heapSize: 256
 redis:
   enabled: true
   existingSecret: "hermes-internal-redis"
