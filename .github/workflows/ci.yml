@@ -55,7 +55,7 @@ jobs:
             type=semver,pattern={{major}}.{{minor}}
       - name: Build Docker image
         id: build
-        timeout-minutes: 10
+        timeout-minutes: 25
         uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
         with:
           context: .
@@ -95,7 +95,7 @@ jobs:
       - name: Push image
         if: github.event_name != 'pull_request'
         id: push
-        timeout-minutes: 5
+        timeout-minutes: 25
         uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
         with:
           image: ${{ steps.meta.outputs.tags }}
