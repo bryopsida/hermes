@@ -217,7 +217,7 @@ jobs:
     - name: Set Kube Config
       run: |
         mkdir -p ~/.kube
-        sg microk8s -c "microk8s config" > ~/.kube/config
+        sudo microk8s config > ~/.kube/config
     - name: Test Kube Access
       run: kubectl get nodes
     - name: Create Namespace
