@@ -215,7 +215,9 @@ jobs:
         sudo microk8s status --wait-ready
         sudo microk8s kubectl rollout status deployment/hostpath-provisioner -n kube-system
     - name: Set Kube Config
-      run: sg microk8s -c "microk8s config" > ~/.kube/config
+      run: |
+        mkdir -p ~/.kube
+        sg microk8s -c "microk8s config" > ~/.kube/config
     - name: Test Kube Access
       run: kubectl get nodes
     - name: Create Namespace
