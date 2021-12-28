@@ -214,6 +214,7 @@ jobs:
         sudo microk8s enable dns storage registry rbac
         sudo microk8s status --wait-ready
         sudo microk8s kubectl rollout status deployment/hostpath-provisioner -n kube-system
+        sudo microk8s kubectl rollout status deployment/registry -n container-registry
     - name: Set Kube Config
       run: |
         mkdir -p ~/.kube
