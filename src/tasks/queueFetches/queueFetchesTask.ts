@@ -25,7 +25,8 @@ export class QueueFetchesTask implements ITask {
   }
 
   stop (): Promise<void> {
-    throw new Error('Method not implemented.')
+    this.log.info('Stopping queue fetches task')
+    return Promise.resolve()
   }
 
   private async processJob (job: Job<IQueueFetchOptions>, done: DoneCallback) {
