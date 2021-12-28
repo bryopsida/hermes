@@ -182,6 +182,12 @@ jobs:
         uses: github/codeql-action/upload-sarif@v1
         with:
           sarif_file: kubesec-results.sarif
+      - uses: actions/upload-artifact@v2
+        if: failure()
+        with:
+          name: test-deploy-logs
+          path: /tmp/kind-hermes/logs/
+          retention-days: 1
   test-deploy:
     name: "Test Deploy"
     needs: [ build-container, helm-lint, kube-scan, analyze ]
@@ -227,6 +233,10 @@ jobs:
     - name: E2E Tests
       timeout-minutes: 10
       run: npm run test:e2e
+    - name: Collect Info On Failure
+      if: failure()
+      run: npm run kind:logs
+    
   # TODO: Add publish helm chart and generate docs here
   deploy:
     if: ${{ github.event_name != 'pull_request' && github.ref == 'refs/heads/main' }}
