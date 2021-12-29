@@ -245,6 +245,10 @@ jobs:
       run: |
         mkdir /tmp/microk8s-hermes/
         sudo snap logs microk8s > /tmp/microk8s-hermes/microk8s.log
+        kubectl -n $HELM_NAMESPACE describe pods > /tmp/microk8s-hermes/hermes.pods.describe
+        kubectl -n $HELM_NAMESPACE describe statefulsets > /tmp/microk8s-hermes/hermes.statefulsets.describe
+        kubectl -n $HELM_NAMESPACE describe replicasets > /tmp/microk8s-hermes/hermes.replicasets.describe
+        kubectl -n $HELM_NAMESPACE describe deployments > /tmp/microk8s-hermes/hermes.deployments.describe
         inspectTarball=$(sudo microk8s inspect | grep -Po "/var/snap/microk8s/.*\.tar\.gz")
         sudo cp $inspectTarball /tmp/microk8s-hermes/
     - name: Upload Info On Failure
