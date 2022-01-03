@@ -1,22 +1,15 @@
+import configFactory from '../../config/postgresConfig'
+const config = configFactory.buildPostgresConfig('watchManagementApi')
+
 module.exports = {
-    development: {
-        client: 'pg',
-        searchPath: ['watches'],
-        connection: {
-             user: 'postgres', 
-             database: '',
-             password: '',
-             host: 'localhost' 
-        }
-    },
-    production: { 
-        client: 'pg',
-        searchPath: ['watches'],
-        connection: {
-            user: process.env.PG_USER,
-            database: process.env.PG_DATABASE,
-            password: process.env.PG_PASSWORD,
-            host:  process.env.PG_HOST 
-       }
-    }
-};
+  development: {
+    client: 'pg',
+    searchPath: ['watches'],
+    connection: config
+  },
+  production: {
+    client: 'pg',
+    searchPath: ['watches'],
+    connection: config
+  }
+}

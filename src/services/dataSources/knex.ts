@@ -1,15 +1,18 @@
 import { knex } from 'knex'
+import postgresConfigFactory from '../../config/postgresConfig'
 import COMPUTED_CONSTANTS from '../../common/computedConstants'
+
+const config = postgresConfigFactory.buildPostgresConfig('dataSourceApi')
 
 const knexInstance = knex({
   client: 'pg',
   searchPath: 'data_sources',
   connection: {
-    host: process.env.PG_HOST || 'localhost',
-    user: process.env.PG_USER || 'postgres',
-    port: 5432,
-    password: process.env.PG_PASSWORD || 'postgres',
-    database: 'datasource_watch',
+    host: config.host,
+    user: config.user,
+    port: config.port,
+    password: config.password,
+    database: config.database,
     application_name: `data-sources-${COMPUTED_CONSTANTS.id}`
   }
 })

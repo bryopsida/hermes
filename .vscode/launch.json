@@ -41,6 +41,18 @@
       "env": {
         "USE_CLUSTERING": "true"
       }
+    },
+    {
+      "type": "node",
+      "name": "Launch Nodemon Hermes (Mono) (Dev Pod)",
+      "console": "integratedTerminal",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+          "run-script", "start:dev"
+      ],
+      "env": {
+        "USE_CLUSTERING": "true",
+      }
     }
   ]
 }

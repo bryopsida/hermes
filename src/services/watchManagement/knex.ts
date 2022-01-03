@@ -1,15 +1,18 @@
 import { knex } from 'knex'
+import configFactory from '../../config/postgresConfig'
 import COMPUTED_CONSTANTS from '../../common/computedConstants'
+
+const config = configFactory.buildPostgresConfig('watchManagementApi')
 
 const knexInstance = knex({
   client: 'pg',
   searchPath: 'watches',
   connection: {
-    host: process.env.PG_HOST || 'localhost',
-    user: process.env.PG_USER || 'postgres',
-    port: 5432,
-    password: process.env.PG_PASSWORD || 'postgres',
-    database: 'datasource_watch',
+    host: config.host,
+    user: config.user,
+    port: config.port,
+    password: config.password,
+    database: config.database,
     application_name: `watch-management-${COMPUTED_CONSTANTS.id}`
   }
 })
