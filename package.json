@@ -4,7 +4,7 @@
   "description": "Collects and receives data which is ingested to a processing pipeline which normalizes to prep for watch evaluations, watches trigger alerts",
   "main": "build/monoApp.ts",
   "scripts": {
-    "test": "jest --coverage",
+    "test": "jest --coverage --testPathPattern='tests/.*\\.spec\\.ts' --testPathIgnorePatterns='tests/.*\\.rest\\.spec\\.ts'",
     "build": "node_modules/typescript/bin/tsc --project ./",
     "start": "node build/src/monoApp.js",
     "start:dev": "nodemon",
@@ -18,7 +18,7 @@
     "helm:test": "helm test hermes",
     "helm:delete": "helm delete hermes",
     "helm:lint": "helm lint ./helm/hermes",
-    "test:e2e": "echo 'todo'"
+    "test:e2e": "jest --testPathPattern='tests/.*\\.rest\\.spec\\.ts'"
   },
   "repository": {
     "type": "git",

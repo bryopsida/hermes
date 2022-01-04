@@ -25,4 +25,5 @@ WORKDIR /usr/src/app
 COPY --chown=node:node --from=libraries /usr/src/app/node_modules /usr/src/app/node_modules
 
 COPY --chown=node:node --from=build /usr/src/app/build/src/ /usr/src/app/
+EXPOSE 3000
 CMD ["dumb-init", "node", "monoApp.js"]

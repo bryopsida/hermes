@@ -40,6 +40,8 @@ elastic:
   enabled: true
   data:
     heapSize: "512m"
+  volumePermissions:
+    enabled: true
 kafka:
   enabled: true
   replicaCount: 5
@@ -47,6 +49,8 @@ kafka:
   offsetsTopicReplicationFactor: 3
   transactionStateLogReplicationFactor: 3
   heapOpts: "-Xmx256m -Xms256m"
+  volumePermissions:
+    enabled: true
   zookeeper:
     replicaCount: 3
     heapSize: 256
@@ -54,10 +58,15 @@ redis:
   enabled: true
   existingSecret: "hermes-internal-redis"
   existingSecretPasswordKey: "redisPassword"
+  volumePermissions:
+    enabled: true
 postgres:
   enabled: true
+  volumePermissions:
+    enabled: true
   postgresql:
     replicaCount: 2
     existingSecret: "hermes-internal-postgresql"
+    database: "datasource_watch"
   pgpool:
     existingSecret: "hermes-internal-pgpool"
