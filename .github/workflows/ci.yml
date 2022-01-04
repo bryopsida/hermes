@@ -191,6 +191,8 @@ jobs:
     steps:
     - name: Checkout repository
       uses: actions/checkout@v2
+    - name: NPM install
+      run: npm ci
     - name: Download Container TAR
       if: ${{ github.event_name == 'pull_request' }}
       timeout-minutes: 4
