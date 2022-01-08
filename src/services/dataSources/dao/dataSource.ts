@@ -6,19 +6,17 @@ import knex from '../knex'
 const tableName = 'data_sources'
 
 export interface IDataSource {
-    id: number;
+    id: string;
     type: string;
     name: string;
     uri: string;
-    tags: Array<string>;
 }
 
 export class DataSource implements IDataSource {
-    public id: number;
+    public id: string;
     public type: string;
     public name: string;
     public uri: string;
-    public tags: Array<string>;
 
     private static readonly log = createLogger({
       serviceName: `data-source-dao-${COMPUTED_CONSTANTS.id}`,
@@ -27,17 +25,15 @@ export class DataSource implements IDataSource {
 
     constructor (dataSource: IDataSource | null = null) {
       if (dataSource == null) {
-        this.id = 0
+        this.id = ''
         this.type = ''
         this.name = ''
         this.uri = ''
-        this.tags = []
       } else {
         this.id = dataSource.id
         this.type = dataSource.type
         this.name = dataSource.name
         this.uri = dataSource.uri
-        this.tags = dataSource.tags
       }
     }
 
@@ -80,8 +76,7 @@ export class DataSource implements IDataSource {
         id: this.id,
         type: this.type,
         name: this.name,
-        uri: this.uri,
-        tags: this.tags
+        uri: this.uri
       }
     }
 

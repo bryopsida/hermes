@@ -1,27 +1,5 @@
 version: "3.9"
 services:
-  postgres:
-    image: postgres:14-alpine
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: datasource_watch
-    ports:
-      - "5432:5432"
-    volumes:
-        - postgres:/var/lib/postgresql/data
-  pgadmin:
-    image: dpage/pgadmin4
-    ports:
-      - "28080:8080"
-    depends_on:
-      - postgres
-    environment:
-      PGADMIN_DEFAULT_EMAIL: admin@pgadmin.local
-      PGADMIN_DEFAULT_PASSWORD: admin
-      PGADMIN_LISTEN_PORT: 8080
-    volumes:
-        - pgadmin:/var/lib/pgadmin
   redis:
     image: redis:alpine
     ports:
@@ -38,6 +16,11 @@ services:
     volumes: 
       - zookeeperdata:/var/lib/zookeeper/data
       - zookeeperlog:/var/lib/zookeeper/log
+  mongo:
+    image: mongo
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: mongo
+      MONGO_INITDB_ROOT_PASSWORD: mongo
   
   kafka:
     image: confluentinc/cp-kafka:latest

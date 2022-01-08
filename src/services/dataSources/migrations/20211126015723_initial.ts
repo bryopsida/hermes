@@ -3,7 +3,7 @@ import { Knex } from 'knex'
 exports.up = function (knex: Knex) {
   return knex.schema
     .createTable('data_sources', function (table) {
-      table.increments('id')
+      table.uuid('id').defaultTo(knex.raw('uuid_generate_v4()'))
       table.string('type', 255).notNullable()
       table.string('name', 255).notNullable()
       table.string('uri', 255).notNullable()

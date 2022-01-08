@@ -1,7 +1,6 @@
 export interface DataSourceDTO {
-    id: number;
+    id: string;
     type: string;
     name: string;
     uri: string;
-    tags: Array<string>;
 }

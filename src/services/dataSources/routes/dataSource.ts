@@ -25,18 +25,23 @@ export default function registerDataSourceRoute (fastify: FastifyInstance): void
         Body: DataSourceDTO,
         Reply: DataSourceDTO,
         Parameters: {
-            id: number
+            id: string
         }
     }>(`${routeMountPoint}/sources/:id`, async (request, reply) => {
-      const dataSource = await DataSource.upsert(DataSource.fromDTO(request.body))
-      reply.send(dataSource)
+      try {
+        const dataSource = (await DataSource.upsert(DataSource.fromDTO(request.body))).toDTO()
+        reply.send(dataSource)
+      } catch (err) {
+        console.error(err)
+        reply.code(500)
+      }
     })
 
   // TODO: fix this type coercion, its ugly
   fastify.delete<{
         Reply: FastifyReply,
         Parameters: {
-            id: number
+            id: string
         }
     }>(`${routeMountPoint}/sources/:id`, async (request : FastifyRequest, reply: FastifyReply) => {
       const req:FastifyRequest = request
