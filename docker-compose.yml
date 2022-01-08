@@ -21,7 +21,8 @@ services:
     environment:
       MONGO_INITDB_ROOT_USERNAME: mongo
       MONGO_INITDB_ROOT_PASSWORD: mongo
-  
+    volumes:
+    - mongo:/mongo/db
   kafka:
     image: confluentinc/cp-kafka:latest
     depends_on:
@@ -42,10 +43,8 @@ networks:
   elastic:
     driver: bridge
 volumes:
-  postgres:
-  pgadmin:
   redis:
   zookeeperdata:
   zookeeperlog:
   kafka:
-  elastic:
+  mongodb:

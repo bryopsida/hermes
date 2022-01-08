@@ -18,6 +18,7 @@
     "homepage": "https://github.com/bryopsida/data-source-watch#readme",
     "dependencies": {
         "fastify": "^3.24.0",
+        "mongoose": "^6.1.5",
         "pg": "^8.7.1",
         "pino": "^7.4.1"
     }

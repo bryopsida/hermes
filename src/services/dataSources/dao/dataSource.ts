@@ -1,7 +1,7 @@
 import COMPUTED_CONSTANTS from '../../../common/computedConstants'
 import createLogger from '../../../common/logger/factory'
 import { DataSourceDTO } from '../dto/dataSource'
-import knex from '../knex'
+import mongoose from 'mongoose'
 
 const tableName = 'data_sources'
 
@@ -17,6 +17,8 @@ export class DataSource implements IDataSource {
     public type: string;
     public name: string;
     public uri: string;
+
+    
 
     private static readonly log = createLogger({
       serviceName: `data-source-dao-${COMPUTED_CONSTANTS.id}`,
