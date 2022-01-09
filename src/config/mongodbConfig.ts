@@ -7,7 +7,8 @@ const PASSWORD_KEY = 'mongodb.password'
 const DATABASE_KEY = 'mongodb.database'
 
 export interface IMongoDBConfig {
-  serverUrl: string
+  serverUrl: string,
+  options: Record<string, unknown>
 }
 
 export default {
@@ -25,7 +26,11 @@ export default {
     const database = config.has(databaseKey) ? config.get<string>(databaseKey) : scope
 
     return {
-      serverUrl: `mongodb://${user}:${password}@${host}:${port}/${database}`
+      serverUrl: `mongodb://${host}:${port}/${database}?authSource=admin`,
+      options: {
+        user: user,
+        pass: password
+      }
     }
   }
 }

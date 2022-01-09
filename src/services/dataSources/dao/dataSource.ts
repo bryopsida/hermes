@@ -67,29 +67,38 @@ export class DataSource implements IDataSource {
     }
 
     static async count () : Promise<number> {
-      await mongoose.connect(config.serverUrl)
+      await mongoose.connect(config.serverUrl, config.options)
       return model.countDocuments()
+    }
+
+    static async findById (id: string): Promise<DataSource> {
+      await mongoose.connect(config.serverUrl, config.options)
+      return new DataSource(await model.findOne({ id: id }).exec())
     }
 
     static async findAll (offset: number, count: number): Promise<Array<DataSource>> {
       DataSource.log.debug(`Fetching data sources from offset: ${offset} and count: ${count}`)
-      await mongoose.connect(config.serverUrl)
+      await mongoose.connect(config.serverUrl, config.options)
       return (await model.find().skip(offset).limit(count).exec()).map(doc => new DataSource(doc))
     }
 
     static async upsert (dataSource: DataSource): Promise<DataSource> {
-      await mongoose.connect(config.serverUrl)
+      await mongoose.connect(config.serverUrl, config.options)
       await model.updateOne({ id: dataSource.id }, dataSource.toDTO(), { upsert: true }).exec()
-      return new DataSource(await model.findById(dataSource.id).exec())
+      return new DataSource(await model.findOne({
+        id: dataSource.id
+      }).exec())
     }
 
     static async has (id: string): Promise<boolean> {
-      await mongoose.connect(config.serverUrl)
-      return await model.findById(id).exec() != null
+      await mongoose.connect(config.serverUrl, config.options)
+      return await model.findOne({
+        id: id
+      }).exec() != null
     }
 
     static async delete (id: string): Promise<void> {
-      await mongoose.connect(config.serverUrl)
+      await mongoose.connect(config.serverUrl, config.options)
       await model.findByIdAndRemove(id).exec()
     }
 

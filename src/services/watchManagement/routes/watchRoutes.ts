@@ -13,6 +13,21 @@ export default function registerWatchRoutes (fastify: FastifyInstance): void {
       reply.send(await Watch.findAll(request.query.offset, request.query.limit))
     })
 
+  fastify.get<{
+        Reply: WatchDTO,
+        Parameters: {
+          id: string
+        }
+      }>(`${routeMountPoint}/watches/:id`, async (request, reply) => {
+        const params = request.params as { id: string }
+        const watch = await Watch.findById(params.id)
+        if (watch == null) {
+          reply.statusCode = 404
+          return
+        }
+        reply.send(watch.toDTO())
+      })
+
   fastify.put<{
         Body: WatchDTO,
         Reply: WatchDTO,
@@ -27,11 +42,11 @@ export default function registerWatchRoutes (fastify: FastifyInstance): void {
   fastify.delete<{
         Reply: FastifyReply,
         Parameters: {
-            id: number
+            id: string
         }
     }>(`${routeMountPoint}/tasks/:id`, async (request : FastifyRequest, reply: FastifyReply) => {
       const req:FastifyRequest = request
-      const params = req.params as {id: number}
+      const params = req.params as {id: string}
       const hasRecord = await Watch.has(params.id)
 
       if (!hasRecord) {

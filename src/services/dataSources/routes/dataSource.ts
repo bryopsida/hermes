@@ -21,6 +21,21 @@ export default function registerDataSourceRoute (fastify: FastifyInstance): void
       })
     })
 
+  fastify.get<{
+    Reply: DataSourceDTO,
+    Params: {
+      id: string
+    }
+  }>(`${routeMountPoint}/sources/:id`, async (request, reply) => {
+    const params = request.params as { id: string }
+    const dataSource = await DataSource.findById(params.id)
+    if (dataSource == null) {
+      reply.statusCode = 404
+      return
+    }
+    reply.send(dataSource.toDTO())
+  })
+
   fastify.put<{
         Body: DataSourceDTO,
         Reply: DataSourceDTO,
