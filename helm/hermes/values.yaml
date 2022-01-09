@@ -36,12 +36,6 @@ autoscaling:
 nodeSelector: {}
 tolerations: []
 affinity: {}
-elastic:
-  enabled: true
-  data:
-    heapSize: "512m"
-  volumePermissions:
-    enabled: true
 kafka:
   enabled: true
   replicaCount: 5
@@ -60,13 +54,5 @@ redis:
   existingSecretPasswordKey: "redisPassword"
   volumePermissions:
     enabled: true
-postgres:
+mongodb:
   enabled: true
-  volumePermissions:
-    enabled: true
-  postgresql:
-    replicaCount: 2
-    existingSecret: "hermes-internal-postgresql"
-    database: "datasource_watch"
-  pgpool:
-    existingSecret: "hermes-internal-pgpool"
