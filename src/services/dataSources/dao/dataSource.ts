@@ -2,6 +2,7 @@ import COMPUTED_CONSTANTS from '../../../common/computedConstants'
 import createLogger from '../../../common/logger/factory'
 import { DataSourceDTO } from '../dto/dataSource'
 import mongoose from 'mongoose'
+import configFactory from '../../../config/mongodbConfig'
 
 const tableName = 'data_sources'
 
@@ -10,15 +11,41 @@ export interface IDataSource {
     type: string;
     name: string;
     uri: string;
+    tags: string[];
 }
 
+const schema = new mongoose.Schema<IDataSource>({
+  id: {
+    type: String,
+    required: true
+  },
+  type: {
+    type: String,
+    required: true
+  },
+  name: {
+    type: String,
+    required: true
+  },
+  uri: {
+    type: String,
+    required: true
+  },
+  tags: {
+    type: [String],
+    required: false
+  }
+})
+
+const model = mongoose.model<IDataSource>(tableName, schema)
+
+const config = configFactory.buildConfig('data_sources')
 export class DataSource implements IDataSource {
     public id: string;
     public type: string;
     public name: string;
     public uri: string;
-
-    
+    public tags: string[] = []
 
     private static readonly log = createLogger({
       serviceName: `data-source-dao-${COMPUTED_CONSTANTS.id}`,
@@ -40,37 +67,30 @@ export class DataSource implements IDataSource {
     }
 
     static async count () : Promise<number> {
-      return (await knex).from(tableName).count('* as count')
+      await mongoose.connect(config.serverUrl)
+      return model.countDocuments()
     }
 
     static async findAll (offset: number, count: number): Promise<Array<DataSource>> {
       DataSource.log.debug(`Fetching data sources from offset: ${offset} and count: ${count}`)
-      return (await knex).from(tableName).select('*').offset(offset).limit(count).then(function (rows) {
-        return rows.map(row => {
-          return new DataSource(row)
-        })
-      })
+      await mongoose.connect(config.serverUrl)
+      return (await model.find().skip(offset).limit(count).exec()).map(doc => new DataSource(doc))
     }
 
     static async upsert (dataSource: DataSource): Promise<DataSource> {
-      return (await knex).raw(
-            `? ON CONFLICT (id)
-                    DO UPDATE SET
-                    name = EXCLUDED.name,
-                    uri = EXCLUDED.uri
-                  RETURNING *;`,
-            [(await knex)(tableName).insert(dataSource)]
-      )
+      await mongoose.connect(config.serverUrl)
+      await model.updateOne({ id: dataSource.id }, dataSource.toDTO(), { upsert: true }).exec()
+      return new DataSource(await model.findById(dataSource.id).exec())
     }
 
-    static async has (id: number): Promise<boolean> {
-      return (await knex).from(tableName).where({ id }).count('* as count').then(function (rows) {
-        return rows.length > 0
-      })
+    static async has (id: string): Promise<boolean> {
+      await mongoose.connect(config.serverUrl)
+      return await model.findById(id).exec() != null
     }
 
-    static async delete (id: number): Promise<void> {
-      return (await knex).from(tableName).where({ id }).del()
+    static async delete (id: string): Promise<void> {
+      await mongoose.connect(config.serverUrl)
+      await model.findByIdAndRemove(id).exec()
     }
 
     toDTO (): DataSourceDTO {
@@ -78,7 +98,8 @@ export class DataSource implements IDataSource {
         id: this.id,
         type: this.type,
         name: this.name,
-        uri: this.uri
+        uri: this.uri,
+        tags: this.tags
       }
     }
 

@@ -1,6 +1,6 @@
 import { FastifyInstance } from 'fastify'
+import mongoose from 'mongoose'
 import { IService } from '../../common/interfaces/service'
-import { cleanupKnex } from './knex'
 import registerWatchRoutes from './routes/watchRoutes'
 
 export class WatchManagementService implements IService {
@@ -21,6 +21,6 @@ export class WatchManagementService implements IService {
   }
 
   async destroy (): Promise<void> {
-    return cleanupKnex()
+    await mongoose.disconnect()
   }
 }

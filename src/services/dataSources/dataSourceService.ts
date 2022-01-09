@@ -1,7 +1,7 @@
 import { IService } from '../../common/interfaces/service'
 import { FastifyInstance } from 'fastify'
 import registerDataSourceRoute from './routes/dataSource'
-import { cleanupKnex } from './knex'
+import mongoose from 'mongoose'
 
 export class DataSourceService implements IService {
   constructor (private readonly fastify: FastifyInstance) {
@@ -21,6 +21,6 @@ export class DataSourceService implements IService {
   }
 
   async destroy (): Promise<void> {
-    return cleanupKnex()
+    await mongoose.disconnect()
   }
 }

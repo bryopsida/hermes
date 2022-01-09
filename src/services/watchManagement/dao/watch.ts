@@ -1,17 +1,42 @@
 import { WatchDTO } from '../dto/watch'
-import knex from '../knex'
+import mongoose from 'mongoose'
+import configFactory from '../../../config/mongodbConfig'
+import { randomUUID } from 'crypto'
 
 const tableName = 'watches'
 
 export interface IWatch {
-    id: number;
+    id: string;
     name: string;
     description: string;
     graphql: string;
 }
 
+const schema = new mongoose.Schema<IWatch>({
+  id: {
+    type: String,
+    required: true
+  },
+  name: {
+    type: String,
+    required: true
+  },
+  description: {
+    type: String,
+    required: true
+  },
+  graphql: {
+    type: String,
+    required: true
+  }
+})
+
+const model = mongoose.model<IWatch>(tableName, schema)
+
+const config = configFactory.buildConfig('watches')
+
 export class Watch implements IWatch {
-    id: number;
+    id: string;
     name: string;
     description: string;
     graphql: string;
@@ -23,7 +48,7 @@ export class Watch implements IWatch {
         this.description = watch.description
         this.graphql = watch.graphql
       } else {
-        this.id = 0
+        this.id = randomUUID()
         this.name = ''
         this.description = ''
         this.graphql = ''
@@ -31,45 +56,40 @@ export class Watch implements IWatch {
     }
 
     static async findAll (offset: number, count: number): Promise<Array<Watch>> {
-      return (await knex).from(tableName).select('*').offset(offset).limit(count).then(function (rows) {
-        return rows.map(row => {
-          return new Watch(row)
-        })
-      })
+      await mongoose.connect(config.serverUrl)
+      return (await model.find().limit(count).skip(offset).exec()).map(doc => new Watch(doc))
     }
 
     static async upsert (watcb: Watch): Promise<Watch> {
-      return (await knex).raw(
-            `? ON CONFLICT (id)
-                    DO UPDATE SET
-                    name = EXCLUDED.name,
-                    description = EXCLUDED.description
-                    graphql = EXCLUDED.graphql
-                  RETURNING *;`,
-            [(await knex)(tableName).insert(watcb)]
-      )
+      await mongoose.connect(config.serverUrl)
+      return new Watch(await model.findOneAndUpdate({ id: watcb.id }, watcb.toDTO(), { upsert: true, new: true }).exec())
     }
 
     static async delete (id: number): Promise<void> {
-      await (await knex).from(tableName).where({ id: id }).delete()
+      await mongoose.connect(config.serverUrl)
+      await model.findByIdAndDelete(id).exec()
     }
 
     static async has (id: number): Promise<boolean> {
-      return (await knex).from(tableName).where({ id: id }).then(function (rows) {
-        return rows.length > 0
-      })
+      await mongoose.connect(config.serverUrl)
+      return await model.findById(id).exec() != null
     }
 
     toDTO (): WatchDTO {
       return {
         id: this.id,
-        description: this.description,
         name: this.name,
+        description: this.description,
         graphql: this.graphql
       }
     }
 
     static fromDTO (watchDTO: WatchDTO): Watch {
-      return new Watch(watchDTO)
+      return new Watch({
+        id: watchDTO.id,
+        name: watchDTO.name,
+        description: watchDTO.description,
+        graphql: watchDTO.graphql
+      })
     }
 }

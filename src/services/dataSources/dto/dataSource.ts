@@ -3,4 +3,5 @@ export interface DataSourceDTO {
     type: string;
     name: string;
     uri: string;
+    tags: string[];
 }

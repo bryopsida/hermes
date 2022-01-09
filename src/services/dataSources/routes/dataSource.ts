@@ -45,7 +45,7 @@ export default function registerDataSourceRoute (fastify: FastifyInstance): void
         }
     }>(`${routeMountPoint}/sources/:id`, async (request : FastifyRequest, reply: FastifyReply) => {
       const req:FastifyRequest = request
-      const params = req.params as {id: number}
+      const params = req.params as {id: string}
       const hasRecord = await DataSource.has(params.id)
 
       if (!hasRecord) {

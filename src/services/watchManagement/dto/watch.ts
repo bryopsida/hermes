@@ -1,5 +1,5 @@
 export interface WatchDTO {
-    id: number;
+    id: string;
     name: string;
     description: string;
     graphql: string;
