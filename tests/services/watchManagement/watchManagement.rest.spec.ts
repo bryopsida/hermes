@@ -3,8 +3,9 @@ import 'jest'
 import { randomUUID } from 'crypto'
 import axios from 'axios'
 import { WatchDTO } from '../../../src/services/watchManagement/dto/watch'
+import testConfig from '../../helpers/testConfiguration'
 
-const baseUrl = process.env.BASE_URL || 'http://localhost:3000'
+const baseUrl = `${testConfig.proto}://${testConfig.host}:${testConfig.port}`
 const testUrl = `${baseUrl}/api/watch_management/v1`
 
 describe('WatchManagement.Rest', () => {

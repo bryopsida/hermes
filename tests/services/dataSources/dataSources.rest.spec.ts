@@ -3,8 +3,9 @@ import 'jest'
 import axios from 'axios'
 import { randomUUID } from 'crypto'
 import { DataSourceDTO } from '../../../src/services/dataSources/dto/dataSource'
+import testConfig from '../../helpers/testConfiguration'
 
-const baseUrl = process.env.BASE_URL || 'http://localhost:3000'
+const baseUrl = `${testConfig.proto}://${testConfig.host}:${testConfig.port}`
 const testUrl = `${baseUrl}/api/data_sources/v1`
 
 describe('DataSource.Rest', () => {

@@ -229,6 +229,10 @@ jobs:
         sudo microk8s config > ~/.kube/config
     - name: Test Kube Access
       run: kubectl get nodes
+    - name: Set hermes.local /etc/hosts rule
+      run: |
+        export NODE_IP=$(kubectl get nodes -o json | jq -r '.items[].status.addresses[] | select(.type=="InternalIP") | .address ' | head -n 1)
+        sudo node scripts/setEtcHosts.js hermes.local $NODE_IP
     - name: Create Namespace
       run: npm run k8s:createNamespace --helm_namespace=$HELM_NAMESPACE
     - name: Create Pull Secret
@@ -247,6 +251,10 @@ jobs:
       run: npm run helm:test
     - name: E2E Tests
       timeout-minutes: 10
+      env:
+        TEST_PROTO: "http"
+        TEST_HOST: "hermes.local"
+        TEST_PORT: "80"
       run: npm run test:e2e
     - name: Collect Info On Failure
       if: failure()
