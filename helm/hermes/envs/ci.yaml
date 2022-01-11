@@ -1,17 +1,7 @@
-elastic:
-  master:
-    replicas: 1
-  coordinating:
-    replicas: 1
-  data:
-    replicas: 1
 kafka:
   replicaCount: 1
   defaultReplicationFactor: 1
   offsetsTopicReplicationFactor: 1
   transactionStateLogReplicationFactor: 1
   zookeeper:
-    replicaCount: 1
-postgres:
-  postgresql:
     replicaCount: 1

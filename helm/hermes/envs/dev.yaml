@@ -1,13 +1,4 @@
 imagePullPolicy: Always
-nodeSelector:
-  kubernetes.io/arch: amd64
-elastic:
-  master:
-    replicas: 1
-  coordinating:
-    replicas: 1
-  data:
-    replicas: 1
 kafka:
   replicaCount: 1
   defaultReplicationFactor: 1
@@ -18,12 +9,18 @@ kafka:
   zookeeper:
     replicaCount: 1
     kubernetes.io/arch: amd64
-postgres:
-  postgresql:
-    replicaCount: 1
+mongodb:
+  arbiter:
     nodeSelector:
       kubernetes.io/arch: amd64
-  pgpool:
+  mongos:
+    nodeSelector:
+      kubernetes.io/arch: amd64
+  shardsvr:
+    dataNode:
+      nodeSelector:
+        kubernetes.io/arch: amd64
+  configsvr:
     nodeSelector:
       kubernetes.io/arch: amd64
 redis:

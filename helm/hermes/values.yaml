@@ -56,3 +56,5 @@ redis:
     enabled: true
 mongodb:
   enabled: true
+  volumePermissions:
+    enabled: true
