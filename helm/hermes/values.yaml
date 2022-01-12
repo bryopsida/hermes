@@ -56,5 +56,6 @@ redis:
     enabled: true
 mongodb:
   enabled: true
+  existingSecret: "hermes-internal-mongodb"
   volumePermissions:
     enabled: true

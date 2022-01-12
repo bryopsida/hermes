@@ -48,16 +48,19 @@ spec:
                 name: "{{ .Release.Name }}-internal-redis"
                 key: "redisPassword"
           - name: KAFKA_BROKER_LIST
-            value: "${{ .Release.Name }}-kafka-headless:9092"
-          - name: PG_HOST
-            value: "{{ .Release.Name }}-postgres-postgresql-headless"
-          - name: PG_USER
-            value: "postgres"
-          - name: PG_PASSWORD
-            valueFrom:
-              secretKeyRef:
-                name: "{{ .Release.Name }}-internal-postgresql"
-                key: "postgresql-password"
+            value: "{{ .Release.Name }}-kafka-headless:9092"
+          - name: HERMES_DATA_SOURCES_MONGODB_HOST
+            value: "{{ .Release.Name }}-mongodb-headless"
+          - name: HERMES_DATA_SOURCES_MONGODB_PORT
+            value: "27017"
+          - name: HERMES_DATA_SOURCES_MONGODB_DATABASE
+            value: "data_sources"
+          - name: HERMES_WATCHES_MONGODB_HOST
+            value: "{{ .Release.Name }}-mongodb-headless"
+          - name: HERMES_WATCHES_MONGODB_PORT
+            value: "27017"
+          - name: HERMES_WATCHES_MONGODB_DATABASE
+            value: "watches"
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
       {{- with .Values.nodeSelector }}

@@ -1,0 +1,20 @@
+{
+  "watches": {
+    "mongodb": {
+      "host": "HERMES_WATCHES_MONGODB_HOST",
+      "port": "HERMES_WATCHES_MONGODB_PORT",
+      "database": "HERMES_WATCHES_MONGODB_DATABASE",
+      "username": "HERMES_WATCHES_MONGODB_USERNAME",
+      "password": "HERMES_WATCHES_MONGODB_PASSWORD"
+    }
+  },
+  "data_sources": {
+    "mongodb": {
+      "host": "HERMES_DATA_SOURCES_MONGODB_HOST",
+      "port": "HERMES_DATA_SOURCES_MONGODB_PORT",
+      "database": "HERMES_DATA_SOURCES_MONGODB_DATABASE",
+      "username": "HERMES_DATA_SOURCES_MONGODB_USERNAME",
+      "password": "HERMES_DATA_SOURCES_MONGODB_PASSWORD"
+    }
+  }
+}
