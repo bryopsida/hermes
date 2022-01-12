@@ -46,6 +46,7 @@ jobs:
       contents: read
       packages: write
       id-token: write
+      security-events: write
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
@@ -121,7 +122,8 @@ jobs:
         timeout-minutes: 25
         uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
         with:
-          image: ${{ steps.meta.outputs.tags }}
+          context: .
+          load: false
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
