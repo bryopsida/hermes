@@ -17,3 +17,9 @@ updates:
       interval: "daily"
     reviewers:
       - bryopsida
+  - package-ecosystem: "github-actions" # See documentation for possible values
+    directory: "/" # Location of package manifests
+    schedule:
+      interval: "daily"
+    reviewers:
+      - bryopsida
