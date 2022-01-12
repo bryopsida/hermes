@@ -196,7 +196,7 @@ jobs:
     - name: Download Container TAR
       if: ${{ github.event_name == 'pull_request' }}
       timeout-minutes: 4
-      uses: actions/download-artifact@v1
+      uses: actions/download-artifact@v2.1.0
       with:
         path: /tmp/artifacts/
         name: image.tar.gz
