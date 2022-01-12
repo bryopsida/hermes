@@ -61,7 +61,7 @@ jobs:
       - name: Log into registry ${{ env.REGISTRY }}
         if: github.event_name != 'pull_request'
         timeout-minutes: 5
-        uses: docker/login-action@28218f9b04b4f3f62068d7b6ce6ca5b26e35336c
+        uses: docker/login-action@42d299face0c5c43a0487c477f595ac9cf22f1a7
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
@@ -69,7 +69,7 @@ jobs:
       - name: Extract Docker metadata
         id: meta
         timeout-minutes: 5
-        uses: docker/metadata-action@98669ae865ea3cffbcbaa878cf57c20bbf1c6c38
+        uses: docker/metadata-action@e5622373a38e60fb6d795a4421e56882f2d7a681
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
@@ -80,7 +80,7 @@ jobs:
       - name: Build Docker image
         id: build
         timeout-minutes: 25
-        uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
+        uses: docker/build-push-action@a66e35b9cbcf4ad0ea91ffcaf7bbad63ad9e0229
         with:
           context: .
           load: true
@@ -120,14 +120,13 @@ jobs:
         if: github.event_name != 'pull_request'
         id: push
         timeout-minutes: 25
-        uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
+        uses: docker/build-push-action@a66e35b9cbcf4ad0ea91ffcaf7bbad63ad9e0229
         with:
           context: .
           load: false
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          platforms: linux/amd64,linux/arm64
           cache-from: type=gha
           cache-to: type=gha,mode=max
       - name: Upload Container TAR
@@ -204,7 +203,7 @@ jobs:
     - name: Download Container TAR
       if: ${{ github.event_name == 'pull_request' }}
       timeout-minutes: 4
-      uses: actions/download-artifact@v1
+      uses: actions/download-artifact@v2.1.0
       with:
         path: /tmp/artifacts/
         name: image.tar.gz
