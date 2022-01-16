@@ -14,8 +14,22 @@ export class BullBoardService implements IService {
 
   constructor (private _app: FastifyInstance) {
     this._queues = [
-      bull(QueueNames.HEARTBEAT_QUEUE),
-      bull(QueueNames.FETCH_QUEUE)
+      bull(QueueNames.HEARTBEAT_QUEUE, {
+        redis: {
+          host: process.env.REDIS_HOST || 'localhost',
+          port: process.env.REDIS_PORT ? parseInt(process.env.REDIS_PORT) : 6379,
+          password: process.env.REDIS_PASSWORD || ''
+        },
+        prefix: '{heartbeat}'
+      }),
+      bull(QueueNames.FETCH_QUEUE, {
+        redis: {
+          host: process.env.REDIS_HOST || 'localhost',
+          port: process.env.REDIS_PORT ? parseInt(process.env.REDIS_PORT) : 6379,
+          password: process.env.REDIS_PASSWORD || ''
+        },
+        prefix: '{heartbeat}'
+      })
     ]
     this._queueAdapters = this._queues.map(queue => new BullAdapter(queue))
     this._serverAdapter = new FastifyAdapter()

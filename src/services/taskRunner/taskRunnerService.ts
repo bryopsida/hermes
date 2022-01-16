@@ -41,12 +41,23 @@ export class TaskRunnerService implements IService {
       this.log.info('Starting task runner service')
 
       // TODO: refactor be clean, generic
-      const FETCH_QUEUE = new BullQueue(QueueNames.FETCH_QUEUE, this._queueOptions)
+      const FETCH_QUEUE = new BullQueue(QueueNames.FETCH_QUEUE, {
+        ...this._queueOptions,
+        ...{
+          prefix: '{fetch}'
+        }
+      } as QueueOptions)
+
       FETCH_QUEUE.on('error', (error) => {
         this.log.error('Error in fetch queue', error)
       })
 
-      const HEARTBEAT_QUEUE = new BullQueue(QueueNames.HEARTBEAT_QUEUE, this._queueOptions)
+      const HEARTBEAT_QUEUE = new BullQueue(QueueNames.HEARTBEAT_QUEUE, {
+        ...this._queueOptions,
+        ...{
+          prefix: '{heartbeat}'
+        }
+      } as QueueOptions)
       HEARTBEAT_QUEUE.on('Error in heartbeat queue', (error) => {
         this.log.error(error)
       })
