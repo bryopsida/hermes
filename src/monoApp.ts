@@ -90,6 +90,8 @@ if (cluster.isPrimary && process.env.USE_CLUSTERING === 'true') {
 
   process.on('unhandledRejection', async (reason, p) => {
     logger.error(`Unhandled rejection at: reason: ${reason}`)
+    logger.error(reason)
+    logger.error(p)
     await stop()
     process.exit(1)
   })
