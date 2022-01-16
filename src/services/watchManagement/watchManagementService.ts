@@ -4,9 +4,22 @@ import { IService } from '../../common/interfaces/service'
 import registerWatchRoutes from './routes/watchRoutes'
 
 export class WatchManagementService implements IService {
+  public readonly ID = 'watchManagement'
   constructor (private readonly fastify: FastifyInstance) {
     // register routes
     registerWatchRoutes(fastify)
+  }
+
+  isAlive (): Promise<boolean> {
+    return Promise.resolve(true)
+  }
+
+  canServeTraffic (): Promise<boolean> {
+    return Promise.resolve(true)
+  }
+
+  servesTraffic (): boolean {
+    return true
   }
 
   start (): Promise<void> {

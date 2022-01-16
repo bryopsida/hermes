@@ -14,6 +14,7 @@ import { BullBoardService } from './services/bullBoard/bullboardServices'
 import { Primary } from './primary'
 import { HermesWorker } from './worker'
 import fastifyHelmet from 'fastify-helmet'
+import { HealthSideKick } from './services/sidekicks/healthSidekick'
 
 const cpuCount = cpus().length
 const queueOptions = {
@@ -63,6 +64,8 @@ if (cluster.isPrimary && process.env.USE_CLUSTERING === 'true') {
   ]
 
   const worker = new HermesWorker(services, app)
+  const healthSideKick = new HealthSideKick(app, '/api/health/v1')
+  services.forEach(service => healthSideKick.registerService(service))
 
   const stop = async () => {
     logger.info('Stopping services')

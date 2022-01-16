@@ -14,6 +14,7 @@ export class TaskRunnerService implements IService {
     private readonly _queues: Map<QueueNames, Queue> = new Map();
     private readonly _tasks: Map<string, ITask> = new Map();
     private readonly _queueOptions: QueueOptions;
+    public readonly ID = 'taskRunnerService'
 
     private readonly log = createLogger({
       serviceName: `task-runner-${COMPUTED_CONSTANTS.id}`,
@@ -22,6 +23,18 @@ export class TaskRunnerService implements IService {
 
     constructor (queueOptions: QueueOptions) {
       this._queueOptions = queueOptions
+    }
+
+    isAlive (): Promise<boolean> {
+      return Promise.resolve(true)
+    }
+
+    canServeTraffic (): Promise<boolean> {
+      return Promise.resolve(false)
+    }
+
+    servesTraffic (): boolean {
+      return false
     }
 
     public async start (): Promise<void> {

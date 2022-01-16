@@ -6,6 +6,7 @@
   "scripts": {
     "test": "jest --coverage --testPathPattern='tests/.*\\.spec\\.ts' --testPathIgnorePatterns='tests/.*\\.rest\\.spec\\.ts'",
     "build": "node_modules/typescript/bin/tsc --project ./",
+    "build:docker": "docker build -t ghcr.io/bryopsida/hermes-mono:local .",
     "start": "node build/src/monoApp.js",
     "start:dev": "nodemon",
     "start:services": "docker-compose -f docker-compose.yml up -d",

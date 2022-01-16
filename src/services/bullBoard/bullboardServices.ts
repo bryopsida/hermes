@@ -7,6 +7,7 @@ import bull from 'bull'
 import { QueueNames } from '../../common/queues/queueNameConstants'
 
 export class BullBoardService implements IService {
+  public readonly ID = 'bullboard'
   private readonly _serverAdapter: FastifyAdapter;
   private readonly _queues: bull.Queue[] = [];
   private readonly _queueAdapters: Array<BullAdapter>;
@@ -25,6 +26,18 @@ export class BullBoardService implements IService {
       serverAdapter: this._serverAdapter,
       queues: this._queueAdapters
     })
+  }
+
+  isAlive () : Promise<boolean> {
+    return Promise.resolve(true)
+  }
+
+  canServeTraffic () : Promise<boolean> {
+    return Promise.resolve(true)
+  }
+
+  servesTraffic () : boolean {
+    return true
   }
 
   start (): Promise<void> {
