@@ -32,8 +32,8 @@ spec:
           configMap:
             name: {{ .Release.Name }}-config
             items:
-              - key: production.yaml
-                path: production.yaml
+              - key: production.json
+                path: production.json
       containers:
         - name: {{ .Chart.Name }}
           livenessProbe:
