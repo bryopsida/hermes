@@ -3,10 +3,11 @@ RUN apk add --update --no-cache python3 make g++ bash
 
 FROM build-base AS build
 WORKDIR /usr/src/app
-COPY src ./src
 COPY package*.json .
+RUN npm ci
+COPY src ./src
 COPY tsconfig.json .
-RUN npm ci && npm run build
+RUN npm run build
 
 FROM build-base AS libraries
 WORKDIR /usr/src/app
