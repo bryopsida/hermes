@@ -34,7 +34,7 @@
     "@bull-board/fastify": "^3.9.0",
     "axios": "^0.24.0",
     "bull": "^4.1.1",
-    "fastify-helmet": "^6.0.0",
+    "fastify-helmet": "^7.0.0",
     "fastify": "^3.24.0",
 
     "knex": "^0.95.14",
