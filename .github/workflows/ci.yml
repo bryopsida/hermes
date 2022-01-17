@@ -35,6 +35,28 @@ jobs:
       uses: github/codeql-action/autobuild@v1
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v1
+  smoke-test:
+    name: "Smoke Test"
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2-
+    - name: Setup Docker buildx
+      timeout-minutes: 4
+      uses: docker/setup-buildx-action@79abd3f86f79a9d68a23c75a09a9a85889262adf
+    - name: Run Smoke Tests
+      id: build
+      timeout-minutes: 25
+      uses: docker/build-push-action@a66e35b9cbcf4ad0ea91ffcaf7bbad63ad9e0229
+      with:
+        context: .
+        file: smoke-test.Dockerfile
+        load: false
+        push: false
+        tags: "smoke-test"
+        labels: "smoke-test"
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
   build-container:
     name: "Build Container"
     runs-on: ubuntu-latest
@@ -109,13 +131,6 @@ jobs:
           mkdir -p /tmp/artifacts
           docker save ${{ steps.meta.outputs.tags }} -o /tmp/artifacts/image.tar
           gzip -c /tmp/artifacts/image.tar > /tmp/artifacts/image.tar.gz
-      - name: Anti Virus Scan
-        timeout-minutes: 10
-        run: |
-          sudo apt-get install clamav clamav-daemon -y
-          sudo systemctl stop clamav-freshclam
-          sudo freshclam
-          clamscan --max-filesize=500M --max-scansize=500M /tmp/artifacts/image.tar.gz
       - name: Push image
         if: github.event_name != 'pull_request'
         id: push
@@ -185,7 +200,7 @@ jobs:
           sarif_file: kubesec-results.sarif
   test-deploy:
     name: "Test Deploy"
-    needs: [ build-container, helm-lint, kube-scan, analyze ]
+    needs: [ build-container, smoke-test, helm-lint, kube-scan, analyze ]
     runs-on: ubuntu-latest
     env: 
       HELM_NAMESPACE: "hermes"
@@ -273,11 +288,44 @@ jobs:
         name: test-deploy-logs
         path: /tmp/microk8s-hermes/
         retention-days: 1
+  virus-scan:
+    name: "Virus Scan"
+    needs: [ build-container ]
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+    - name: Download Tarball
+      if: ${{ github.event_name == 'pull_request' }}
+      timeout-minutes: 4
+      uses: actions/download-artifact
+      with:
+        path: /tmp/artifacts/
+        name: image.tar.gz
+    - name: Login to registry
+      if: ${{ github.event_name != 'pull_request' }}
+      uses: docker/login-action@42d299face0c5c43a0487c477f595ac9cf22f1a7
+      with:
+        registry: ${{ env.REGISTRY }}
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+    - name: Export Container Image
+      if: ${{ github.event_name != 'pull_request' }}
+      timeout-minutes: 4
+      run: |
+        docker save ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ needs.build-container.outputs.version }} > /tmp/artifacts/image.tar.gz
+    - name: Anti Virus Scan
+      timeout-minutes: 10
+      run: |
+        sudo apt-get install clamav clamav-daemon -y
+        sudo systemctl stop clamav-freshclam
+        sudo freshclam
+        clamscan --max-filesize=500M --max-scansize=500M /tmp/artifacts/image.tar.gz
   # TODO: Add publish helm chart and generate docs here
   deploy:
     if: ${{ github.event_name != 'pull_request' && github.ref == 'refs/heads/main' }}
     name: "Deploy to Lab"
-    needs: [ test-deploy ]
+    needs: [ test-deploy, virus-scan ]
     runs-on: ubuntu-latest
     environment: lab
     env: 
