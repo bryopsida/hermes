@@ -82,7 +82,7 @@ spec:
                 key: "mongodb-password"
           volumeMounts:
             - name: config-volume
-              mountPath: /app/config/
+              mountPath: /usr/src/app/config/
               readOnly: true
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
