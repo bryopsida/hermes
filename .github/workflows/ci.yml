@@ -298,7 +298,7 @@ jobs:
     - name: Download Tarball
       if: ${{ github.event_name == 'pull_request' }}
       timeout-minutes: 4
-      uses: actions/download-artifact
+      uses: actions/download-artifact@v2
       with:
         path: /tmp/artifacts/
         name: image.tar.gz
