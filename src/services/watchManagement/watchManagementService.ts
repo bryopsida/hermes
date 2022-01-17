@@ -4,7 +4,8 @@ import { IService } from '../../common/interfaces/service'
 import registerWatchRoutes from './routes/watchRoutes'
 
 export class WatchManagementService implements IService {
-  public readonly ID = 'watchManagement'
+  public static readonly NAME = 'watch_management'
+  public readonly ID = WatchManagementService.NAME
   constructor (private readonly fastify: FastifyInstance) {
     // register routes
     registerWatchRoutes(fastify)

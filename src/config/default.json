@@ -1,0 +1,48 @@
+{
+  "sidekicks": {
+    "health": {
+      "enabled": true
+    }
+  },
+  "bullboard": {
+    "enabled": true
+  },
+  "data_source_manager": {
+    "enabled": true,
+    "mongo": {
+      "host": "localhost",
+      "port": 27017,
+      "db": "data_sources",
+      "username": "mongodb",
+      "password": "mongo"
+    }
+  },
+  "watch_manager": {
+    "enabled": true,
+    "mongo": {
+      "host": "localhost",
+      "port": 27017,
+      "db": "watches",
+      "username": "mongodb",
+      "password": "mongodb"
+    }
+  },
+  "task_runner": {
+    "enabled": true,
+    "redis": {
+      "host": "localhost",
+      "port": 6379,
+      "protocol": "redis",
+      "password": "redis"
+    },
+    "kafka": {
+      "brokers": ["localhost:9092"]
+    }
+  },
+  "theatre": {
+    "enabled": true,
+    "kafka": {
+      "brokers": ["localhost:9092"]
+    }
+  }
+}

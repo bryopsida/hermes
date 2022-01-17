@@ -1,0 +1,25 @@
+{
+  "data_source_manager": {
+    "mongo": {
+      "host": "{{ .Release.Name }}-mongodb-headless"
+    }
+  },
+  "watch_manager": {
+    "mongo": {
+      "host": "{{ .Release.Name }}-mongodb-headless"
+    }
+  },
+  "task_runner": {
+    "redis": {
+      "host": "{{ .Release.Name}}-redis-headless"
+    },
+    "kafka": {
+      "brokers": ["{{ .Release.Name }}-kafka-headless"]
+    }
+  },
+  "theatre": {
+    "kafka": {
+      "brokers": ["{{ .Release.Name }}-kafka-headless"]
+    }
+  }
+}

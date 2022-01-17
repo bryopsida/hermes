@@ -1,20 +1,24 @@
 {
-  "watches": {
-    "mongodb": {
-      "host": "HERMES_WATCHES_MONGODB_HOST",
-      "port": "HERMES_WATCHES_MONGODB_PORT",
-      "database": "HERMES_WATCHES_MONGODB_DATABASE",
+  "watch_manager": {
+    "mongo": {
       "username": "HERMES_WATCHES_MONGODB_USERNAME",
       "password": "HERMES_WATCHES_MONGODB_PASSWORD"
     }
   },
-  "data_sources": {
-    "mongodb": {
-      "host": "HERMES_DATA_SOURCES_MONGODB_HOST",
-      "port": "HERMES_DATA_SOURCES_MONGODB_PORT",
-      "database": "HERMES_DATA_SOURCES_MONGODB_DATABASE",
+  "data_source_manager": {
+    "mongo": {
       "username": "HERMES_DATA_SOURCES_MONGODB_USERNAME",
       "password": "HERMES_DATA_SOURCES_MONGODB_PASSWORD"
+    }
+  },
+  "task_runner": {
+    "redis": {
+      "password": "HERMES_TASK_RUNNER_REDIS_PASSWORD"
+    }
+  },
+  "bullboard": {
+    "redis": {
+      "password": "HERMES_BULLBOARD_REDIS_PASSWORD"
     }
   }
 }

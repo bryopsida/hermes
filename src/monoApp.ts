@@ -12,9 +12,12 @@ import { IService } from './common/interfaces/service'
 import { Primary } from './primary'
 import { HermesWorker } from './worker'
 import fastifyHelmet from 'fastify-helmet'
-import { HealthSideKick } from './services/sidekicks/healthSidekick'
-
+import { HealthSideKick } from './services/sidekicks/health/healthSidekick'
+import { isServiceEnabled, isSideKickEnabled } from './config/isServiceEnabled'
+import { TaskRunnerService } from './services/taskRunner/taskRunnerService'
+import { BullBoardService } from './services/bullBoard/bullboardServices'
 const cpuCount = cpus().length
+
 const queueOptions = {
   redis: {
     host: process.env.REDIS_HOST || 'localhost',
@@ -55,17 +58,19 @@ if (cluster.isPrimary && process.env.USE_CLUSTERING === 'true') {
   // TODO: fix as any cast
   // define services managed by this mono app entry point
   const services : Array<IService> = [
-    new DataSourceService(app as any),
-    // new TaskRunnerService(queueOptions),
-    new WatchManagementService(app),
-    new TheatreService()
-    // new BullBoardService(app)
-  ]
+    isServiceEnabled(DataSourceService.NAME) ? new DataSourceService(app as any) : undefined,
+    isServiceEnabled(TaskRunnerService.NAME) ? new TaskRunnerService(queueOptions) : undefined,
+    isServiceEnabled(WatchManagementService.NAME) ? new WatchManagementService(app) : undefined,
+    isServiceEnabled(TheatreService.NAME) ? new TheatreService() : undefined,
+    isServiceEnabled(BullBoardService.NAME) ? new BullBoardService(app) : undefined
+  ].filter(s => s != null) as Array<IService>
+
+  if (isSideKickEnabled(HealthSideKick.NAME)) {
+    const healthSideKick = new HealthSideKick(app, '/api/health/v1')
+    services.forEach(service => healthSideKick.registerService(service))
+  }
 
   const worker = new HermesWorker(services, app)
-  const healthSideKick = new HealthSideKick(app, '/api/health/v1')
-  services.forEach(service => healthSideKick.registerService(service))
-
   const stop = async () => {
     logger.info('Stopping services')
     await Promise.all([
@@ -96,7 +101,8 @@ if (cluster.isPrimary && process.env.USE_CLUSTERING === 'true') {
   })
 
   worker.start().catch(async (err) => {
-    logger.error('Failed to start worker: ', err)
+    logger.error('Failed to start worker')
+    logger.error(err)
     await stop()
     process.exit(1)
   })

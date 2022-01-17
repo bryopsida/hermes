@@ -39,7 +39,8 @@
           "run-script", "start:dev"
       ],
       "env": {
-        "USE_CLUSTERING": "true"
+        "USE_CLUSTERING": "true",
+        "NODE_CONFIG_DIR": "${workspaceFolder}/src/config"
       }
     },
     {

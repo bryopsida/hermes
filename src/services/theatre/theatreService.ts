@@ -11,8 +11,10 @@ export class TheatreService implements IService {
       level: 'debug'
     })
 
+    public static readonly NAME = 'theatre'
+
     private readonly actors : Array<IActor<unknown, unknown>> = [];
-    public readonly ID = 'theatre'
+    public readonly ID = TheatreService.NAME
 
     constructor () {
       this.log.info('Theatre service created')

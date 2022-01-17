@@ -39,7 +39,7 @@ const schema = new mongoose.Schema<IDataSource>({
 
 const model = mongoose.model<IDataSource>(tableName, schema)
 
-const config = configFactory.buildConfig('data_sources')
+const config = configFactory.buildConfig('data_source_manager')
 export class DataSource implements IDataSource {
     public id: string;
     public type: string;
@@ -66,24 +66,37 @@ export class DataSource implements IDataSource {
       }
     }
 
+    // TODO refactor to be more dry
+    private static connect (): Promise<void> {
+      return new Promise((resolve, reject) => {
+        mongoose.connect(config.getSeverUrl(), config.getMongooseOptions(), (err) => {
+          if (err) {
+            reject(err)
+          } else {
+            resolve()
+          }
+        })
+      })
+    }
+
     static async count () : Promise<number> {
-      await mongoose.connect(config.serverUrl, config.options)
+      await this.connect()
       return model.countDocuments()
     }
 
     static async findById (id: string): Promise<DataSource> {
-      await mongoose.connect(config.serverUrl, config.options)
+      await this.connect()
       return new DataSource(await model.findOne({ id: id }).exec())
     }
 
     static async findAll (offset: number, count: number): Promise<Array<DataSource>> {
       DataSource.log.debug(`Fetching data sources from offset: ${offset} and count: ${count}`)
-      await mongoose.connect(config.serverUrl, config.options)
+      await this.connect()
       return (await model.find().skip(offset).limit(count).exec()).map(doc => new DataSource(doc))
     }
 
     static async upsert (dataSource: DataSource): Promise<DataSource> {
-      await mongoose.connect(config.serverUrl, config.options)
+      await this.connect()
       await model.updateOne({ id: dataSource.id }, dataSource.toDTO(), { upsert: true }).exec()
       return new DataSource(await model.findOne({
         id: dataSource.id
@@ -91,14 +104,14 @@ export class DataSource implements IDataSource {
     }
 
     static async has (id: string): Promise<boolean> {
-      await mongoose.connect(config.serverUrl, config.options)
+      await this.connect()
       return await model.findOne({
         id: id
       }).exec() != null
     }
 
     static async delete (id: string): Promise<void> {
-      await mongoose.connect(config.serverUrl, config.options)
+      await this.connect()
       await model.findByIdAndRemove(id).exec()
     }
 

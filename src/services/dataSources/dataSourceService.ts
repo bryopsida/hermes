@@ -4,7 +4,8 @@ import registerDataSourceRoute from './routes/dataSource'
 import mongoose from 'mongoose'
 
 export class DataSourceService implements IService {
-  public readonly ID = 'dataSource'
+  public static readonly NAME = 'data_source_manager'
+  public readonly ID = DataSourceService.NAME
   constructor (private readonly fastify: FastifyInstance) {
     this.registerRoutes()
   }

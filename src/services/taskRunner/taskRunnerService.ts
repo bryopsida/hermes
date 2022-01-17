@@ -11,10 +11,11 @@ import COMPUTED_CONSTANTS from '../../common/computedConstants'
 import { QueueFetchesTask } from '../../tasks/queueFetches/queueFetchesTask'
 
 export class TaskRunnerService implements IService {
+    public static readonly NAME = 'task_runner'
     private readonly _queues: Map<QueueNames, Queue> = new Map();
     private readonly _tasks: Map<string, ITask> = new Map();
     private readonly _queueOptions: QueueOptions;
-    public readonly ID = 'taskRunnerService'
+    public readonly ID = TaskRunnerService.NAME
 
     private readonly log = createLogger({
       serviceName: `task-runner-${COMPUTED_CONSTANTS.id}`,

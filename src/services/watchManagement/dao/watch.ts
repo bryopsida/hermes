@@ -33,7 +33,7 @@ const schema = new mongoose.Schema<IWatch>({
 
 const model = mongoose.model<IWatch>(tableName, schema)
 
-const config = configFactory.buildConfig('watches')
+const config = configFactory.buildConfig('watch_manager')
 
 export class Watch implements IWatch {
     id: string;
@@ -55,29 +55,41 @@ export class Watch implements IWatch {
       }
     }
 
+    private static connect (): Promise<void> {
+      return new Promise((resolve, reject) => {
+        mongoose.connect(config.getSeverUrl(), config.getMongooseOptions(), (err) => {
+          if (err) {
+            reject(err)
+          } else {
+            resolve()
+          }
+        })
+      })
+    }
+
     static async findAll (offset: number, count: number): Promise<Array<Watch>> {
-      await mongoose.connect(config.serverUrl, config.options)
+      await this.connect()
       return (await model.find().limit(count).skip(offset).exec()).map(doc => new Watch(doc))
     }
 
     static async findById (id: string): Promise<Watch> {
-      await mongoose.connect(config.serverUrl, config.options)
+      await this.connect()
       return new Watch(await model.findOne({ id: id }).exec())
     }
 
     static async upsert (watcb: Watch): Promise<Watch> {
-      await mongoose.connect(config.serverUrl, config.options)
+      await this.connect()
       await model.updateOne({ id: watcb.id }, watcb.toDTO(), { upsert: true }).exec()
       return new Watch(await model.findOne({ id: watcb.id }).exec())
     }
 
     static async delete (id: string): Promise<void> {
-      await mongoose.connect(config.serverUrl, config.options)
+      await this.connect()
       await model.findByIdAndDelete(id).exec()
     }
 
     static async has (id: string): Promise<boolean> {
-      await mongoose.connect(config.serverUrl, config.options)
+      await this.connect()
       return await model.findOne({
         id: id
       }).exec() != null

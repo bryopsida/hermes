@@ -7,7 +7,8 @@ import bull from 'bull'
 import { QueueNames } from '../../common/queues/queueNameConstants'
 
 export class BullBoardService implements IService {
-  public readonly ID = 'bullboard'
+  public static readonly NAME = 'bullboard'
+  public readonly ID = BullBoardService.NAME
   private readonly _serverAdapter: FastifyAdapter;
   private readonly _queues: bull.Queue[] = [];
   private readonly _queueAdapters: Array<BullAdapter>;

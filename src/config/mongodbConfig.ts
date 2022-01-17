@@ -1,36 +1,43 @@
 import config from 'config'
 
-const HOST_KEY = 'mongodb.host'
-const PORT_KEY = 'mongodb.port'
-const USER_KEY = 'mongodb.user'
-const PASSWORD_KEY = 'mongodb.password'
-const DATABASE_KEY = 'mongodb.database'
-
 export interface IMongoDBConfig {
-  serverUrl: string,
-  options: Record<string, unknown>
+  getSeverUrl(): string,
+  getMongooseOptions(): any,
+  user: string,
+  password: string,
+  host: string,
+  port: number,
+  database: string
+}
+class MongoDbConfig {
+  public readonly user: string;
+  public readonly password: string;
+  public readonly host: string;
+  public readonly port: number;
+  public readonly database: string;
+
+  constructor (user: string, password: string, host: string, port: number, database: string) {
+    this.user = user
+    this.password = password
+    this.host = host
+    this.port = port
+    this.database = database
+  }
+
+  public getSeverUrl (): string {
+    return `mongodb://${this.user}:${this.password}@${this.host}:${this.port}/${this.database}`
+  }
+
+  public getMongooseOptions (): any {
+    return {
+      user: this.user,
+      pass: this.password
+    }
+  }
 }
 
 export default {
   buildConfig: (scope: string): IMongoDBConfig => {
-    const hostKey = `${scope}.${HOST_KEY}`
-    const portKey = `${scope}.${PORT_KEY}`
-    const passwordKey = `${scope}.${PASSWORD_KEY}`
-    const databaseKey = `${scope}.${DATABASE_KEY}`
-    const userKey = `${scope}.${USER_KEY}`
-
-    const host = config.has(hostKey) ? config.get<string>(hostKey) : 'localhost'
-    const port = config.has(portKey) ? config.get<number>(portKey) : 27017
-    const password = config.has(passwordKey) ? config.get<string>(passwordKey) : 'mongodb'
-    const user = config.has(userKey) ? config.get<string>(userKey) : 'mongodb'
-    const database = config.has(databaseKey) ? config.get<string>(databaseKey) : scope
-
-    return {
-      serverUrl: `mongodb://${host}:${port}/${database}?authSource=admin`,
-      options: {
-        user: user,
-        pass: password
-      }
-    }
+    return config.get<MongoDbConfig>(`${scope}.mongo`)
   }
 }

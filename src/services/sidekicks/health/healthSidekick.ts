@@ -1,22 +1,25 @@
 import { FastifyInstance } from 'fastify'
-import { IService } from '../../common/interfaces/service'
-import { IHealthSidekick } from '../../common/interfaces/sidekicks/health'
-import createLogger from '../../common/logger/factory'
-import { registerHealthRoutes } from './health/routes/healthController'
+import { IService } from '../../../common/interfaces/service'
+import { IHealthSidekick } from '../../../common/interfaces/sidekicks/health'
+import createLogger from '../../../common/logger/factory'
+import { registerHealthRoutes } from './routes/healthController'
 
+// TODO: this should account for health on other processes when using clustering to prevent flip/flops
 export class HealthSideKick implements IHealthSidekick {
   private readonly logger = createLogger({
     serviceName: 'health-sidekick',
     level: 'debug'
   });
 
+  public static readonly NAME: string = 'health'
+
   private readonly _services: Map<string, IService> = new Map()
   private readonly _basePath: string;
 
   constructor (fastify: FastifyInstance, basePath: string) {
-    this.registerRoutes(fastify)
     this._basePath = basePath
-    this.logger.info('Created health sidekick')
+    this.registerRoutes(fastify)
+    this.logger.info('Created health sidekick on base path: ' + basePath)
   }
 
   registerRoutes (fastify: FastifyInstance<import('http').Server, import('http').IncomingMessage, import('http').ServerResponse, import('fastify').FastifyLoggerInstance>) {

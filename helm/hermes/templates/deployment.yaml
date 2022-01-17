@@ -27,6 +27,13 @@ spec:
       serviceAccountName: {{ include "hermes.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      volumes:
+        - name: config-volume
+          configMap:
+            name: {{ .Release.Name }}-config
+            items:
+              - key: production.yaml
+                path: production.yaml
       containers:
         - name: {{ .Chart.Name }}
           livenessProbe:
@@ -49,29 +56,34 @@ spec:
               containerPort: 3000
               protocol: TCP
           env: 
-          - name: REDIS_HOST
-            value: "{{ .Release.Name }}-redis-headless"
-          - name: REDIS_PORT
-            value: "6379"
-          - name: REDIS_PASSWORD
+          - name: HERMES_TASK_RUNNER_REDIS_PASSWORD
             valueFrom:
               secretKeyRef:
                 name: "{{ .Release.Name }}-internal-redis"
                 key: "redisPassword"
-          - name: KAFKA_BROKER_LIST
-            value: "{{ .Release.Name }}-kafka-headless:9092"
-          - name: HERMES_DATA_SOURCES_MONGODB_HOST
-            value: "{{ .Release.Name }}-mongodb-headless"
-          - name: HERMES_DATA_SOURCES_MONGODB_PORT
-            value: "27017"
-          - name: HERMES_DATA_SOURCES_MONGODB_DATABASE
-            value: "data_sources"
-          - name: HERMES_WATCHES_MONGODB_HOST
-            value: "{{ .Release.Name }}-mongodb-headless"
-          - name: HERMES_WATCHES_MONGODB_PORT
-            value: "27017"
-          - name: HERMES_WATCHES_MONGODB_DATABASE
-            value: "watches"
+          - name: HERMES_BULLBOARD_REDIS_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: "{{ .Release.Name }}-internal-redis"
+                key: "redisPassword"
+          - name: HERMES_WATCHES_MONGODB_USERNAME
+            value: "mongodb"
+          - name: HERMES_WATCHES_MONGODB_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: "{{ .Release.Name }}-internal-mongodb"
+                key: "mongodb-password"
+          - name: HERMES_DATA_SOURCES_MONGODB_USERNAME
+            value: "mongodb"
+          - name: HERMES_DATA_SOURCES_MONGODB_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: "{{ .Release.Name }}-internal-mongodb"
+                key: "mongodb-password"
+          volumeMounts:
+            - name: config-volume
+              mountPath: /app/config/
+              readOnly: true
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
       {{- with .Values.nodeSelector }}
