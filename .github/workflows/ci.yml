@@ -192,12 +192,10 @@ jobs:
     steps:
     - name: Checkout repository
       uses: actions/checkout@v2
-    - uses: actions/cache@v2
+    - uses: actions/setup-node@v2
       with:
-        path: ~/.npm
-        key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-        restore-keys: |
-          ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}  
+        node-version: '16'
+        cache: 'npm'
     - name: NPM install
       run: npm ci
     - name: Download Container TAR
