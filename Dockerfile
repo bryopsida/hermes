@@ -1,14 +1,11 @@
 FROM node:17.3-alpine as build-base
 RUN apk add --update --no-cache python3 make g++ bash
 
-FROM build-base AS qa
-WORKDIR /usr/src/app
-COPY package*.json .
-RUN npm audit && npm ci && npm run lint && npm run build && npm test && npm run sonar --if-present
-
 FROM build-base AS build
 WORKDIR /usr/src/app
-COPY . .
+COPY src ./src
+COPY package*.json .
+COPY tsconfig.json .
 RUN npm ci && npm run build
 
 FROM build-base AS libraries
