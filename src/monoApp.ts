@@ -5,12 +5,10 @@ import cluster from 'cluster'
 import { cpus } from 'os'
 import { DataSourceService } from './services/dataSources/dataSourceService'
 import createLogger from './common/logger/factory'
-import { TaskRunnerService } from './services/taskRunner/taskRunnerService'
 import computedConstants from './common/computedConstants'
 import { WatchManagementService } from './services/watchManagement/watchManagementService'
 import { TheatreService } from './services/theatre/theatreService'
 import { IService } from './common/interfaces/service'
-import { BullBoardService } from './services/bullBoard/bullboardServices'
 import { Primary } from './primary'
 import { HermesWorker } from './worker'
 import fastifyHelmet from 'fastify-helmet'
@@ -22,7 +20,8 @@ const queueOptions = {
     host: process.env.REDIS_HOST || 'localhost',
     port: process.env.REDIS_PORT ? parseInt(process.env.REDIS_PORT) : 6379,
     password: process.env.REDIS_PASSWORD || ''
-  }
+  },
+  prefix: '{bullQueue}'
 }
 
 if (cluster.isPrimary && process.env.USE_CLUSTERING === 'true') {
@@ -57,10 +56,10 @@ if (cluster.isPrimary && process.env.USE_CLUSTERING === 'true') {
   // define services managed by this mono app entry point
   const services : Array<IService> = [
     new DataSourceService(app as any),
-    new TaskRunnerService(queueOptions),
+    // new TaskRunnerService(queueOptions),
     new WatchManagementService(app),
-    new TheatreService(),
-    new BullBoardService(app)
+    new TheatreService()
+    // new BullBoardService(app)
   ]
 
   const worker = new HermesWorker(services, app)

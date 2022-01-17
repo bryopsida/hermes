@@ -46,7 +46,9 @@ export class TaskRunnerService implements IService {
         ...{
           prefix: '{fetch}'
         }
-      } as QueueOptions)
+      } as QueueOptions).on('error', (err) => {
+        this.log.error('Fetch queue error', err)
+      })
 
       FETCH_QUEUE.on('error', (error) => {
         this.log.error('Error in fetch queue', error)
@@ -57,7 +59,9 @@ export class TaskRunnerService implements IService {
         ...{
           prefix: '{heartbeat}'
         }
-      } as QueueOptions)
+      } as QueueOptions).on('error', (err) => {
+        this.log.error('Heartbeat queue error', err)
+      })
       HEARTBEAT_QUEUE.on('Error in heartbeat queue', (error) => {
         this.log.error(error)
       })

@@ -6,7 +6,8 @@
   "scripts": {
     "test": "jest --coverage --testPathPattern='tests/.*\\.spec\\.ts' --testPathIgnorePatterns='tests/.*\\.rest\\.spec\\.ts'",
     "build": "node_modules/typescript/bin/tsc --project ./",
-    "build:docker": "docker build -t ghcr.io/bryopsida/hermes-mono:local .",
+    "docker:build": "docker build -t ghcr.io/bryopsida/hermes-mono:local .",
+    "docker:push": "docker push ghcr.io/bryopsida/hermes-mono:local",
     "start": "node build/src/monoApp.js",
     "start:dev": "nodemon",
     "start:services": "docker-compose -f docker-compose.yml up -d",
@@ -19,6 +20,9 @@
     "helm:test": "helm test hermes",
     "helm:delete": "helm delete hermes",
     "helm:lint": "helm lint ./helm/hermes",
+    "minikube:start": "minikube start --cpus=4 --memory=8192 --disk-size=40G",
+    "minikube:stop": "minikube stop",
+    "minikube:delete": "minikube delete",
     "test:e2e": "jest --testPathPattern='tests/.*\\.rest\\.spec\\.ts'"
   },
   "repository": {

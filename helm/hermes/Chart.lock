@@ -4,9 +4,9 @@ dependencies:
   version: 14.8.1
 - name: redis-cluster
   repository: https://charts.bitnami.com/bitnami
-  version: 7.0.15
+  version: 7.1.2
 - name: mongodb-sharded
   repository: https://charts.bitnami.com/bitnami
   version: 3.11.0
-digest: sha256:ffbbba523e677b85ad254d6ace517abac56c89ea7eaa785f0a10e6e0a49a428a
-generated: "2022-01-08T20:00:03.978813-06:00"
+digest: sha256:420387e1ba15448a4b866c04f3b7944f7bdd87cb2be4eceaf664eaa075aadd92
+generated: "2022-01-16T13:19:53.683957-06:00"
