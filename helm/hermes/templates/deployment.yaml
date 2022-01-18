@@ -53,9 +53,15 @@ spec:
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
             - name: http
-              containerPort: 3000
+              containerPort: 9000
               protocol: TCP
           env: 
+          - name: NODE_CONFIG_DIR
+            value: /var/run/config:/usr/src/app/config
+          - name: HERMES_SERVER_LISTEN_PORT
+            value: "9000"
+          - name: HERMES_SERVER_LISTEN_ADDRESS
+            value: "0.0.0.0"
           - name: HERMES_TASK_RUNNER_REDIS_PASSWORD
             valueFrom:
               secretKeyRef:
@@ -82,7 +88,7 @@ spec:
                 key: "mongodb-password"
           volumeMounts:
             - name: config-volume
-              mountPath: /usr/src/app/config/
+              mountPath: /var/run/config/
               readOnly: true
           resources:
             {{- toYaml .Values.resources | nindent 12 }}

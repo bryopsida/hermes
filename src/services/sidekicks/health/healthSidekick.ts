@@ -42,7 +42,7 @@ export class HealthSideKick implements IHealthSidekick {
   }
 
   canServeTraffic (): Promise<boolean> {
-    return Promise.all(Array.from(this._services.values()).filter(s => s.servesTraffic).map(service => service.canServeTraffic()))
+    return Promise.all(Array.from(this._services.values()).filter(s => s.servesTraffic()).map(service => service.canServeTraffic()))
       .then(results => results.every(result => result))
   }
 }
