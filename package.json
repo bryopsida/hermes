@@ -5,7 +5,7 @@
   "main": "build/monoApp.ts",
   "scripts": {
     "test": "jest --coverage --testPathPattern='tests/.*\\.spec\\.ts' --testPathIgnorePatterns='tests/.*\\.rest\\.spec\\.ts'",
-    "build": "node_modules/typescript/bin/tsc --project ./",
+    "build": "node_modules/typescript/bin/tsc --project ./ && cp src/config/*.json build/src/config/",
     "docker:build": "docker build -t ghcr.io/bryopsida/hermes-mono:local .",
     "docker:push": "docker push ghcr.io/bryopsida/hermes-mono:local",
     "start": "node build/src/monoApp.js",
