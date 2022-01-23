@@ -3,7 +3,7 @@ import { IQeuryLimit } from '../../../common/interfaces/commonRest'
 import { WatchDTO } from '../dto/watch'
 import { Watch } from '../dao/watch'
 
-const routeMountPoint = '/api/watch_management/v1'
+const routeMountPoint = '/api/watch_manager/v1'
 
 export default function registerWatchRoutes (fastify: FastifyInstance): void {
   fastify.get<{

@@ -4,7 +4,7 @@ import COMPUTED_CONSTANTS from '../../common/computedConstants'
 import { ITask } from '../../common/interfaces/task'
 import createLogger from '../../common/logger/factory'
 import { IPaginatedResponse } from '../../common/models/paginatedResponse'
-import { DataSourceDTO } from '../../services/dataSources/dto/dataSource'
+import { DataSourceDTO } from '../../services/dataSourceManager/dto/dataSource'
 import { FetchTaskParams } from '../fetch/fetchTask'
 
 export interface IQueueFetchOptions {
@@ -40,24 +40,29 @@ export class QueueFetchesTask implements ITask {
     const client = new DataSourceClient(job.data.baseUrl)
     let fetchJobsQueued = 0
     let dataSourceResponse: IPaginatedResponse<DataSourceDTO> | null = null
-    do {
-      dataSourceResponse = await client.getDataSources(dataSourceResponse ? dataSourceResponse.offset + dataSourceResponse.limit : 0, job.data.batchSize || 1000)
-      if (dataSourceResponse) {
-        for (const dataSource of dataSourceResponse.items) {
-          this.log.debug(`Queueing fetch job for data source id: ${dataSource.id}, type: ${dataSource.type}, name: ${dataSource.name}, uri: ${dataSource.uri}`)
-          await this.queue.add('fetch', {
-            name: dataSource.name,
-            uri: dataSource.uri,
-            type: dataSource.type,
-            properties: {}
-          } as FetchTaskParams)
-          fetchJobsQueued++
+    try {
+      do {
+        dataSourceResponse = await client.getDataSources(dataSourceResponse ? dataSourceResponse.offset + dataSourceResponse.limit : 0, job.data.batchSize || 1000)
+        if (dataSourceResponse) {
+          for (const dataSource of dataSourceResponse.items) {
+            this.log.debug(`Queueing fetch job for data source id: ${dataSource.id}, type: ${dataSource.type}, name: ${dataSource.name}, uri: ${dataSource.uri}`)
+            await this.queue.add('fetch', {
+              name: dataSource.name,
+              uri: dataSource.uri,
+              type: dataSource.type,
+              properties: {}
+            } as FetchTaskParams)
+            fetchJobsQueued++
+          }
         }
-      }
-    } while (dataSourceResponse && dataSourceResponse.items.length > 0)
-    this.log.info(`Queued ${fetchJobsQueued} fetch jobs`)
-    done(null, {
-      jobQueueCount: fetchJobsQueued
-    })
+      } while (dataSourceResponse && dataSourceResponse.items.length > 0)
+      this.log.info(`Queued ${fetchJobsQueued} fetch jobs`)
+      done(null, {
+        jobQueueCount: fetchJobsQueued
+      })
+    } catch (err: unknown) {
+      this.log.error(`Error queueing fetch jobs: ${err}`)
+      done(err as Error)
+    }
   }
 }

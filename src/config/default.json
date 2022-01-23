@@ -45,7 +45,8 @@
     },
     "tasks": {
       "fetch": {
-        "batchSize": 1000
+        "batchSize": 1000,
+        "sourceApiUrl": "http://localhost:3000/api/data_source_manager/v1"
       }
     }
   },

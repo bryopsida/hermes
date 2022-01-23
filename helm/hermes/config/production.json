@@ -18,6 +18,12 @@
     },
     "kafka": {
       "brokers": ["{{ .Release.Name }}-kafka-headless"]
+    },
+    "tasks": {
+      "fetch": {
+        "batchSize": 1000,
+        "sourceApiUrl": "http://{{ include "hermes.fullname" . }}:{{ .Values.service.port }}/api/data_source_manager/v1"
+      }
     }
   },
   "theatre": {

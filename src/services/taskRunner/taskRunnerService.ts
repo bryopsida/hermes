@@ -9,10 +9,8 @@ import { Producer, ProducerTopicConfig } from 'node-rdkafka'
 import { ITask } from '../../common/interfaces/task'
 import COMPUTED_CONSTANTS from '../../common/computedConstants'
 import { QueueFetchesTask } from '../../tasks/queueFetches/queueFetchesTask'
-import globalConfigFactory from '../../config/globalConfig'
 import taskConfigFactory, { IFetchTaskConfig } from '../../config/taskConfig'
 
-const globalConfig = globalConfigFactory.buildConfig()
 const fetchTaskConfig = taskConfigFactory<IFetchTaskConfig>('fetch')
 export class TaskRunnerService implements IService {
     public static readonly NAME = 'task_runner'
@@ -82,7 +80,7 @@ export class TaskRunnerService implements IService {
       })
       HEARTBEAT_QUEUE.add('heartbeat', {}, { repeat: { cron: '*/1 * * * *' } })
       FETCH_QUEUE.add('queue_fetches', {
-        baseUrl: `http://${globalConfig.getHostname()}:${globalConfig.getPort()}/api/data_source_manager/v1`,
+        baseUrl: fetchTaskConfig.sourceApiUrl,
         batchSize: fetchTaskConfig.batchSize
       }, { repeat: { cron: '*/5 * * * *' } })
 

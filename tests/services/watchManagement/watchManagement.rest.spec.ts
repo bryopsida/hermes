@@ -2,11 +2,11 @@
 import 'jest'
 import { randomUUID } from 'crypto'
 import axios from 'axios'
-import { WatchDTO } from '../../../src/services/watchManagement/dto/watch'
+import { WatchDTO } from '../../../src/services/watchManager/dto/watch'
 import testConfig from '../../helpers/testConfiguration'
 
 const baseUrl = `${testConfig.proto}://${testConfig.host}:${testConfig.port}`
-const testUrl = `${baseUrl}/api/watch_management/v1`
+const testUrl = `${baseUrl}/api/watch_manager/v1`
 
 describe('WatchManagement.Rest', () => {
   it('can manage a watch', async () => {

@@ -2,7 +2,7 @@
 import 'jest'
 import axios from 'axios'
 import { randomUUID } from 'crypto'
-import { DataSourceDTO } from '../../../src/services/dataSources/dto/dataSource'
+import { DataSourceDTO } from '../../../src/services/dataSourceManager/dto/dataSource'
 import testConfig from '../../helpers/testConfiguration'
 
 const baseUrl = `${testConfig.proto}://${testConfig.host}:${testConfig.port}`
