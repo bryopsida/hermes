@@ -6,7 +6,7 @@ import { DataSourceDTO } from '../../../src/services/dataSources/dto/dataSource'
 import testConfig from '../../helpers/testConfiguration'
 
 const baseUrl = `${testConfig.proto}://${testConfig.host}:${testConfig.port}`
-const testUrl = `${baseUrl}/api/data_sources/v1`
+const testUrl = `${baseUrl}/api/data_source_manager/v1`
 
 describe('DataSource.Rest', () => {
   it('can manage a data source', async () => {

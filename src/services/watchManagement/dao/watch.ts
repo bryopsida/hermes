@@ -57,7 +57,7 @@ export class Watch implements IWatch {
 
     private static connect (): Promise<void> {
       return new Promise((resolve, reject) => {
-        mongoose.connect(config.getSeverUrl(), config.getMongooseOptions(), (err) => {
+        mongoose.connect(config.getServerUrl(), config.getMongooseOptions(), (err) => {
           if (err) {
             reject(err)
           } else {

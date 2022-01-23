@@ -16,16 +16,31 @@ import { HealthSideKick } from './services/sidekicks/health/healthSidekick'
 import { isServiceEnabled, isSideKickEnabled } from './config/isServiceEnabled'
 import { TaskRunnerService } from './services/taskRunner/taskRunnerService'
 import { BullBoardService } from './services/bullBoard/bullboardServices'
+import redisConfigFactory from './config/redisConfig'
+import { QueueOptions } from 'bull'
+import { Cluster, NodeConfiguration, ClusterOptions } from 'ioredis'
+
 const cpuCount = cpus().length
+const redisConfig = redisConfigFactory.buildConfig('task_runner')
 
 const queueOptions = {
   redis: {
-    host: process.env.REDIS_HOST || 'localhost',
-    port: process.env.REDIS_PORT ? parseInt(process.env.REDIS_PORT) : 6379,
-    password: process.env.REDIS_PASSWORD || ''
+    host: redisConfig.host,
+    port: redisConfig.port,
+    password: redisConfig.password
   },
-  prefix: '{bullQueue}'
-}
+  createClient: redisConfig.cluster
+    ? () => new Cluster([{
+      host: redisConfig.host,
+      port: redisConfig.port
+    } as NodeConfiguration], {
+      enableReadyCheck: false,
+      redisOptions: {
+        password: redisConfig.password
+      }
+    } as ClusterOptions)
+    : undefined
+} as QueueOptions
 
 if (cluster.isPrimary && process.env.USE_CLUSTERING === 'true') {
   const primary = new Primary(process.env.WORKER_COUNT ? parseInt(process.env.WORKER_COUNT) : cpuCount)

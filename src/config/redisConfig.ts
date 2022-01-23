@@ -4,6 +4,7 @@ export interface IRedisConfig {
   host: string;
   port: number;
   password: string;
+  cluster: boolean;
 }
 
 export default {

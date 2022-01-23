@@ -1,43 +1,52 @@
 import config from 'config'
 
-export interface IMongoDBConfig {
-  getSeverUrl(): string,
-  getMongooseOptions(): any,
-  user: string,
-  password: string,
-  host: string,
-  port: number,
-  database: string
+export interface IMongoDBConfigProps {
+  readonly username: string,
+  readonly password: string,
+  readonly host: string,
+  readonly port: number,
+  readonly db: string,
+  readonly authEnabled: boolean
 }
+
+export interface IMongoDBConfig extends IMongoDBConfigProps{
+  getServerUrl(): string,
+  getMongooseOptions(): any,
+}
+
 class MongoDbConfig {
-  public readonly user: string;
+  public readonly username: string;
   public readonly password: string;
   public readonly host: string;
   public readonly port: number;
-  public readonly database: string;
+  public readonly db: string;
+  public readonly authEnabled: boolean;
 
-  constructor (user: string, password: string, host: string, port: number, database: string) {
-    this.user = user
-    this.password = password
-    this.host = host
-    this.port = port
-    this.database = database
+  constructor (c: IMongoDBConfigProps) {
+    this.username = c.username
+    this.password = c.password
+    this.host = c.host
+    this.port = c.port
+    this.db = c.db
+    this.authEnabled = c.authEnabled
   }
 
-  public getSeverUrl (): string {
-    return `mongodb://${this.user}:${this.password}@${this.host}:${this.port}/${this.database}`
+  public getServerUrl (): string {
+    return `mongodb://${this.host}:${this.port}/${this.db}`
   }
 
   public getMongooseOptions (): any {
     return {
-      user: this.user,
-      pass: this.password
+      user: this.authEnabled ? this.username : undefined,
+      pass: this.authEnabled ? this.password : undefined,
+      dbName: this.db,
+      authSource: this.authEnabled ? 'admin' : undefined
     }
   }
 }
 
 export default {
   buildConfig: (scope: string): IMongoDBConfig => {
-    return config.get<MongoDbConfig>(`${scope}.mongo`)
+    return new MongoDbConfig(config.get<IMongoDBConfigProps>(`${scope}.mongo`))
   }
 }

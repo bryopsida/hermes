@@ -1,4 +1,6 @@
 {
+  "hostname": "{{ (first .Values.ingress.hosts).host }}",
+  "port": 80,
   "data_source_manager": {
     "mongo": {
       "host": "{{ .Release.Name }}-mongodb-headless"
@@ -11,7 +13,8 @@
   },
   "task_runner": {
     "redis": {
-      "host": "{{ .Release.Name}}-redis-headless"
+      "host": "{{ .Release.Name}}-redis-headless",
+      "cluster": true
     },
     "kafka": {
       "brokers": ["{{ .Release.Name }}-kafka-headless"]

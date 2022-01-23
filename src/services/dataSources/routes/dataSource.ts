@@ -4,7 +4,7 @@ import { IPaginatedResponse } from '../../../common/models/paginatedResponse'
 import { DataSource } from '../dao/dataSource'
 import { DataSourceDTO } from '../dto/dataSource'
 
-const routeMountPoint = '/api/data_sources/v1'
+const routeMountPoint = '/api/data_source_manager/v1'
 
 export default function registerDataSourceRoute (fastify: FastifyInstance): void {
   fastify.get<{
