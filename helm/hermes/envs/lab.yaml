@@ -1,20 +1,37 @@
-imagePullPolicy: Always
+imagePullPolicy: IfNotPresent
+ingress:
+  hosts:
+    - host: lab.hermes.local
+      paths:
+        - path: /
+          pathType: ImplementationSpecific
+  tls: 
+    - secretName: hermes-tls
+      hosts:
+        - lab.hermes.local
 kafka:
   nodeSelector:
     kubernetes.io/arch: amd64
   zookeeper:
     kubernetes.io/arch: amd64
+mongodb:
+  arbiter:
+    nodeSelector:
+      kubernetes.io/arch: amd64
+  mongos:
+    nodeSelector:
+      kubernetes.io/arch: amd64
+  shardsvr:
+    dataNode:
+      nodeSelector:
+        kubernetes.io/arch: amd64
+  configsvr:
+    nodeSelector:
+      kubernetes.io/arch: amd64
 redis:
   updateJob:
     nodeSelector:
       kubernetes.io/arch: amd64
   redis:
-    nodeSelector:
-      kubernetes.io/arch: amd64
-postgres:
-  postgresql:
-    nodeSelector:
-      kubernetes.io/arch: amd64
-  pgpool:
     nodeSelector:
       kubernetes.io/arch: amd64

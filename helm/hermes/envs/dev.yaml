@@ -40,13 +40,3 @@ redis:
   redis:
     nodeSelector:
       kubernetes.io/arch: amd64
-certmanager:
-  cainjector:
-    nodeSelector:
-      kubernetes.io/arch: amd64
-  webhook:
-    nodeSelector:
-      kubernetes.io/arch: amd64
-  controller:
-    nodeSelector:
-      kubernetes.io/arch: amd64
