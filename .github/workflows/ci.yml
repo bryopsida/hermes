@@ -273,7 +273,8 @@ jobs:
       run: npm run helm:test
     - name: Trust Deployment Self Signed Certificate
       run: |
-        sudo openssl s_client -connect :443 2>/dev/null </dev/null |  sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' >  /usr/local/share/ca-certificates/hermes.local.crt
+        openssl s_client -connect :443 2>/dev/null </dev/null |  sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' >  /tmp/hermes.local.crt
+        sudo mv /tmp/hermes.local.crt /usr/local/share/ca-certificates/hermes.local.crt
         sudo update-ca-certificates
     - name: E2E Tests
       timeout-minutes: 10
