@@ -274,7 +274,7 @@ jobs:
     - name: Trust Deployment Self Signed Certificate
       run: |
         openssl s_client -connect :443 2>/dev/null </dev/null |  sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' >  /tmp/hermes.local.crt
-        kubectl get secret hermes-root-ca-secret -o jsonpath="{.data['ca\.crt']}" | base64 -d > /tmp/hermes.local.ca.crt
+        kubectl -n $HELM_NAMESPACE get secret hermes-root-ca-secret -o jsonpath="{.data['ca\.crt']}" | base64 -d > /tmp/hermes.local.ca.crt
         sudo mv /tmp/*.crt /usr/local/share/ca-certificates/
         sudo update-ca-certificates
     - name: E2E Tests
@@ -293,6 +293,8 @@ jobs:
         kubectl -n $HELM_NAMESPACE describe statefulsets > /tmp/microk8s-hermes/hermes.statefulsets.describe
         kubectl -n $HELM_NAMESPACE describe replicasets > /tmp/microk8s-hermes/hermes.replicasets.describe
         kubectl -n $HELM_NAMESPACE describe deployments > /tmp/microk8s-hermes/hermes.deployments.describe
+        kubectl -n $HELM_NAMESPACE describe configmaps > /tmp/microk8s-hermes/hermes.configmaps.describe
+        kubectl -n $HELM_NAMESPACE describe secrets > /tmp/microk8s-hermes/hermes.secrets.describe
         inspectTarball=$(sudo microk8s inspect | grep -Po "/var/snap/microk8s/.*\.tar\.gz")
         sudo cp $inspectTarball /tmp/microk8s-hermes/
     - name: Upload Info On Failure
