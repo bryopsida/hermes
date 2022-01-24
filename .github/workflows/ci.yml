@@ -325,7 +325,7 @@ jobs:
     - name: Anti Virus Scan
       timeout-minutes: 10
       run: |
-        sudo apt-get install clamav clamav-daemon -y
+        sudo apt-get update && sudo apt-get install clamav clamav-daemon -y
         sudo systemctl stop clamav-freshclam
         sudo freshclam
         clamscan --max-filesize=500M --max-scansize=500M /tmp/artifacts/image.tar.gz
