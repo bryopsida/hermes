@@ -245,6 +245,12 @@ jobs:
         sudo microk8s config > ~/.kube/config
     - name: Test Kube Access
       run: kubectl get nodes
+    - name: Deploy Cert Manager
+      timeout-minutes: 10
+      run: |
+        npm run helm:addRepos
+        npm run helm:updateRepos
+        npm run helm:deployCertManager
     - name: Set hermes.local /etc/hosts rule
       run: |
         export NODE_IP=$(kubectl get nodes -o json | jq -r '.items[].status.addresses[] | select(.type=="InternalIP") | .address ' | head -n 1)

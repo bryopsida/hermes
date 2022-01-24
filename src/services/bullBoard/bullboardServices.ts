@@ -3,7 +3,7 @@ import { IService } from '../../common/interfaces/service'
 import { createBullBoard } from '@bull-board/api'
 import { BullAdapter } from '@bull-board/api/bullAdapter'
 import { FastifyAdapter } from '@bull-board/fastify'
-import bull from 'bull'
+import bull, { QueueOptions } from 'bull'
 import { QueueNames } from '../../common/queues/queueNameConstants'
 
 export class BullBoardService implements IService {
@@ -13,24 +13,21 @@ export class BullBoardService implements IService {
   private readonly _queues: bull.Queue[] = [];
   private readonly _queueAdapters: Array<BullAdapter>;
 
-  constructor (private _app: FastifyInstance) {
+  constructor (private _app: FastifyInstance, private _queueOptions: QueueOptions) {
     this._queues = [
       bull(QueueNames.HEARTBEAT_QUEUE, {
-        redis: {
-          host: process.env.REDIS_HOST || 'localhost',
-          port: process.env.REDIS_PORT ? parseInt(process.env.REDIS_PORT) : 6379,
-          password: process.env.REDIS_PASSWORD || ''
-        },
-        prefix: '{heartbeat}'
-      }),
+        ...this._queueOptions,
+        ...{
+          prefix: '{heartbeat}'
+        }
+      } as QueueOptions
+      ),
       bull(QueueNames.FETCH_QUEUE, {
-        redis: {
-          host: process.env.REDIS_HOST || 'localhost',
-          port: process.env.REDIS_PORT ? parseInt(process.env.REDIS_PORT) : 6379,
-          password: process.env.REDIS_PASSWORD || ''
-        },
-        prefix: '{heartbeat}'
-      })
+        ...this._queueOptions,
+        ...{
+          prefix: '{fetch}'
+        }
+      } as QueueOptions)
     ]
     this._queueAdapters = this._queues.map(queue => new BullAdapter(queue))
     this._serverAdapter = new FastifyAdapter()

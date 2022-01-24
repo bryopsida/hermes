@@ -3,12 +3,14 @@
   "port": 80,
   "data_source_manager": {
     "mongo": {
-      "host": "{{ .Release.Name }}-mongodb-headless"
+      "host": "{{ .Release.Name }}-mongodb-headless",
+      "username": "root"
     }
   },
   "watch_manager": {
     "mongo": {
-      "host": "{{ .Release.Name }}-mongodb-headless"
+      "host": "{{ .Release.Name }}-mongodb-headless",
+      "username": "root"
     }
   },
   "task_runner": {

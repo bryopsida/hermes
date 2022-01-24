@@ -26,7 +26,10 @@ ingress:
       paths:
         - path: /
           pathType: ImplementationSpecific
-  tls: []
+  tls: 
+    - secretName: hermes-tls
+      hosts:
+        - hermes.local
 resources: {}
 autoscaling:
   enabled: false
@@ -59,3 +62,5 @@ mongodb:
   existingSecret: "hermes-internal-mongodb"
   volumePermissions:
     enabled: true
+certmanager:
+  enabled: true

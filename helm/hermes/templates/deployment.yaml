@@ -73,19 +73,19 @@ spec:
                 name: "{{ .Release.Name }}-internal-redis"
                 key: "redisPassword"
           - name: HERMES_WATCHES_MONGODB_USERNAME
-            value: "mongodb"
+            value: "root"
           - name: HERMES_WATCHES_MONGODB_PASSWORD
             valueFrom:
               secretKeyRef:
                 name: "{{ .Release.Name }}-internal-mongodb"
-                key: "mongodb-password"
+                key: "mongodb-root-password"
           - name: HERMES_DATA_SOURCES_MONGODB_USERNAME
-            value: "mongodb"
+            value: "root"
           - name: HERMES_DATA_SOURCES_MONGODB_PASSWORD
             valueFrom:
               secretKeyRef:
                 name: "{{ .Release.Name }}-internal-mongodb"
-                key: "mongodb-password"
+                key: "mongodb-root-password"
           volumeMounts:
             - name: config-volume
               mountPath: /var/run/config/

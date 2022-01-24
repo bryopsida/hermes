@@ -11,12 +11,12 @@ dependencies:
     condition: kafka.enabled
     alias: kafka
   - name: redis-cluster
-    version: "7.1.2"
+    version: "7.1.3"
     repository: https://charts.bitnami.com/bitnami
     condition: redis.enabled
     alias: redis
   - name: mongodb-sharded
-    version: "3.11.0"
+    version: "3.11.2"
     repository: https://charts.bitnami.com/bitnami
     condition: mongodb.enabled
     alias: mongodb

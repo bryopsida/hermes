@@ -77,7 +77,7 @@ if (cluster.isPrimary && process.env.USE_CLUSTERING === 'true') {
     isServiceEnabled(TaskRunnerService.NAME) ? new TaskRunnerService(queueOptions) : undefined,
     isServiceEnabled(WatchManagementService.NAME) ? new WatchManagementService(app) : undefined,
     isServiceEnabled(TheatreService.NAME) ? new TheatreService() : undefined,
-    isServiceEnabled(BullBoardService.NAME) ? new BullBoardService(app) : undefined
+    isServiceEnabled(BullBoardService.NAME) ? new BullBoardService(app, queueOptions) : undefined
   ].filter(s => s != null) as Array<IService>
 
   if (isSideKickEnabled(HealthSideKick.NAME)) {
