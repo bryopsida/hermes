@@ -76,7 +76,7 @@ jobs:
       - name: Setup Docker buildx
         timeout-minutes: 4
         uses: docker/setup-buildx-action@79abd3f86f79a9d68a23c75a09a9a85889262adf
-      - name: Log into registry ${{ env.REGISTRY }}
+      - name: Log into registry
         if: github.event_name != 'pull_request'
         timeout-minutes: 5
         uses: docker/login-action@42d299face0c5c43a0487c477f595ac9cf22f1a7
