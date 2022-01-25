@@ -18,11 +18,11 @@ describe('DataSource.Rest', () => {
       type: 'test',
       name: 'test',
       uri: 'http://google.com'
-    } as DataSourceDTO)
+    } as DataSourceDTO, testConfig.requestConfig)
     expect(response.status).toBe(200)
 
     // fetch
-    const dataSource = await (await axios.get(`${testUrl}/sources/${id}`)).data
+    const dataSource = await (await axios.get(`${testUrl}/sources/${id}`, testConfig.requestConfig)).data
     expect(dataSource.id).toBe(id)
   })
 })

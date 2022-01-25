@@ -18,11 +18,11 @@ describe('WatchManagement.Rest', () => {
       name: 'test',
       description: 'test',
       graphql: 'test'
-    } as WatchDTO)
+    } as WatchDTO, testConfig.requestConfig)
     expect(response.status).toBe(200)
 
     // fetch
-    const dataSource = await (await axios.get(`${testUrl}/watches/${id}`)).data
+    const dataSource = await (await axios.get(`${testUrl}/watches/${id}`, testConfig.requestConfig)).data
     expect(dataSource.id).toBe(id)
   })
 })
