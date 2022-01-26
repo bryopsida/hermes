@@ -1,7 +1,8 @@
 import { WatchDTO } from '../dto/watch'
-import mongoose from 'mongoose'
+import mongoose, { Connection } from 'mongoose'
 import configFactory from '../../../config/mongodbConfig'
 import { randomUUID } from 'crypto'
+import { using } from '../../../common/using'
 
 const tableName = 'watches'
 
@@ -31,8 +32,6 @@ const schema = new mongoose.Schema<IWatch>({
   }
 })
 
-const model = mongoose.model<IWatch>(tableName, schema)
-
 const config = configFactory.buildConfig('watch_manager')
 
 export class Watch implements IWatch {
@@ -55,44 +54,55 @@ export class Watch implements IWatch {
       }
     }
 
-    private static connect (): Promise<void> {
+    private static connect (): Promise<Connection> {
       return new Promise((resolve, reject) => {
-        mongoose.connect(config.getServerUrl(), config.getMongooseOptions(), (err) => {
+        mongoose.createConnection(config.getServerUrl(), config.getMongooseOptions(), (err, conn) => {
           if (err) {
             reject(err)
           } else {
-            resolve()
+            resolve(conn)
           }
         })
       })
     }
 
+    private static getModel (conn: mongoose.Connection): mongoose.Model<IWatch> {
+      return conn.model(tableName, schema)
+    }
+
     static async findAll (offset: number, count: number): Promise<Array<Watch>> {
-      await this.connect()
-      return (await model.find().limit(count).skip(offset).exec()).map(doc => new Watch(doc))
+      return using<Connection, Array<Watch>>(await this.connect(), async (conn) => {
+        const model = this.getModel(conn)
+        return (await model.find().skip(offset).limit(count).exec()).map(doc => new Watch(doc))
+      })
     }
 
     static async findById (id: string): Promise<Watch> {
-      await this.connect()
-      return new Watch(await model.findOne({ id: id }).exec())
+      return using<Connection, Watch>(await this.connect(), async (conn) => {
+        return new Watch(await this.getModel(conn).findOne({ id: id }).exec())
+      })
     }
 
     static async upsert (watcb: Watch): Promise<Watch> {
-      await this.connect()
-      await model.updateOne({ id: watcb.id }, watcb.toDTO(), { upsert: true }).exec()
-      return new Watch(await model.findOne({ id: watcb.id }).exec())
+      return using<Connection, Watch>(await this.connect(), async (conn) => {
+        const model = this.getModel(conn)
+        await model.updateOne({ id: watcb.id }, watcb.toDTO(), { upsert: true }).exec()
+        return new Watch(await model.findOne({
+          id: watcb.id
+        }).exec())
+      })
     }
 
     static async delete (id: string): Promise<void> {
-      await this.connect()
-      await model.findByIdAndDelete(id).exec()
+      return using<Connection, void>(await this.connect(), async (conn) => {
+        await this.getModel(conn).deleteOne({ id: id }).exec()
+      })
     }
 
     static async has (id: string): Promise<boolean> {
-      await this.connect()
-      return await model.findOne({
-        id: id
-      }).exec() != null
+      return using<Connection, boolean>(await this.connect(), async (conn) => {
+        return (await this.getModel(conn).findOne({ id: id }).exec()) !== null
+      })
     }
 
     toDTO (): WatchDTO {
