@@ -114,7 +114,7 @@ export class DataSource implements IDataSource {
 
     static async has (id: string): Promise<boolean> {
       return using<Connection, boolean>(await this.connect(), async (conn) => {
-        return this.getModel(conn).exists({ id: id })
+        return (await this.getModel(conn).findOne({ id: id }).exec()) !== null
       })
     }
 
