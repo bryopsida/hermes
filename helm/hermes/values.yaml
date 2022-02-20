@@ -46,8 +46,6 @@ kafka:
   offsetsTopicReplicationFactor: 3
   transactionStateLogReplicationFactor: 3
   heapOpts: "-Xmx256m -Xms256m"
-  volumePermissions:
-    enabled: true
   zookeeper:
     replicaCount: 3
     heapSize: 256
@@ -55,12 +53,8 @@ redis:
   enabled: true
   existingSecret: "hermes-internal-redis"
   existingSecretPasswordKey: "redisPassword"
-  volumePermissions:
-    enabled: true
 mongodb:
   enabled: true
   existingSecret: "hermes-internal-mongodb"
-  volumePermissions:
-    enabled: true
 certmanager:
   enabled: true

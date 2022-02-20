@@ -18,7 +18,8 @@ kafka:
     kubernetes.io/arch: amd64
   zookeeper:
     replicaCount: 1
-    kubernetes.io/arch: amd64
+    nodeSelector:
+      kubernetes.io/arch: amd64
 mongodb:
   arbiter:
     nodeSelector:
