@@ -10,8 +10,8 @@ dependencies:
     repository: https://charts.bitnami.com/bitnami
     condition: kafka.enabled
     alias: kafka
-  - name: redis-cluster
-    version: "7.2.1"
+  - name: redis
+    version: "16.4.0"
     repository: https://charts.bitnami.com/bitnami
     condition: redis.enabled
     alias: redis

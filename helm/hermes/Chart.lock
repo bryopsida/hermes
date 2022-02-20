@@ -2,11 +2,11 @@ dependencies:
 - name: kafka
   repository: https://charts.bitnami.com/bitnami
   version: 15.1.0
-- name: redis-cluster
+- name: redis
   repository: https://charts.bitnami.com/bitnami
-  version: 7.2.1
+  version: 16.4.0
 - name: mongodb
   repository: https://charts.bitnami.com/bitnami
   version: 11.0.3
-digest: sha256:68f338172beacb87c5c162c23807ef10c3dbf19b4924e3c8b22ce105ffdb93cb
-generated: "2022-02-19T20:46:02.848876-06:00"
+digest: sha256:9fda2050ddcb0da138ae79e855d52c47bf9e39051ab799cbe87f6f0bc480f3b4
+generated: "2022-02-20T08:10:12.598045-06:00"
