@@ -1,7 +1,1 @@
-kafka:
-  replicaCount: 1
-  defaultReplicationFactor: 1
-  offsetsTopicReplicationFactor: 1
-  transactionStateLogReplicationFactor: 1
-  zookeeper:
-    replicaCount: 1
+# any ci specific overrides here

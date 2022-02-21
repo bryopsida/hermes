@@ -3,20 +3,20 @@
   "port": 80,
   "data_source_manager": {
     "mongo": {
-      "host": "{{ .Release.Name }}-mongodb-headless",
+      "host": "{{ .Release.Name }}-mongodb",
       "username": "root"
     }
   },
   "watch_manager": {
     "mongo": {
-      "host": "{{ .Release.Name }}-mongodb-headless",
+      "host": "{{ .Release.Name }}-mongodb",
       "username": "root"
     }
   },
   "task_runner": {
     "redis": {
-      "host": "{{ .Release.Name}}-redis-headless",
-      "cluster": true
+      "host": "{{ .Release.Name}}-redis-master",
+      "cluster": false
     },
     "kafka": {
       "brokers": ["{{ .Release.Name }}-kafka-headless"]

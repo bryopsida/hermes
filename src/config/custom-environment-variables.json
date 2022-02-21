@@ -1,4 +1,8 @@
 {
+  "logging": {
+    "level": "HERMES_LOG_LEVEL",
+    "pretty": "HERMES_LOG_PRETTY"
+  },
   "watch_manager": {
     "mongo": {
       "username": "HERMES_WATCHES_MONGODB_USERNAME",

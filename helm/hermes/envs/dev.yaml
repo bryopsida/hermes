@@ -12,14 +12,9 @@ ingress:
 kafka:
   volumePermissions:
     enabled: true
-  replicaCount: 1
-  defaultReplicationFactor: 1
-  offsetsTopicReplicationFactor: 1
-  transactionStateLogReplicationFactor: 1
   nodeSelector:
     kubernetes.io/arch: amd64
   zookeeper:
-    replicaCount: 1
     nodeSelector:
       kubernetes.io/arch: amd64
 mongodb:
@@ -40,6 +35,5 @@ redis:
     nodeSelector:
       kubernetes.io/arch: amd64
   replica:
-    replicaCount: 1
     nodeSelector:
       kubernetes.io/arch: amd64

@@ -6,6 +6,10 @@
       "enabled": true
     }
   },
+  "logging": {
+    "level": "debug",
+    "pretty": false
+  }, 
   "bullboard": {
     "enabled": true
   },
