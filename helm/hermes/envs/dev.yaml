@@ -10,6 +10,8 @@ ingress:
       hosts:
         - dev.hermes.local
 kafka:
+  volumePermissions:
+    enabled: true
   replicaCount: 1
   defaultReplicationFactor: 1
   offsetsTopicReplicationFactor: 1
@@ -21,23 +23,23 @@ kafka:
     nodeSelector:
       kubernetes.io/arch: amd64
 mongodb:
+  volumePermissions:
+    enabled: true
+  nodeSelector:
+    kubernetes.io/arch: amd64
   arbiter:
     nodeSelector:
       kubernetes.io/arch: amd64
-  mongos:
-    nodeSelector:
-      kubernetes.io/arch: amd64
-  shardsvr:
-    dataNode:
-      nodeSelector:
-        kubernetes.io/arch: amd64
-  configsvr:
+  hidden:
     nodeSelector:
       kubernetes.io/arch: amd64
 redis:
-  updateJob:
+  volumePermissions:
+    enabled: true
+  master:
     nodeSelector:
       kubernetes.io/arch: amd64
-  redis:
+  replica:
+    replicaCount: 1
     nodeSelector:
       kubernetes.io/arch: amd64
