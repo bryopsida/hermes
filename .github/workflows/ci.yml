@@ -267,9 +267,14 @@ jobs:
       run: |
         docker tag ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ needs.build-container.outputs.version }} localhost:32000/hermes-mono:latest
         docker push localhost:32000/hermes-mono:latest
-    - name: Deploy
+    - name: Deploy Unpublished
+      if: ${{ github.event_name == 'pull_request' }}
       timeout-minutes: 25
       run: npm run helm:deploy --helm_namespace=$HELM_NAMESPACE --helm_args="-f helm/hermes/envs/ci.yaml --set image.repository=localhost:32000/hermes-mono --set image.tag=latest --timeout 20m"
+    - name: Deploy Published
+      if: ${{ github.event_name != 'pull_request' }}
+      timeout-minutes: 25
+      run: npm run helm:deploy --helm_namespace=$HELM_NAMESPACE --helm_args="-f helm/hermes/envs/ci.yaml --set image.repository=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }} --set image.tag=${{ needs.build-container.outputs.version }} --timeout 20m"
     - name: Test Deployment
       timeout-minutes: 5
       run: npm run helm:test
