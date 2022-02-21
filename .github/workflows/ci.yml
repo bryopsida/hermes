@@ -332,6 +332,7 @@ jobs:
       timeout-minutes: 4
       run: |
         mkdir -p /tmp/artifacts
+        docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ needs.build-container.outputs.version }}
         docker save ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ needs.build-container.outputs.version }} > /tmp/artifacts/image.tar.gz
     - name: Anti Virus Scan
       timeout-minutes: 10
