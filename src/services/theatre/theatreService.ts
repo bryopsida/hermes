@@ -11,12 +11,27 @@ export class TheatreService implements IService {
       level: 'debug'
     })
 
+    public static readonly NAME = 'theatre'
+
     private readonly actors : Array<IActor<unknown, unknown>> = [];
+    public readonly ID = TheatreService.NAME
 
     constructor () {
       this.log.info('Theatre service created')
       this.actors.push(new JsonWatchActor())
       this.actors.push(new HeartbeatActor())
+    }
+
+    isAlive (): Promise<boolean> {
+      return Promise.resolve(true)
+    }
+
+    canServeTraffic (): Promise<boolean> {
+      return Promise.resolve(false)
+    }
+
+    servesTraffic (): boolean {
+      return false
     }
 
     async start (): Promise<void> {

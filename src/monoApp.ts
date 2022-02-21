@@ -3,26 +3,44 @@
 import { fastify, FastifyInstance } from 'fastify'
 import cluster from 'cluster'
 import { cpus } from 'os'
-import { DataSourceService } from './services/dataSources/dataSourceService'
+import { DataSourceService } from './services/dataSourceManager/dataSourceService'
 import createLogger from './common/logger/factory'
-import { TaskRunnerService } from './services/taskRunner/taskRunnerService'
 import computedConstants from './common/computedConstants'
-import { WatchManagementService } from './services/watchManagement/watchManagementService'
+import { WatchManagementService } from './services/watchManager/watchManagementService'
 import { TheatreService } from './services/theatre/theatreService'
 import { IService } from './common/interfaces/service'
-import { BullBoardService } from './services/bullBoard/bullboardServices'
 import { Primary } from './primary'
 import { HermesWorker } from './worker'
 import fastifyHelmet from 'fastify-helmet'
+import { HealthSideKick } from './services/sidekicks/health/healthSidekick'
+import { isServiceEnabled, isSideKickEnabled } from './config/isServiceEnabled'
+import { TaskRunnerService } from './services/taskRunner/taskRunnerService'
+import { BullBoardService } from './services/bullBoard/bullboardServices'
+import redisConfigFactory from './config/redisConfig'
+import { QueueOptions } from 'bull'
+import { Cluster, NodeConfiguration, ClusterOptions } from 'ioredis'
 
 const cpuCount = cpus().length
+const redisConfig = redisConfigFactory.buildConfig('task_runner')
+
 const queueOptions = {
   redis: {
-    host: process.env.REDIS_HOST || 'localhost',
-    port: process.env.REDIS_PORT ? parseInt(process.env.REDIS_PORT) : 6379,
-    password: process.env.REDIS_PASSWORD || ''
-  }
-}
+    host: redisConfig.host,
+    port: redisConfig.port,
+    password: redisConfig.password
+  },
+  createClient: redisConfig.cluster
+    ? () => new Cluster([{
+      host: redisConfig.host,
+      port: redisConfig.port
+    } as NodeConfiguration], {
+      enableReadyCheck: false,
+      redisOptions: {
+        password: redisConfig.password
+      }
+    } as ClusterOptions)
+    : undefined
+} as QueueOptions
 
 if (cluster.isPrimary && process.env.USE_CLUSTERING === 'true') {
   const primary = new Primary(process.env.WORKER_COUNT ? parseInt(process.env.WORKER_COUNT) : cpuCount)
@@ -55,15 +73,19 @@ if (cluster.isPrimary && process.env.USE_CLUSTERING === 'true') {
   // TODO: fix as any cast
   // define services managed by this mono app entry point
   const services : Array<IService> = [
-    new DataSourceService(app as any),
-    new TaskRunnerService(queueOptions),
-    new WatchManagementService(app),
-    new TheatreService(),
-    new BullBoardService(app)
-  ]
+    isServiceEnabled(DataSourceService.NAME) ? new DataSourceService(app as any) : undefined,
+    isServiceEnabled(TaskRunnerService.NAME) ? new TaskRunnerService(queueOptions) : undefined,
+    isServiceEnabled(WatchManagementService.NAME) ? new WatchManagementService(app) : undefined,
+    isServiceEnabled(TheatreService.NAME) ? new TheatreService() : undefined,
+    isServiceEnabled(BullBoardService.NAME) ? new BullBoardService(app, queueOptions) : undefined
+  ].filter(s => s != null) as Array<IService>
+
+  if (isSideKickEnabled(HealthSideKick.NAME)) {
+    const healthSideKick = new HealthSideKick(app, '/api/health/v1')
+    services.forEach(service => healthSideKick.registerService(service))
+  }
 
   const worker = new HermesWorker(services, app)
-
   const stop = async () => {
     logger.info('Stopping services')
     await Promise.all([
@@ -87,12 +109,15 @@ if (cluster.isPrimary && process.env.USE_CLUSTERING === 'true') {
 
   process.on('unhandledRejection', async (reason, p) => {
     logger.error(`Unhandled rejection at: reason: ${reason}`)
+    logger.error(reason)
+    logger.error(p)
     await stop()
     process.exit(1)
   })
 
   worker.start().catch(async (err) => {
-    logger.error('Failed to start worker: ', err)
+    logger.error('Failed to start worker')
+    logger.error(err)
     await stop()
     process.exit(1)
   })

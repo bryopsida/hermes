@@ -9,11 +9,15 @@ import { Producer, ProducerTopicConfig } from 'node-rdkafka'
 import { ITask } from '../../common/interfaces/task'
 import COMPUTED_CONSTANTS from '../../common/computedConstants'
 import { QueueFetchesTask } from '../../tasks/queueFetches/queueFetchesTask'
+import taskConfigFactory, { IFetchTaskConfig } from '../../config/taskConfig'
 
+const fetchTaskConfig = taskConfigFactory<IFetchTaskConfig>('fetch')
 export class TaskRunnerService implements IService {
+    public static readonly NAME = 'task_runner'
     private readonly _queues: Map<QueueNames, Queue> = new Map();
     private readonly _tasks: Map<string, ITask> = new Map();
     private readonly _queueOptions: QueueOptions;
+    public readonly ID = TaskRunnerService.NAME
 
     private readonly log = createLogger({
       serviceName: `task-runner-${COMPUTED_CONSTANTS.id}`,
@@ -24,23 +28,60 @@ export class TaskRunnerService implements IService {
       this._queueOptions = queueOptions
     }
 
+    isAlive (): Promise<boolean> {
+      return Promise.resolve(true)
+    }
+
+    canServeTraffic (): Promise<boolean> {
+      return Promise.resolve(false)
+    }
+
+    servesTraffic (): boolean {
+      return false
+    }
+
     public async start (): Promise<void> {
       this.log.info('Starting task runner service')
 
+      const fetchQueueOptions = {
+        ...this._queueOptions,
+        ...{
+          prefix: '{fetch}'
+        }
+      } as QueueOptions
+
+      const heartbeatQueueOptions = {
+        ...this._queueOptions,
+        ...{
+          prefix: '{heartbeat}'
+        }
+      } as QueueOptions
+
       // TODO: refactor be clean, generic
-      const FETCH_QUEUE = new BullQueue(QueueNames.FETCH_QUEUE, this._queueOptions)
-      FETCH_QUEUE.on('error', (error) => {
-        this.log.error('Error in fetch queue', error)
+      const FETCH_QUEUE = new BullQueue(QueueNames.FETCH_QUEUE, fetchQueueOptions).on('error', (err) => {
+        this.log.error('Fetch queue error')
+        this.log.error(err)
       })
 
-      const HEARTBEAT_QUEUE = new BullQueue(QueueNames.HEARTBEAT_QUEUE, this._queueOptions)
+      this.log.info(`Fetch queue ${FETCH_QUEUE.name} created, with prefix ${fetchQueueOptions.prefix}`)
+
+      FETCH_QUEUE.on('error', (error) => {
+        this.log.error('Error in fetch queue')
+        this.log.error(error)
+      })
+
+      const HEARTBEAT_QUEUE = new BullQueue(QueueNames.HEARTBEAT_QUEUE, heartbeatQueueOptions).on('error', (err) => {
+        this.log.error('Heartbeat queue error')
+        this.log.error(err)
+      })
+      this.log.info(`Heartbeat queue ${HEARTBEAT_QUEUE.name} created, with prefix ${heartbeatQueueOptions.prefix}`)
       HEARTBEAT_QUEUE.on('Error in heartbeat queue', (error) => {
         this.log.error(error)
       })
       HEARTBEAT_QUEUE.add('heartbeat', {}, { repeat: { cron: '*/1 * * * *' } })
       FETCH_QUEUE.add('queue_fetches', {
-        baseUrl: 'http://localhost:3000/api/data_sources/v1',
-        batchSize: 1000
+        baseUrl: fetchTaskConfig.sourceApiUrl,
+        batchSize: fetchTaskConfig.batchSize
       }, { repeat: { cron: '*/5 * * * *' } })
 
       this._queues.set(QueueNames.FETCH_QUEUE, FETCH_QUEUE)

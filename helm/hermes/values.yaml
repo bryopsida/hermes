@@ -18,46 +18,46 @@ service:
   type: ClusterIP
   port: 80
 ingress:
-  enabled: false
+  enabled: true
   className: ""
   annotations: {}
   hosts:
-    - host: chart-example.local
+    - host: hermes.local
       paths:
         - path: /
           pathType: ImplementationSpecific
-  tls: []
+  tls: 
+    - secretName: hermes-tls
+      hosts:
+        - hermes.local
 resources: {}
 autoscaling:
   enabled: false
   minReplicas: 1
-  maxReplicas: 100
+  maxReplicas: 10
   targetCPUUtilizationPercentage: 80
 nodeSelector: {}
 tolerations: []
 affinity: {}
-elastic:
-  enabled: true
-  data:
-    heapSize: "512m"
 kafka:
   enabled: true
-  replicaCount: 5
-  defaultReplicationFactor: 3
-  offsetsTopicReplicationFactor: 3
-  transactionStateLogReplicationFactor: 3
+  replicaCount: 1
+  defaultReplicationFactor: 1
+  offsetsTopicReplicationFactor: 1
+  transactionStateLogReplicationFactor: 1
   heapOpts: "-Xmx256m -Xms256m"
   zookeeper:
-    replicaCount: 3
+    replicaCount: 1
     heapSize: 256
 redis:
   enabled: true
-  existingSecret: "hermes-internal-redis"
-  existingSecretPasswordKey: "redisPassword"
-postgres:
+  architecture: "standalone"
+  auth:
+    existingSecret: "hermes-internal-redis"
+    existingSecretPasswordKey: "redisPassword"
+mongodb:
   enabled: true
-  postgresql:
-    replicaCount: 2
-    existingSecret: "hermes-internal-postgresql"
-  pgpool:
-    existingSecret: "hermes-internal-pgpool"
+  auth:
+    existingSecret: "hermes-internal-mongodb"
+certmanager:
+  enabled: true

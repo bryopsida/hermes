@@ -3,18 +3,31 @@ import { IService } from '../../common/interfaces/service'
 import { createBullBoard } from '@bull-board/api'
 import { BullAdapter } from '@bull-board/api/bullAdapter'
 import { FastifyAdapter } from '@bull-board/fastify'
-import bull from 'bull'
+import bull, { QueueOptions } from 'bull'
 import { QueueNames } from '../../common/queues/queueNameConstants'
 
 export class BullBoardService implements IService {
+  public static readonly NAME = 'bullboard'
+  public readonly ID = BullBoardService.NAME
   private readonly _serverAdapter: FastifyAdapter;
   private readonly _queues: bull.Queue[] = [];
   private readonly _queueAdapters: Array<BullAdapter>;
 
-  constructor (private _app: FastifyInstance) {
+  constructor (private _app: FastifyInstance, private _queueOptions: QueueOptions) {
     this._queues = [
-      bull(QueueNames.HEARTBEAT_QUEUE),
-      bull(QueueNames.FETCH_QUEUE)
+      bull(QueueNames.HEARTBEAT_QUEUE, {
+        ...this._queueOptions,
+        ...{
+          prefix: '{heartbeat}'
+        }
+      } as QueueOptions
+      ),
+      bull(QueueNames.FETCH_QUEUE, {
+        ...this._queueOptions,
+        ...{
+          prefix: '{fetch}'
+        }
+      } as QueueOptions)
     ]
     this._queueAdapters = this._queues.map(queue => new BullAdapter(queue))
     this._serverAdapter = new FastifyAdapter()
@@ -25,6 +38,18 @@ export class BullBoardService implements IService {
       serverAdapter: this._serverAdapter,
       queues: this._queueAdapters
     })
+  }
+
+  isAlive () : Promise<boolean> {
+    return Promise.resolve(true)
+  }
+
+  canServeTraffic () : Promise<boolean> {
+    return Promise.resolve(true)
+  }
+
+  servesTraffic () : boolean {
+    return true
   }
 
   start (): Promise<void> {

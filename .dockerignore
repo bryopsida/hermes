@@ -6,7 +6,6 @@ Dockerfile
 .git
 .gitignore
 .npmrc
-.eslintrc
 coverage
 helm
 build
@@ -14,7 +13,6 @@ build
 .vscode
 .github
 postman
-tests
 docker-compose.yml
 nodemon.json
 kind-config.yaml

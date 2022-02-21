@@ -1,0 +1,63 @@
+{
+  "hostname": "localhost",
+  "port": 3000,
+  "sidekicks": {
+    "health": {
+      "enabled": true
+    }
+  },
+  "logging": {
+    "level": "debug",
+    "pretty": false
+  }, 
+  "bullboard": {
+    "enabled": true
+  },
+  "data_source_manager": {
+    "enabled": true,
+    "mongo": {
+      "authEnabled": true,
+      "host": "localhost",
+      "port": 27017,
+      "db": "data_sources",
+      "username": "mongodb",
+      "password": "mongodb"
+    }
+  },
+  "watch_manager": {
+    "enabled": true,
+    "mongo": {
+      "authEnabled": true,
+      "host": "localhost",
+      "port": 27017,
+      "db": "watches",
+      "username": "mongodb",
+      "password": "mongodb"
+    }
+  },
+  "task_runner": {
+    "enabled": true,
+    "redis": {
+      "host": "localhost",
+      "port": 6379,
+      "protocol": "redis",
+      "password": "redis",
+      "cluster": false
+    },
+    "kafka": {
+      "brokers": ["localhost:9092"]
+    },
+    "tasks": {
+      "fetch": {
+        "batchSize": 1000,
+        "sourceApiUrl": "http://localhost:3000/api/data_source_manager/v1"
+      }
+    }
+  },
+  "theatre": {
+    "enabled": true,
+    "kafka": {
+      "brokers": ["localhost:9092"]
+    }
+  }
+}

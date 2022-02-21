@@ -31,7 +31,7 @@ export class HermesWorker {
   public async start () : Promise<void> {
     this.logger.info('Starting sub services')
     await Promise.all(this.services.map(service => service.start()))
-    await this.app.listen(process.env.SERVER_LISTEN || 3000)
+    await this.app.listen(process.env.HERMES_SERVER_LISTEN_PORT || 3000, process.env.HERMES_SERVER_LISTEN_ADDRESS || '127.0.0.1')
   }
 
   public async stop () : Promise<void> {

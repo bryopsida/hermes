@@ -1,0 +1,28 @@
+{
+  "logging": {
+    "level": "HERMES_LOG_LEVEL",
+    "pretty": "HERMES_LOG_PRETTY"
+  },
+  "watch_manager": {
+    "mongo": {
+      "username": "HERMES_WATCHES_MONGODB_USERNAME",
+      "password": "HERMES_WATCHES_MONGODB_PASSWORD"
+    }
+  },
+  "data_source_manager": {
+    "mongo": {
+      "username": "HERMES_DATA_SOURCES_MONGODB_USERNAME",
+      "password": "HERMES_DATA_SOURCES_MONGODB_PASSWORD"
+    }
+  },
+  "task_runner": {
+    "redis": {
+      "password": "HERMES_TASK_RUNNER_REDIS_PASSWORD"
+    }
+  },
+  "bullboard": {
+    "redis": {
+      "password": "HERMES_BULLBOARD_REDIS_PASSWORD"
+    }
+  }
+}

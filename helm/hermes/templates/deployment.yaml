@@ -27,37 +27,69 @@ spec:
       serviceAccountName: {{ include "hermes.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      volumes:
+        - name: config-volume
+          configMap:
+            name: {{ .Release.Name }}-config
+            items:
+              - key: production.json
+                path: production.json
       containers:
         - name: {{ .Chart.Name }}
+          livenessProbe:
+            httpGet:
+              path: /api/health/v1/alive
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /api/health/v1/ready
+              port: http
+            initialDelaySeconds: 10
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
             - name: http
-              containerPort: 80
+              containerPort: 9000
               protocol: TCP
           env: 
-          - name: REDIS_HOST
-            value: "{{ .Release.Name }}-redis-headless"
-          - name: REDIS_PORT
-            value: "6379"
-          - name: REDIS_PASSWORD
+          - name: NODE_CONFIG_DIR
+            value: /var/run/config:/usr/src/app/config
+          - name: HERMES_SERVER_LISTEN_PORT
+            value: "9000"
+          - name: HERMES_SERVER_LISTEN_ADDRESS
+            value: "0.0.0.0"
+          - name: HERMES_TASK_RUNNER_REDIS_PASSWORD
             valueFrom:
               secretKeyRef:
                 name: "{{ .Release.Name }}-internal-redis"
                 key: "redisPassword"
-          - name: KAFKA_BROKER_LIST
-            value: "${{ .Release.Name }}-kafka-headless:9092"
-          - name: PG_HOST
-            value: "{{ .Release.Name }}-postgres-postgresql-headless"
-          - name: PG_USER
-            value: "postgres"
-          - name: PG_PASSWORD
+          - name: HERMES_BULLBOARD_REDIS_PASSWORD
             valueFrom:
               secretKeyRef:
-                name: "{{ .Release.Name }}-internal-postgresql"
-                key: "postgresql-password"
+                name: "{{ .Release.Name }}-internal-redis"
+                key: "redisPassword"
+          - name: HERMES_WATCHES_MONGODB_USERNAME
+            value: "root"
+          - name: HERMES_WATCHES_MONGODB_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: "{{ .Release.Name }}-internal-mongodb"
+                key: "mongodb-root-password"
+          - name: HERMES_DATA_SOURCES_MONGODB_USERNAME
+            value: "root"
+          - name: HERMES_DATA_SOURCES_MONGODB_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: "{{ .Release.Name }}-internal-mongodb"
+                key: "mongodb-root-password"
+          volumeMounts:
+            - name: config-volume
+              mountPath: /var/run/config/
+              readOnly: true
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
       {{- with .Values.nodeSelector }}

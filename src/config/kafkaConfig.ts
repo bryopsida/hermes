@@ -1,8 +1,11 @@
-import { GlobalConfig } from 'node-rdkafka'
+import config from 'config'
 
-const brokerList = process.env.KAFKA_BROKER_LIST || 'localhost:29092'
+export interface IKafkaConfig {
+  brokers: string[];
+}
+
 export default {
-  buildGlobalConfig: (groupdId: string) : GlobalConfig => ({
-    'metadata.broker.list': brokerList
-  })
+  buildConfig: (scope: string) : IKafkaConfig => {
+    return config.get<IKafkaConfig>(`${scope}.kafka`)
+  }
 }

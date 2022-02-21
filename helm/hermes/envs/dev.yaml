@@ -1,34 +1,39 @@
 imagePullPolicy: Always
-elastic:
-  master:
-    replicas: 1
-  coordinating:
-    replicas: 1
-  data:
-    replicas: 1
+ingress:
+  hosts:
+    - host: dev.hermes.local
+      paths:
+        - path: /
+          pathType: ImplementationSpecific
+  tls: 
+    - secretName: hermes-tls
+      hosts:
+        - dev.hermes.local
 kafka:
-  replicaCount: 1
-  defaultReplicationFactor: 1
-  offsetsTopicReplicationFactor: 1
-  transactionStateLogReplicationFactor: 1
+  volumePermissions:
+    enabled: true
   nodeSelector:
     kubernetes.io/arch: amd64
   zookeeper:
-    replicaCount: 1
-    kubernetes.io/arch: amd64
-postgres:
-  postgresql:
-    replicaCount: 1
     nodeSelector:
       kubernetes.io/arch: amd64
-  pgpool:
+mongodb:
+  volumePermissions:
+    enabled: true
+  nodeSelector:
+    kubernetes.io/arch: amd64
+  arbiter:
+    nodeSelector:
+      kubernetes.io/arch: amd64
+  hidden:
     nodeSelector:
       kubernetes.io/arch: amd64
 redis:
-  updateJob:
+  volumePermissions:
+    enabled: true
+  master:
     nodeSelector:
       kubernetes.io/arch: amd64
-  redis:
+  replica:
     nodeSelector:
       kubernetes.io/arch: amd64
-  

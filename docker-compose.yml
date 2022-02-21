@@ -1,27 +1,5 @@
 version: "3.9"
 services:
-  postgres:
-    image: postgres:14-alpine
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: datasource_watch
-    ports:
-      - "5432:5432"
-    volumes:
-        - postgres:/var/lib/postgresql/data
-  pgadmin:
-    image: dpage/pgadmin4
-    ports:
-      - "28080:8080"
-    depends_on:
-      - postgres
-    environment:
-      PGADMIN_DEFAULT_EMAIL: admin@pgadmin.local
-      PGADMIN_DEFAULT_PASSWORD: admin
-      PGADMIN_LISTEN_PORT: 8080
-    volumes:
-        - pgadmin:/var/lib/pgadmin
   redis:
     image: redis:alpine
     ports:
@@ -38,7 +16,15 @@ services:
     volumes: 
       - zookeeperdata:/var/lib/zookeeper/data
       - zookeeperlog:/var/lib/zookeeper/log
-  
+  mongodb:
+    image: mongo
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: mongodb
+      MONGO_INITDB_ROOT_PASSWORD: mongodb
+    ports:
+      - 27017:27017
+    volumes:
+    - mongodb:/mongo/db
   kafka:
     image: confluentinc/cp-kafka:latest
     depends_on:
@@ -55,32 +41,12 @@ services:
       KAFKA_DEFAULT_REPLICATION_FACTOR: 1
     volumes: 
       - kafka:/var/lib/kafka/data
-  elastic:
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.16.1
-    environment:
-      - node.name=es01
-      - cluster.name=es-docker-cluster
-      - cluster.initial_master_nodes=es01
-      - bootstrap.memory_lock=true
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
-    ulimits:
-      memlock:
-        soft: -1
-        hard: -1
-    volumes:
-      - elastic:/usr/share/elasticsearch/data
-    ports:
-      - 9200:9200
-    networks:
-      - elastic
 networks:
   elastic:
     driver: bridge
 volumes:
-  postgres:
-  pgadmin:
   redis:
   zookeeperdata:
   zookeeperlog:
   kafka:
-  elastic:
+  mongodb:

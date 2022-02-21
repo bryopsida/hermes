@@ -1,0 +1,36 @@
+{
+  "hostname": "{{ (first .Values.ingress.hosts).host }}",
+  "port": 80,
+  "data_source_manager": {
+    "mongo": {
+      "host": "{{ .Release.Name }}-mongodb",
+      "username": "root"
+    }
+  },
+  "watch_manager": {
+    "mongo": {
+      "host": "{{ .Release.Name }}-mongodb",
+      "username": "root"
+    }
+  },
+  "task_runner": {
+    "redis": {
+      "host": "{{ .Release.Name}}-redis-master",
+      "cluster": false
+    },
+    "kafka": {
+      "brokers": ["{{ .Release.Name }}-kafka-headless"]
+    },
+    "tasks": {
+      "fetch": {
+        "batchSize": 1000,
+        "sourceApiUrl": "http://{{ include "hermes.fullname" . }}:{{ .Values.service.port }}/api/data_source_manager/v1"
+      }
+    }
+  },
+  "theatre": {
+    "kafka": {
+      "brokers": ["{{ .Release.Name }}-kafka-headless"]
+    }
+  }
+}
