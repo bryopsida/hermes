@@ -90,6 +90,8 @@ jobs:
         uses: docker/metadata-action@e5622373a38e60fb6d795a4421e56882f2d7a681
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          flavor: |
+            latest=auto
           tags: |
             type=ref,event=branch
             type=ref,event=pr
@@ -421,7 +423,7 @@ jobs:
     - name: Deploy To lab
       timeout-minutes: 35
       run: |
-        npm run helm:deploy --helm_namespace=$HELM_NAMESPACE --helm_args="-f helm/hermes/envs/lab.yaml --set image.repository=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }} --set image.tag=${{ needs.build-container.outputs.version }} --timeout 30m"
+        npm run helm:deploy --helm_namespace=$HELM_NAMESPACE --helm_args="-f helm/hermes/envs/lab.yaml --set image.repository=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }} --set image.tag=main --timeout 30m"
     - name: Cleanup Wireguard
       timeout-minutes: 4
       if: always()
