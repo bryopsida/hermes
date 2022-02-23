@@ -272,12 +272,12 @@ jobs:
         docker push localhost:32000/hermes-mono:latest
     - name: Deploy Unpublished
       if: ${{ github.event_name == 'pull_request' }}
-      timeout-minutes: 25
-      run: npm run helm:deploy --helm_namespace=$HELM_NAMESPACE --helm_args="-f helm/hermes/envs/ci.yaml --set image.repository=localhost:32000/hermes-mono --set image.tag=latest --timeout 20m"
+      timeout-minutes: 20
+      run: npm run helm:deploy --helm_namespace=$HELM_NAMESPACE --helm_args="-f helm/hermes/envs/ci.yaml --set image.repository=localhost:32000/hermes-mono --set image.tag=latest --timeout 10m"
     - name: Deploy Published
       if: ${{ github.event_name != 'pull_request' }}
-      timeout-minutes: 25
-      run: npm run helm:deploy --helm_namespace=$HELM_NAMESPACE --helm_args="-f helm/hermes/envs/ci.yaml --set image.repository=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }} --set image.tag=${{ needs.build-container.outputs.version }} --timeout 20m"
+      timeout-minutes: 20
+      run: npm run helm:deploy --helm_namespace=$HELM_NAMESPACE --helm_args="-f helm/hermes/envs/ci.yaml --set image.repository=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }} --set image.tag=${{ needs.build-container.outputs.version }} --timeout 10m"
     - name: Test Deployment
       timeout-minutes: 5
       run: npm run helm:test
@@ -421,9 +421,9 @@ jobs:
         EOF
         kubectl config use-context deployer@lab
     - name: Deploy To lab
-      timeout-minutes: 35
+      timeout-minutes: 20
       run: |
-        npm run helm:deploy --helm_namespace=$HELM_NAMESPACE --helm_args="-f helm/hermes/envs/lab.yaml --set image.repository=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }} --set image.tag=main --timeout 30m"
+        npm run helm:deploy --helm_namespace=$HELM_NAMESPACE --helm_args="-f helm/hermes/envs/lab.yaml --set image.repository=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }} --set image.tag=main --timeout 10m"
     - name: Cleanup Wireguard
       timeout-minutes: 4
       if: always()
