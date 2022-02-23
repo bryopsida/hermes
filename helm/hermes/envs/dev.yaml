@@ -15,6 +15,8 @@ kafka:
   nodeSelector:
     kubernetes.io/arch: amd64
   zookeeper:
+    volumePermissions:
+      enabled: true
     nodeSelector:
       kubernetes.io/arch: amd64
 mongodb:
