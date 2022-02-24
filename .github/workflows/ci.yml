@@ -58,6 +58,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       tags: ${{ steps.meta.outputs.tags }}
+      tag: ${{ steps.short-sha.outputs.sha_tag }}
       labels: ${{ steps.meta.outputs.labels }}
       version: ${{ steps.meta.outputs.version }}
     permissions:
@@ -112,12 +113,16 @@ jobs:
           cache-to: type=gha,mode=max
       - name: Get Short SHA
         id: short-sha
-        run: echo "::set-output name=sha_short::$(git rev-parse --short HEAD)"
+        run: |
+          export SHORT_SHA=$(git rev-parse --short HEAD)
+          echo "::set-output name=sha_short::$SHORT_SHA"
+          echo "::set-output name=sha_tag::${{ env.REGISTRY}}/${{ env.IMAGE_NAME }}:sha-$SHORT_SHA"
+        
       - name: Scan image
         id: scan
         uses: anchore/scan-action@v3
         with:
-          image: ${{ env.REGISTRY}}/${{ env.IMAGE_NAME }}:sha-${{ steps.short-sha.outputs.sha_short }}
+          image: ${{ steps.short-sha.outputs.sha_tag }}
           fail-build: false
           acs-report-enable: true
       - name: Upload Anchore scan SARIF report
@@ -131,7 +136,7 @@ jobs:
           set -e
           set -x
           mkdir -p /tmp/artifacts
-          docker save ${{ steps.meta.outputs.tags }} -o /tmp/artifacts/image.tar
+          docker save ${{ steps.short-sha.outputs.sha_tag }} -o /tmp/artifacts/image.tar
           gzip -c /tmp/artifacts/image.tar > /tmp/artifacts/image.tar.gz
       - name: Push image
         if: github.event_name != 'pull_request'
