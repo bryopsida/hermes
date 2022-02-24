@@ -116,7 +116,7 @@ jobs:
         id: scan
         uses: anchore/scan-action@v3
         with:
-          image: ${{ env.REGISTRY}}/${{ env.IMAGE_NAME }}:${{ steps.short-sha.outputs.sha_short }}
+          image: ${{ env.REGISTRY}}/${{ env.IMAGE_NAME }}:sha-${{ steps.short-sha.outputs.sha_short }}
           fail-build: false
           acs-report-enable: true
       - name: Upload Anchore scan SARIF report
