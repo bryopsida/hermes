@@ -109,11 +109,14 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+      - name: Get Short SHA
+        id: short-sha
+        run: echo "::set-output name=sha_short::$(git rev-parse --short HEAD)"
       - name: Scan image
         id: scan
         uses: anchore/scan-action@v3
         with:
-          image: ${{ steps.meta.outputs.tags }}
+          image: ${{ steps.vars.outputs.sha_short }}
           fail-build: false
           acs-report-enable: true
       - name: Upload Anchore scan SARIF report
@@ -127,7 +130,7 @@ jobs:
           set -e
           set -x
           mkdir -p /tmp/artifacts
-          docker save ${{ steps.meta.outputs.tags }} -o /tmp/artifacts/image.tar
+          docker save  -o /tmp/artifacts/image.tar
           gzip -c /tmp/artifacts/image.tar > /tmp/artifacts/image.tar.gz
       - name: Push image
         if: github.event_name != 'pull_request'
