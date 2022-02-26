@@ -361,7 +361,7 @@ jobs:
   deploy:
     if: ${{ github.event_name != 'pull_request' && github.ref == 'refs/heads/main' }}
     name: "Deploy to Lab"
-    needs: [ test-deploy, virus-scan ]
+    needs: [ test-deploy, virus-scan, build-container ]
     runs-on: ubuntu-latest
     environment: lab
     env: 
@@ -431,7 +431,7 @@ jobs:
     - name: Deploy To lab
       timeout-minutes: 20
       run: |
-        npm run helm:deploy --helm_namespace=$HELM_NAMESPACE --helm_args="-f helm/hermes/envs/lab.yaml --set image.repository=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }} --set image.tag=main --timeout 10m"
+        npm run helm:deploy --helm_namespace=$HELM_NAMESPACE --helm_args="-f helm/hermes/envs/lab.yaml --set image.repository=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }} --set image.tag=${{ needs.build-container.outputs.tag }} --timeout 10m"
     - name: Cleanup Wireguard
       timeout-minutes: 4
       if: always()
