@@ -120,16 +120,16 @@ jobs:
         
       - name: Scan image
         id: scan
-        uses: anchore/scan-action@v3
+        uses: aquasecurity/trivy-action@master
         with:
-          image: ${{ steps.short-sha.outputs.sha_tag }}
-          fail-build: false
-          acs-report-enable: true
-      - name: Upload Anchore scan SARIF report
+          image-ref: ${{ steps.short-sha.outputs.sha_tag }}
+          format: 'sarif'
+          output: 'scan-results.sarif'
+      - name: Upload Container Scan SARIF report
         if: ${{ env.CODEQL_ENABLED }}
         uses: github/codeql-action/upload-sarif@v1
         with:
-          sarif_file: ${{ steps.scan.outputs.sarif }}
+          sarif_file: 'scan-results.sarif'
       - name: Export Container TAR
         timeout-minutes: 4
         run: |
