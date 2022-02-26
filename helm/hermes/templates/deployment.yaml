@@ -58,7 +58,7 @@ spec:
           env: 
           - name: NODE_CONFIG_DIR
             value: /var/run/config:/usr/src/app/config
-          - name: KAFKA_BROKER_LIST
+          - name: HERMES_KAFKA_BROKER_LIST
             value: "{{ .Release.Name }}-kafka-headless:9092"
           - name: HERMES_SERVER_LISTEN_PORT
             value: "9000"

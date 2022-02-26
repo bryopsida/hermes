@@ -5,3 +5,7 @@ export interface IActor<T, R> {
     startProcessing(): Promise<void>;
     stopProcessing(): Promise<void>;
 }
+
+export interface IActorConfig {
+    readonly brokers: string[];
+}

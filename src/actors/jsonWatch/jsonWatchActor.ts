@@ -1,5 +1,5 @@
 import COMPUTED_CONSTANTS from '../../common/computedConstants'
-import { IActor } from '../../common/interfaces/actor'
+import { IActor, IActorConfig } from '../../common/interfaces/actor'
 import createLogger from '../../common/logger/factory'
 import { IJsonWatchResult, IWatchedJsonData } from '../../common/models/watchModels'
 import { KafkaConsumer, Message } from 'node-rdkafka'
@@ -9,13 +9,15 @@ export class JsonWatchActor implements IActor<IWatchedJsonData, IJsonWatchResult
     private readonly log = createLogger({
       serviceName: `theatre-${COMPUTED_CONSTANTS.id}`,
       level: 'debug'
-    })
+    });
 
+    readonly config: IActorConfig;
     readonly name: string;
     readonly topic: string;
     kafkaConsumer?: KafkaConsumer;
 
-    constructor () {
+    constructor (config : IActorConfig) {
+      this.config = config
       this.name = 'jsonWatchActor'
       this.topic = 'json-data'
       this.log.info(`${this.name} actor created`)
@@ -44,7 +46,7 @@ export class JsonWatchActor implements IActor<IWatchedJsonData, IJsonWatchResult
     startProcessing (): Promise<void> {
       this.kafkaConsumer = new KafkaConsumer({
         'group.id': this.name,
-        'metadata.broker.list': process.env.KAFKA_BROKER_LIST || 'localhost:29092'
+        'metadata.broker.list': this.config.brokers.join(',')
       }, kafkaTopicConfig['json-data'])
 
       this.kafkaConsumer.connect()

@@ -1,5 +1,5 @@
 import COMPUTED_CONSTANTS from '../../common/computedConstants'
-import { IActor } from '../../common/interfaces/actor'
+import { IActor, IActorConfig } from '../../common/interfaces/actor'
 import createLogger from '../../common/logger/factory'
 import { ConsumerTopicConfig, KafkaConsumer, LibrdKafkaError, Message } from 'node-rdkafka'
 import kafkaTopicConfig from '../../common/ topics/kafkaTopicConfig'
@@ -13,9 +13,12 @@ export class HeartbeatActor implements IActor<IHeartbeat, boolean> {
 
     readonly name: string;
     readonly topic: string;
+    readonly config: IActorConfig;
+
     kafkaConsumer?: KafkaConsumer;
 
-    constructor () {
+    constructor (config: IActorConfig) {
+      this.config = config
       this.name = 'heartbeatActor'
       this.topic = 'heartbeats'
       this.log.info(`${this.name} actor created`)
@@ -50,7 +53,7 @@ export class HeartbeatActor implements IActor<IHeartbeat, boolean> {
       this.kafkaConsumer = new KafkaConsumer({
         'group.id': this.name,
         'enable.auto.commit': true,
-        'metadata.broker.list': process.env.KAFKA_BROKER_LIST || 'localhost:29092'
+        'metadata.broker.list': this.config.brokers.join(',')
       }, kafkaTopicConfig.heartbeats.consumer as ConsumerTopicConfig)
 
       this.kafkaConsumer.on('ready', this.onReady.bind(this))
