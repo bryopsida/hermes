@@ -19,7 +19,7 @@
       "cluster": false
     },
     "kafka": {
-      "brokers": ["{{ .Release.Name }}-kafka-headless"]
+      "brokers": ["{{ .Release.Name }}-kafka-headless:9092"]
     },
     "tasks": {
       "fetch": {
