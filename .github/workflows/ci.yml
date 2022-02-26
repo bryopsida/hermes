@@ -276,7 +276,7 @@ jobs:
     - name: Side Load Image
       if: ${{ github.event_name == 'pull_request' }}
       run: |
-        docker tag ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ needs.build-container.outputs.tag }} localhost:32000/hermes-mono:latest
+        docker tag ${{ needs.build-container.outputs.tag }} localhost:32000/hermes-mono:latest
         docker push localhost:32000/hermes-mono:latest
     - name: Deploy Unpublished
       if: ${{ github.event_name == 'pull_request' }}
@@ -361,7 +361,7 @@ jobs:
   deploy:
     if: ${{ github.event_name != 'pull_request' && github.ref == 'refs/heads/main' }}
     name: "Deploy to Lab"
-    needs: [ test-deploy, virus-scan, build-container ]
+    needs: [ test-deploy, virus-scan]
     runs-on: ubuntu-latest
     environment: lab
     env: 
@@ -431,7 +431,8 @@ jobs:
     - name: Deploy To lab
       timeout-minutes: 20
       run: |
-        npm run helm:deploy --helm_namespace=$HELM_NAMESPACE --helm_args="-f helm/hermes/envs/lab.yaml --set image.repository=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }} --set image.tag=${{ needs.build-container.outputs.tag }} --timeout 10m"
+        export SHORT_SHA=$(git rev-parse --short HEAD)
+        npm run helm:deploy --helm_namespace=$HELM_NAMESPACE --helm_args="-f helm/hermes/envs/lab.yaml --set image.repository=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }} --set image.tag=sha-$SHORT_SHA --timeout 10m"
     - name: Cleanup Wireguard
       timeout-minutes: 4
       if: always()
