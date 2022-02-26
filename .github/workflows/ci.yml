@@ -58,6 +58,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       tags: ${{ steps.meta.outputs.tags }}
+      tag: ${{ steps.short-sha.outputs.sha_tag }}
       labels: ${{ steps.meta.outputs.labels }}
       version: ${{ steps.meta.outputs.version }}
     permissions:
@@ -90,13 +91,14 @@ jobs:
         uses: docker/metadata-action@e5622373a38e60fb6d795a4421e56882f2d7a681
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-          flavor: |
-            latest=auto
           tags: |
             type=ref,event=branch
             type=ref,event=pr
+            type=raw,value=latest,enable=${{ github.ref == format('refs/heads/{0}', github.event.repository.default_branch) }}
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
+            type=sha
+            type=raw,value={{date 'YYYYMMDD'}}-{{sha}}
       - name: Build Docker image
         id: build
         timeout-minutes: 25
@@ -109,26 +111,32 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+      - name: Get Short SHA
+        id: short-sha
+        run: |
+          export SHORT_SHA=$(git rev-parse --short HEAD)
+          echo "::set-output name=sha_short::$SHORT_SHA"
+          echo "::set-output name=sha_tag::${{ env.REGISTRY}}/${{ env.IMAGE_NAME }}:sha-$SHORT_SHA"
+        
       - name: Scan image
         id: scan
-        uses: anchore/scan-action@v3
+        uses: aquasecurity/trivy-action@master
         with:
-          image: ${{ steps.meta.outputs.tags }}
-          fail-build: false
-          severity-cutoff: "critical"
-          acs-report-enable: true
-      - name: Upload Anchore scan SARIF report
+          image-ref: ${{ steps.short-sha.outputs.sha_tag }}
+          format: 'sarif'
+          output: 'scan-results.sarif'
+      - name: Upload Container Scan SARIF report
         if: ${{ env.CODEQL_ENABLED }}
         uses: github/codeql-action/upload-sarif@v1
         with:
-          sarif_file: ${{ steps.scan.outputs.sarif }}
+          sarif_file: 'scan-results.sarif'
       - name: Export Container TAR
         timeout-minutes: 4
         run: |
           set -e
           set -x
           mkdir -p /tmp/artifacts
-          docker save ${{ steps.meta.outputs.tags }} -o /tmp/artifacts/image.tar
+          docker save ${{ steps.short-sha.outputs.sha_tag }} -o /tmp/artifacts/image.tar
           gzip -c /tmp/artifacts/image.tar > /tmp/artifacts/image.tar.gz
       - name: Push image
         if: github.event_name != 'pull_request'
@@ -268,7 +276,7 @@ jobs:
     - name: Side Load Image
       if: ${{ github.event_name == 'pull_request' }}
       run: |
-        docker tag ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ needs.build-container.outputs.version }} localhost:32000/hermes-mono:latest
+        docker tag ${{ needs.build-container.outputs.tag }} localhost:32000/hermes-mono:latest
         docker push localhost:32000/hermes-mono:latest
     - name: Deploy Unpublished
       if: ${{ github.event_name == 'pull_request' }}
@@ -353,7 +361,7 @@ jobs:
   deploy:
     if: ${{ github.event_name != 'pull_request' && github.ref == 'refs/heads/main' }}
     name: "Deploy to Lab"
-    needs: [ test-deploy, virus-scan ]
+    needs: [ test-deploy, virus-scan]
     runs-on: ubuntu-latest
     environment: lab
     env: 
@@ -423,7 +431,8 @@ jobs:
     - name: Deploy To lab
       timeout-minutes: 20
       run: |
-        npm run helm:deploy --helm_namespace=$HELM_NAMESPACE --helm_args="-f helm/hermes/envs/lab.yaml --set image.repository=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }} --set image.tag=main --timeout 10m"
+        export SHORT_SHA=$(git rev-parse --short HEAD)
+        npm run helm:deploy --helm_namespace=$HELM_NAMESPACE --helm_args="-f helm/hermes/envs/lab.yaml --set image.repository=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }} --set image.tag=sha-$SHORT_SHA --timeout 10m"
     - name: Cleanup Wireguard
       timeout-minutes: 4
       if: always()
