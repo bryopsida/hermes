@@ -276,7 +276,7 @@ jobs:
     - name: Side Load Image
       if: ${{ github.event_name == 'pull_request' }}
       run: |
-        docker tag ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ needs.build-container.outputs.version }} localhost:32000/hermes-mono:latest
+        docker tag ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ needs.build-container.outputs.tag }} localhost:32000/hermes-mono:latest
         docker push localhost:32000/hermes-mono:latest
     - name: Deploy Unpublished
       if: ${{ github.event_name == 'pull_request' }}
