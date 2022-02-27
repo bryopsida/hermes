@@ -92,4 +92,4 @@ jobs:
           version: v3.4.0 
 
       - name: Run chart install
-        run: ct install --config .github/ct.yaml
+        run: ct install --config .github/ct.yml
