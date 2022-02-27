@@ -1,4 +1,5 @@
 imagePullPolicy: IfNotPresent
+replicaCount: 3
 ingress:
   hosts:
     - host: lab.hermes.local
