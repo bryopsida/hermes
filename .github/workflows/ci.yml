@@ -151,8 +151,8 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:buildcache
-          cache-to: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:buildcache,mode=max
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
           platforms: linux/amd64,linux/arm64
       - name: Upload Container TAR
         if: ${{ github.event_name == 'pull_request' }}
