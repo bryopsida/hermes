@@ -151,6 +151,7 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+          platforms: linux/amd64,linux/arm64,linux/ppc64le
       - name: Upload Container TAR
         if: ${{ github.event_name == 'pull_request' }}
         timeout-minutes: 4
