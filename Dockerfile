@@ -4,15 +4,15 @@ RUN apk add --update --no-cache python3 make g++ bash
 FROM build-base AS build
 WORKDIR /usr/src/app
 COPY package*.json ./
-RUN npm ci --loglevel verbose
+RUN npm ci
 COPY src ./src
 COPY tsconfig.json .
-RUN npm run build --loglevel verbose
+RUN npm run build
 
 FROM build-base AS libraries
 WORKDIR /usr/src/app
 COPY package*.json ./
-RUN npm ci --only=production --loglevel verbose
+RUN npm ci --only=production
 
 
 FROM node:17.6.0-alpine

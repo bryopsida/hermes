@@ -140,13 +140,12 @@ jobs:
           docker save ${{ steps.short-sha.outputs.sha_tag }} -o /tmp/artifacts/image.tar
           gzip -c /tmp/artifacts/image.tar > /tmp/artifacts/image.tar.gz
       - name: Push image
-        #if: github.event_name != 'pull_request'
+        if: github.event_name != 'pull_request'
         id: push
         timeout-minutes: 60
         uses: docker/build-push-action@7f9d37fa544684fb73bfe4835ed7214c255ce02b
         with:
           context: .
-          buildkitd-flags: --debug
           builder: ${{ steps.buildx.outputs.name }}
           load: false
           push: true
