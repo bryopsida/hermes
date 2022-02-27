@@ -70,10 +70,10 @@ jobs:
     strategy:
       matrix:
         k8s:
-          - v1.20
-          - v1.21
-          - v1.22
-          - v1.23
+          - v1.20.7
+          - v1.21.2
+          - v1.22.5
+          - v1.23.3
     steps:
       - name: Checkout
         uses: actions/checkout@ec3a7ce113134d7a93b817d10a8272cb61118579 
