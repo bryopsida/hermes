@@ -10,6 +10,7 @@ import { ITask } from '../../common/interfaces/task'
 import COMPUTED_CONSTANTS from '../../common/computedConstants'
 import { QueueFetchesTask } from '../../tasks/queueFetches/queueFetchesTask'
 import taskConfigFactory, { IFetchTaskConfig } from '../../config/taskConfig'
+import kafkaConfigFactory from '../../config/kafkaConfig'
 
 const fetchTaskConfig = taskConfigFactory<IFetchTaskConfig>('fetch')
 export class TaskRunnerService implements IService {
@@ -92,7 +93,7 @@ export class TaskRunnerService implements IService {
       // TODO: this smells, evaluate and refactor
       const fetchTask: ITask = new FetchTask(this._queues.get(QueueNames.FETCH_QUEUE) as Queue)
       const heartbeatTask: ITask = new HeartbeatTask(this._queues.get(QueueNames.HEARTBEAT_QUEUE) as Queue, new Producer({
-        'metadata.broker.list': 'localhost:29092'
+        'metadata.broker.list': kafkaConfigFactory.buildConfig(TaskRunnerService.NAME).brokers.join(',')
       }, kafkaTopicConfig.heartbeats.producer as ProducerTopicConfig))
       const queueFetchTask: ITask = new QueueFetchesTask(this._queues.get(QueueNames.FETCH_QUEUE) as Queue)
       this._tasks.set(fetchTask.id, fetchTask)

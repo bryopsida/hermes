@@ -4,6 +4,7 @@ import COMPUTED_CONSTANTS from '../../common/computedConstants'
 import { IActor } from '../../common/interfaces/actor'
 import { IService } from '../../common/interfaces/service'
 import createLogger from '../../common/logger/factory'
+import kafkaConfigFactory from '../../config/kafkaConfig'
 
 export class TheatreService implements IService {
     private readonly log = createLogger({
@@ -18,8 +19,9 @@ export class TheatreService implements IService {
 
     constructor () {
       this.log.info('Theatre service created')
-      this.actors.push(new JsonWatchActor())
-      this.actors.push(new HeartbeatActor())
+      const config = kafkaConfigFactory.buildConfig(TheatreService.NAME)
+      this.actors.push(new JsonWatchActor(config))
+      this.actors.push(new HeartbeatActor(config))
     }
 
     isAlive (): Promise<boolean> {
