@@ -17,6 +17,7 @@ securityContext:
   readOnlyRootFilesystem: true
   runAsUser: 1000
   runAsGroup: 1000
+  runAsNonRoot: true
   capabilities:
     drop:
       - all
@@ -56,16 +57,19 @@ kafka:
   heapOpts: "-Xmx256m -Xms256m"
   containerSecurityContext:
     readOnlyRootFilesystem: true
+    runAsNonRoot: true
   zookeeper:
     replicaCount: 1
     heapSize: 256
     containerSecurityContext:
       readOnlyRootFilesystem: true
+      runAsNonRoot: true
 redis:
   enabled: true
   architecture: "standalone"
   containerSecurityContext:
     readOnlyRootFilesystem: true
+    runAsNonRoot: true
   auth:
     existingSecret: "hermes-internal-redis"
     existingSecretPasswordKey: "redisPassword"
@@ -73,6 +77,7 @@ mongodb:
   enabled: true
   containerSecurityContext:
     readOnlyRootFilesystem: true
+    runAsNonRoot: true
   auth:
     existingSecret: "hermes-internal-mongodb"
 certmanager:
