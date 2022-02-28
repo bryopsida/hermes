@@ -54,17 +54,25 @@ kafka:
   offsetsTopicReplicationFactor: 1
   transactionStateLogReplicationFactor: 1
   heapOpts: "-Xmx256m -Xms256m"
+  containerSecurityContext:
+    readOnlyRootFilesystem: true
   zookeeper:
     replicaCount: 1
     heapSize: 256
+    containerSecurityContext:
+      readOnlyRootFilesystem: true
 redis:
   enabled: true
   architecture: "standalone"
+  containerSecurityContext:
+    readOnlyRootFilesystem: true
   auth:
     existingSecret: "hermes-internal-redis"
     existingSecretPasswordKey: "redisPassword"
 mongodb:
   enabled: true
+  containerSecurityContext:
+    readOnlyRootFilesystem: true
   auth:
     existingSecret: "hermes-internal-mongodb"
 certmanager:
