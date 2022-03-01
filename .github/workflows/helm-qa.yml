@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@ec3a7ce113134d7a93b817d10a8272cb61118579
+        uses: actions/checkout@v3
         with:
           fetch-depth: 0
       - name: Install Helm
@@ -36,7 +36,7 @@ jobs:
     needs: lint-chart
     steps:
       - name: Checkout
-        uses: actions/checkout@ec3a7ce113134d7a93b817d10a8272cb61118579
+        uses: actions/checkout@v3
       - name: Run helm-docs
         run: .github/helm-docs.sh
   kubeval-chart:
@@ -53,7 +53,7 @@ jobs:
           - v1.23.3
     steps:
       - name: Checkout
-        uses: actions/checkout@ec3a7ce113134d7a93b817d10a8272cb61118579
+        uses: actions/checkout@v3
         with:
           fetch-depth: 0
       - name: Run kubeval
@@ -76,7 +76,7 @@ jobs:
           - v1.23.3
     steps:
       - name: Checkout
-        uses: actions/checkout@ec3a7ce113134d7a93b817d10a8272cb61118579 
+        uses: actions/checkout@v3 
         with:
           fetch-depth: 0
 
