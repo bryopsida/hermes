@@ -1,4 +1,4 @@
-FROM node:17.6.0-alpine as build-base
+FROM node:17.7.1-alpine as build-base
 RUN apk add --update --no-cache python3 make g++ bash
 
 FROM build-base AS build
@@ -15,7 +15,7 @@ COPY package*.json ./
 RUN npm ci --only=production
 
 
-FROM node:17.6.0-alpine
+FROM node:17.7.1-alpine
 RUN apk add dumb-init curl
 ENV NODE_ENV production
 USER node

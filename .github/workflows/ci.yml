@@ -22,7 +22,7 @@ jobs:
       security-events: write
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
     - name: Initialize CodeQL
       uses: github/codeql-action/init@v1
       with:
@@ -75,10 +75,10 @@ jobs:
       security-events: write
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Install cosign
         if: github.event_name != 'pull_request'
-        uses: sigstore/cosign-installer@179e0f15e70e22ca2e7254fc12d68a9fbab35614
+        uses: sigstore/cosign-installer@581838fbedd492d2350a9ecd427a95d6de1e5d01
         with:
           cosign-release: 'v1.4.0'
       # for multi arch container builds
@@ -93,7 +93,7 @@ jobs:
       - name: Log into registry
         if: github.event_name != 'pull_request'
         timeout-minutes: 5
-        uses: docker/login-action@bb984efc561711aaa26e433c32c3521176eae55b
+        uses: docker/login-action@dd4fa0671be5250ee6f50aedf4cb05514abda2c7
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
@@ -115,7 +115,7 @@ jobs:
       - name: Build Docker image
         id: build
         timeout-minutes: 25
-        uses: docker/build-push-action@7f9d37fa544684fb73bfe4835ed7214c255ce02b
+        uses: docker/build-push-action@ac9327eae2b366085ac7f6a2d02df8aa8ead720a
         with:
           context: .
           load: true
@@ -155,7 +155,7 @@ jobs:
         if: github.event_name != 'pull_request'
         id: push
         timeout-minutes: 60
-        uses: docker/build-push-action@7f9d37fa544684fb73bfe4835ed7214c255ce02b
+        uses: docker/build-push-action@ac9327eae2b366085ac7f6a2d02df8aa8ead720a
         with:
           context: .
           builder: ${{ steps.buildx.outputs.name }}
@@ -185,7 +185,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Lint Helm Chart
         run: npm run helm:lint
   kube-scan:
@@ -197,7 +197,7 @@ jobs:
       security-events: write
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Create single template for scanning
         working-directory: helm/hermes
         run: |
@@ -233,7 +233,7 @@ jobs:
       HELM_NAMESPACE: "hermes"
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
     - uses: actions/setup-node@v3
       with:
         node-version: '17'
@@ -249,7 +249,7 @@ jobs:
     - name: Download Container TAR
       if: ${{ github.event_name == 'pull_request' }}
       timeout-minutes: 4
-      uses: actions/download-artifact@v2.1.0
+      uses: actions/download-artifact@v3
       with:
         path: /tmp/artifacts/
         name: image.tar.gz
@@ -348,17 +348,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
     - name: Download Tarball
       if: ${{ github.event_name == 'pull_request' }}
       timeout-minutes: 4
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v3
       with:
         path: /tmp/artifacts/
         name: image.tar.gz
     - name: Login to registry
       if: ${{ github.event_name != 'pull_request' }}
-      uses: docker/login-action@bb984efc561711aaa26e433c32c3521176eae55b
+      uses: docker/login-action@dd4fa0671be5250ee6f50aedf4cb05514abda2c7
       with:
         registry: ${{ env.REGISTRY }}
         username: ${{ github.actor }}
@@ -391,7 +391,7 @@ jobs:
       cancel-in-progress: false
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
     # create connection to the cluster
     - name: Install Wireguard
       run: |
