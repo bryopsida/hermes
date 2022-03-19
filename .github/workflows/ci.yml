@@ -94,7 +94,7 @@ jobs:
       - name: Extract Docker metadata
         id: meta
         timeout-minutes: 5
-        uses: docker/metadata-action@e5622373a38e60fb6d795a4421e56882f2d7a681
+        uses: docker/metadata-action@47c365107cb34e788d99cf3d89acf424b505b3e8
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
