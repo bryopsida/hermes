@@ -167,7 +167,7 @@ jobs:
       - name: Upload Container TAR
         if: ${{ github.event_name == 'pull_request' }}
         timeout-minutes: 4
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           path: /tmp/artifacts/image.tar.gz
           name: image.tar.gz
@@ -196,7 +196,7 @@ jobs:
         run: |
           helm template . > infra.yaml
       - name: actions/upload-artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: infra-template-render
           path: helm/hermes/infra.yaml
@@ -209,7 +209,7 @@ jobs:
           output: kubesec-results.sarif
           exit-code: "0"
       - name: actions/upload-artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: kubesec-analysis
           path: kubesec-results.sarif
@@ -329,7 +329,7 @@ jobs:
         inspectTarball=$(sudo microk8s inspect | grep -Po "/var/snap/microk8s/.*\.tar\.gz")
         sudo cp $inspectTarball /tmp/microk8s-hermes/
     - name: Upload Info On Failure
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       if: failure()
       with:
         name: test-deploy-logs
