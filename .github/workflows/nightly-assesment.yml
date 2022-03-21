@@ -2,7 +2,7 @@ name: Nightly Assesment
 on:
   workflow_dispatch:
   schedule:
-    - cron: "0 * * * *"
+    - cron: "0 0 * * *"
 jobs:
   evaluate:
     runs-on: ubuntu-latest
