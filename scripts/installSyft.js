@@ -11,7 +11,7 @@ const expectedHashes = [
 ]
 
 const INSTALL_SCRIPT = 'https://raw.githubusercontent.com/anchore/syft/main/install.sh'
-const INSTALL_SCRIPT_PATH = '/tmp/syft-install.sh'
+const INSTALL_SCRIPT_PATH = './syft-install.sh'
 const REQUEST_FAILED_EXIT_CODE = 1
 const SYFT_INSTALL_HASH_MISMATCH_EXIT_CODE = 2
 const FAILED_TO_REMOVE_SCRIPT_EXIT_CODE = 3
