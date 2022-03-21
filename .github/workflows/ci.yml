@@ -136,6 +136,19 @@ jobs:
         uses: github/codeql-action/upload-sarif@v1
         with:
           sarif_file: 'scan-results.sarif'
+      - name: Build SBOM
+        id: sbom
+        run: |
+          npm run install:syft
+          npm run docker:sbom --image_tag=${{steps.short-sha.outputs.sha_tag}}
+      - name: Upload Container SBOM
+        timeout-minutes: 4
+        uses: actions/upload-artifact@v3
+        with:
+          path: sbom.json
+          name: sbom.json
+          retention-days: 30
+          if-no-files-found: error
       - name: Export Container TAR
         timeout-minutes: 4
         run: |
