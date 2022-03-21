@@ -1,36 +1,47 @@
+import { Server } from 'http'
 import { Provider } from 'oidc-provider'
 import { IService } from '../../common/interfaces/service'
+import { IIdentityConfig, IdentifyConfigFactory } from '../../config/identityConfig'
 
 export class IdentityService implements IService {
-  private provider: Provider
-  readonly ID: string;
+  private readonly provider: Provider
+  private readonly config: IIdentityConfig
+  private server: Server
+  readonly ID: string
 
   constructor () {
-    this.provider = new Provider('http://localhost:8080', {})
     this.ID = 'identity'
+    this.config = IdentifyConfigFactory.buildConfig(this.ID)
+    this.provider = new Provider(this.config.baseUrl, {})
   }
 
   start (): Promise<void> {
-    throw new Error('Method not implemented.')
+    return new Promise((resolve, reject) => {
+      this.provider.listen(this.config.baseUrl, (err) => {
+
+      })
+    });
+    this.server = await this.provider.listen(this.config.baseUrl)
   }
 
   stop (): Promise<void> {
-    throw new Error('Method not implemented.')
+    this.server.close()
+    return Promise.resolve();
   }
 
   destroy (): Promise<void> {
-    throw new Error('Method not implemented.')
+    return this.stop()
   }
 
   isAlive (): Promise<boolean> {
-    throw new Error('Method not implemented.')
+    return Promise.resolve(true)
   }
 
   canServeTraffic (): Promise<boolean> {
-    throw new Error('Method not implemented.')
+    return Promise.resolve(true)
   }
 
   servesTraffic (): boolean {
-    throw new Error('Method not implemented.')
+    return true
   }
 }
