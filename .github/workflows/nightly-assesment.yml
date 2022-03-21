@@ -1,7 +1,6 @@
 name: Nightly Assesment
 on:
   workflow_dispatch:
-  push:
   schedule:
     - cron: "0 * * * *"
 jobs:
