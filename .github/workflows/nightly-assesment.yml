@@ -1,11 +1,11 @@
-name: Kubebench Scan
+name: Nightly Assesment
 on:
   workflow_dispatch:
   push:
   schedule:
     - cron: "0 * * * *"
 jobs:
-  kube-bench:
+  evaluate:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -22,5 +22,5 @@ jobs:
           sudo microk8s config > ~/.kube/config
       - name: Kubebench scan
         run: |
-          docker run --pid=host -v /etc:/etc:ro -v /var:/var:ro -t aquasec/kube-bench:latest --version 1.23
+          docker run --pid=host -v $(which kubectl):/usr/local/mount-from-host/bin/kubectl -v /etc:/etc:ro -v /var:/var:ro -t aquasec/kube-bench:latest --version 1.23
       
