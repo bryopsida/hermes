@@ -1,4 +1,4 @@
-FROM node:17.7.2-alpine as build-base
+FROM node:17.8.0-alpine as build-base
 RUN apk add --update --no-cache python3 make g++ bash
 
 FROM build-base AS smoke-test-stage
