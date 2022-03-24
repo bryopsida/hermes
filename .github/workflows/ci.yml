@@ -38,7 +38,7 @@ jobs:
       image: node:17.6.0-alpine
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
     - name: Install Build-Tools
       run: apk add --update --no-cache python3 make g++ bash
     - name: Setup Cache
@@ -89,11 +89,11 @@ jobs:
       - name: Setup Docker buildx
         id: buildx
         timeout-minutes: 4
-        uses: docker/setup-buildx-action@766152f6a9556ec9ed74638570ee3e659ceae57c
+        uses: docker/setup-buildx-action@20111c644724909db5e5afbf25d7de40ddf74f0b
       - name: Log into registry
         if: github.event_name != 'pull_request'
         timeout-minutes: 5
-        uses: docker/login-action@f6d32ad0236599ffe0bb261e71184c3e4e1d47cd
+        uses: docker/login-action@70e1ff84cbd75a9e03941a79f21f05f1b03a71bb
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
@@ -101,7 +101,7 @@ jobs:
       - name: Extract Docker metadata
         id: meta
         timeout-minutes: 5
-        uses: docker/metadata-action@47c365107cb34e788d99cf3d89acf424b505b3e8
+        uses: docker/metadata-action@1237c3e3d6926ae8bfad16f64e08d259b9943637
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
@@ -115,7 +115,7 @@ jobs:
       - name: Build Docker image
         id: build
         timeout-minutes: 25
-        uses: docker/build-push-action@ac9327eae2b366085ac7f6a2d02df8aa8ead720a
+        uses: docker/build-push-action@b5730d24715e542a67be9991a420842b8b072900
         with:
           context: .
           load: true
@@ -143,6 +143,19 @@ jobs:
         uses: github/codeql-action/upload-sarif@v1
         with:
           sarif_file: 'scan-results.sarif'
+      - name: Build SBOM
+        id: sbom
+        run: |
+          npm run install:syft
+          npm run docker:sbom --image_tag=${{steps.short-sha.outputs.sha_tag}}
+      - name: Upload Container SBOM
+        timeout-minutes: 4
+        uses: actions/upload-artifact@v3
+        with:
+          path: sbom.json
+          name: sbom.json
+          retention-days: 30
+          if-no-files-found: error
       - name: Export Container TAR
         timeout-minutes: 4
         run: |
@@ -155,7 +168,7 @@ jobs:
         if: github.event_name != 'pull_request'
         id: push
         timeout-minutes: 60
-        uses: docker/build-push-action@ac9327eae2b366085ac7f6a2d02df8aa8ead720a
+        uses: docker/build-push-action@b5730d24715e542a67be9991a420842b8b072900
         with:
           context: .
           builder: ${{ steps.buildx.outputs.name }}
@@ -174,7 +187,7 @@ jobs:
       - name: Upload Container TAR
         if: ${{ github.event_name == 'pull_request' }}
         timeout-minutes: 4
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           path: /tmp/artifacts/image.tar.gz
           name: image.tar.gz
@@ -203,7 +216,7 @@ jobs:
         run: |
           helm template . > infra.yaml
       - name: actions/upload-artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: infra-template-render
           path: helm/hermes/infra.yaml
@@ -216,7 +229,7 @@ jobs:
           output: kubesec-results.sarif
           exit-code: "0"
       - name: actions/upload-artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: kubesec-analysis
           path: kubesec-results.sarif
@@ -238,7 +251,7 @@ jobs:
       with:
         node-version: '17'
     - name: NPM Cache
-      uses: actions/cache@v2
+      uses: actions/cache@v3
       with:
         path: ~/.npm
         key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
@@ -336,7 +349,7 @@ jobs:
         inspectTarball=$(sudo microk8s inspect | grep -Po "/var/snap/microk8s/.*\.tar\.gz")
         sudo cp $inspectTarball /tmp/microk8s-hermes/
     - name: Upload Info On Failure
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       if: failure()
       with:
         name: test-deploy-logs
@@ -358,7 +371,7 @@ jobs:
         name: image.tar.gz
     - name: Login to registry
       if: ${{ github.event_name != 'pull_request' }}
-      uses: docker/login-action@f6d32ad0236599ffe0bb261e71184c3e4e1d47cd
+      uses: docker/login-action@70e1ff84cbd75a9e03941a79f21f05f1b03a71bb
       with:
         registry: ${{ env.REGISTRY }}
         username: ${{ github.actor }}

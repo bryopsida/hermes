@@ -1,0 +1,27 @@
+name: Nightly Assesment
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 0 * * *"
+jobs:
+  evaluate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Install MicroK8S
+        run: |
+          sudo snap install microk8s --classic --channel=1.23/stable
+          sudo microk8s enable dns storage rbac ingress metallb:10.64.140.43-10.64.140.49
+          sudo microk8s status --wait-ready
+          sudo microk8s kubectl rollout status deployment/hostpath-provisioner -n kube-system
+          sudo microk8s enable registry
+          sudo microk8s status --wait-ready
+          sudo microk8s kubectl rollout status deployment/registry -n container-registry
+          mkdir -p ~/.kube
+          sudo microk8s config > ~/.kube/config
+      # TODO: Add anisble playbook that remediates issues found in kubebench, apply here then scan
+      - name: Kubebench scan
+        run: |
+          docker run --pid=host -v $(which kubectl):/usr/local/mount-from-host/bin/kubectl -v /etc:/etc:ro -v /var:/var:ro -v ~/.kube:/.kube -e KUBECONFIG=/.kube/config -t aquasec/kube-bench:latest --version 1.23
+      # TODO: Add loop that detects all scanable manifets and runs them through kubsec and opa conftest
+          
