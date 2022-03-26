@@ -19,6 +19,7 @@ import { BullBoardService } from './services/bullBoard/bullboardServices'
 import redisConfigFactory from './config/redisConfig'
 import { QueueOptions } from 'bull'
 import { Cluster, NodeConfiguration, ClusterOptions } from 'ioredis'
+import { IdentityService } from './services/identity/identityService'
 
 const cpuCount = cpus().length
 const redisConfig = redisConfigFactory.buildConfig('task_runner')
@@ -77,7 +78,8 @@ if (cluster.isPrimary && process.env.USE_CLUSTERING === 'true') {
     isServiceEnabled(TaskRunnerService.NAME) ? new TaskRunnerService(queueOptions) : undefined,
     isServiceEnabled(WatchManagementService.NAME) ? new WatchManagementService(app) : undefined,
     isServiceEnabled(TheatreService.NAME) ? new TheatreService() : undefined,
-    isServiceEnabled(BullBoardService.NAME) ? new BullBoardService(app, queueOptions) : undefined
+    isServiceEnabled(BullBoardService.NAME) ? new BullBoardService(app, queueOptions) : undefined,
+    isServiceEnabled(IdentityService.NAME) ? new IdentityService() : undefined
   ].filter(s => s != null) as Array<IService>
 
   if (isSideKickEnabled(HealthSideKick.NAME)) {

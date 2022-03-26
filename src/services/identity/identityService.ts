@@ -1,12 +1,11 @@
-import { Server } from 'http'
 import { Provider } from 'oidc-provider'
 import { IService } from '../../common/interfaces/service'
 import { IIdentityConfig, IdentifyConfigFactory } from '../../config/identityConfig'
 
 export class IdentityService implements IService {
+  public static readonly NAME = 'theatre'
   private readonly provider: Provider
   private readonly config: IIdentityConfig
-  private server: Server
   readonly ID: string
 
   constructor () {
@@ -17,16 +16,15 @@ export class IdentityService implements IService {
 
   start (): Promise<void> {
     return new Promise((resolve, reject) => {
-      this.provider.listen(this.config.baseUrl, (err) => {
-
+      this.provider.listen(this.config.baseUrl, () => {
+        return resolve()
       })
-    });
-    this.server = await this.provider.listen(this.config.baseUrl)
+    })
   }
 
   stop (): Promise<void> {
-    this.server.close()
-    return Promise.resolve();
+    this.provider.close()
+    return Promise.resolve()
   }
 
   destroy (): Promise<void> {
