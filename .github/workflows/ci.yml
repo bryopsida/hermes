@@ -424,11 +424,6 @@ jobs:
       run: |
         sudo systemctl enable wg-quick@wg0.service
         sudo systemctl start wg-quick@wg0.service
-    - name: Check Wireguard Connection
-      timeout-minutes: 5
-      run: |
-        ping -c 1 -W 1 ${{ secrets.WG_TEST_IP}}
-        ping -c 1 -W 1 ${{ secrets.TEST_IP}}
     - name: Create Kubernetes Configuration
       timeout-minutes: 2
       run: |
