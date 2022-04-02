@@ -95,6 +95,14 @@ export class DataSource implements IDataSource {
     }
 
     static async findAll (offset: number, count: number): Promise<Array<DataSource>> {
+      if (offset == null || isNaN(offset)) {
+        DataSource.log.warn('offset is not defined or NaN, defaulting to 0')
+        offset = 0
+      }
+      if (count == null || isNaN(count)) {
+        DataSource.log.warn('count is not defined or NaN, defaulting to 10')
+        count = 10
+      }
       DataSource.log.debug(`Fetching data sources from offset: ${offset} and count: ${count}`)
       const conn = await this.connect()
       const result = (await this.getModel(conn).find().skip(offset).limit(count).exec()).map(doc => new DataSource(doc))

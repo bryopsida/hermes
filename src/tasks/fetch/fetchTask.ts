@@ -1,7 +1,9 @@
-import { Queue, Job, DoneCallback } from 'bull'
+import { Queue, Job } from 'bull'
 import COMPUTED_CONSTANTS from '../../common/computedConstants'
-import { ITask } from '../../common/interfaces/task'
 import createLogger from '../../common/logger/factory'
+import axios from 'axios'
+import { ProducerTask } from '../producerTask'
+import { Producer } from 'node-rdkafka'
 
 export interface FetchTaskParams {
     name: string;
@@ -9,30 +11,93 @@ export interface FetchTaskParams {
     type: string;
     properties: Record<string, unknown>;
 }
+export interface LogMethod {
+    (message: string): void;
+}
 
-export class FetchTask implements ITask {
-    id = 'fetch';
-    private readonly log = createLogger({
+export class FetchTask extends ProducerTask {
+    static readonly ID = 'fetch'
+    id = FetchTask.ID;
+    protected readonly log = createLogger({
       serviceName: `fetch-task-${COMPUTED_CONSTANTS.id}`,
       level: 'debug'
     })
 
-    constructor (private queue: Queue) {
+    constructor (queue: Queue, kafkaProducer: Producer) {
+      super(queue, FetchTask.ID, kafkaProducer)
       this.log.debug(`Fetch task initialized on queue ${queue.name}`)
-      queue.process('fetch', this.processJob)
     }
 
-    private processJob (job: Job<FetchTaskParams>, done: DoneCallback) {
-      this.log.debug(`Processing job ${job.id} on queue ${job.queue.name}`)
-      this.log.debug(`Checking if there is new data sources for ${job.data.name} at ${job.data.uri}`)
+    private isNewData (uri: string): Promise<boolean> {
+      // TODO: make this smarter, for now we will fetch every time
+      return Promise.resolve(true)
+    }
 
-      // TODO: check headers etc to see if there is new data
+    private async fetchData (uri: string): Promise<unknown> {
+      // TODO: in the future support more than get
+      const response = await axios.get<unknown>(uri, {
+        headers: {
+          'Content-Type': 'application/json',
+          accept: 'application/json'
+        }
+      })
+      return response.data
+    }
 
-      // TODO: if there is new data fetch it
+    protected publish (data: unknown, job: Job<unknown>): Promise<void> {
+      this.kafkaProducer.produce('jsonData', null, Buffer.from(JSON.stringify({
+        jobId: job.id,
+        sourceQueue: job.queue.name,
+        timestamp: job.timestamp,
+        data: data
+      })), COMPUTED_CONSTANTS.id as string, new Date().getTime())
+      return Promise.resolve()
+    }
 
-      // TODO: if we have new data publish it to the stream for processing
+    private isJson (data: unknown) : boolean {
+      if (typeof data === 'string') {
+        try {
+          JSON.parse(data)
+          return true
+        } catch (err) {
+          return false
+        }
+      } else if (typeof data === 'object' || Array.isArray(data)) {
+        return true
+      } else {
+        return false
+      }
+    }
 
-      // Long term TODO: for big datasets determine mechanisms for publishing incremental values, perhaps by specifying queries that reduce the data set to an array in a way that can be processed incrementally
+    private getFullUrl (uri: string) : string {
+      if (uri.startsWith('http')) {
+        return uri
+      } else {
+        return `https://${uri}`
+      }
+    }
+
+    override async processJob (job: Job<FetchTaskParams>) : Promise<unknown> {
+      this.logToJob(`Processing job ${job.id} on queue ${job.queue.name}`, job)
+      this.logToJob(`Checking if there is new data sources for ${job.data.name} at ${job.data.uri}`, job)
+      const fullUri = this.getFullUrl(job.data.uri)
+      if (!await this.isNewData(fullUri)) {
+        this.logToJob(`No new data sources for ${job.data.name} at ${job.data.uri}`, job)
+        return
+      }
+
+      this.logToJob(`New data, fetching data sources for ${job.data.name} at ${job.data.uri}`, job)
+      const data = await this.fetchData(fullUri)
+
+      if (!this.isJson(data)) {
+        this.logToJob(`Data is not JSON for ${job.data.name} at ${job.data.uri}, data: ${data}`, job)
+        return
+      }
+
+      this.logToJob(`Publishing data for ${job.data.name} at ${job.data.uri}`, job)
+      await this.publish(data, job)
+      this.logToJob(`Done with job ${job.id} on queue ${job.queue.name}`, job)
+      return data
     }
 
     public async stop (): Promise<void> {
