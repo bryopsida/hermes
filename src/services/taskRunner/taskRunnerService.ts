@@ -4,7 +4,7 @@ import createLogger from '../../common/logger/factory'
 import { FetchTask } from '../../tasks/fetch/fetchTask'
 import { HeartbeatTask } from '../../tasks/heartbeat/heartbeatTask'
 import { QueueNames } from '../../common/queues/queueNameConstants'
-import kafkaTopicConfig from '../../common/ topics/kafkaTopicConfig'
+import kafkaTopicConfig from '../../common/topics/kafkaTopicConfig'
 import { Producer, ProducerTopicConfig } from 'node-rdkafka'
 import { ITask } from '../../common/interfaces/task'
 import COMPUTED_CONSTANTS from '../../common/computedConstants'
@@ -91,7 +91,10 @@ export class TaskRunnerService implements IService {
       // load seed tasks from json file
 
       // TODO: this smells, evaluate and refactor
-      const fetchTask: ITask = new FetchTask(this._queues.get(QueueNames.FETCH_QUEUE) as Queue)
+      const fetchTask: ITask = new FetchTask(this._queues.get(QueueNames.FETCH_QUEUE)as Queue, new Producer({
+        'metadata.broker.list': kafkaConfigFactory.buildConfig(TaskRunnerService.NAME).brokers.join(',')
+      }, kafkaTopicConfig.jsonData.producer as ProducerTopicConfig))
+
       const heartbeatTask: ITask = new HeartbeatTask(this._queues.get(QueueNames.HEARTBEAT_QUEUE) as Queue, new Producer({
         'metadata.broker.list': kafkaConfigFactory.buildConfig(TaskRunnerService.NAME).brokers.join(',')
       }, kafkaTopicConfig.heartbeats.producer as ProducerTopicConfig))

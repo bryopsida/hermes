@@ -1,5 +1,8 @@
 {
     "watch": ["src"],
+    "ignore": [
+        "src/tools/pandora/*"
+    ],
     "ext": "ts,json",
     "exec": "node --inspect -r ts-node/register ./src/monoApp.ts",
     "delay": 5,
