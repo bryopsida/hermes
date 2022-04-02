@@ -6,6 +6,7 @@ module.exports = {
   extends: [
     'standard'
   ],
+  ignorePatterns: ['src/tools/pandora/build/**/*'],
   parser: '@typescript-eslint/parser',
   parserOptions: {
     ecmaVersion: 12,
