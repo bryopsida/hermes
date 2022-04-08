@@ -10,7 +10,6 @@
         "module": "commonjs",                           /* Specify module code generation: 'none', 'commonjs', 'amd', 'system', 'umd', 'es2015', 'es2020', or 'ESNext'. */
         "sourceMap": true,                           /* Generates corresponding '.map' file. */
         "outDir": "./build",                              /* Redirect output structure to the directory. */
-        "rootDir": "./",                             /* Specify the root directory of input files. Use to control the output directory structure with --outDir. */
         "strict": true,                                 /* Enable all strict type-checking options. */
         "esModuleInterop": true,                        /* Enables emit interoperability between CommonJS and ES Modules via creation of namespace objects for all imports. Implies 'allowSyntheticDefaultImports'. */
         "skipLibCheck": true,                           /* Skip type checking of declaration files. */
@@ -22,7 +21,6 @@
     ],
     "exclude": [
         "node_modules",
-        "src/tools/pandora",
         "test"
     ]
 }

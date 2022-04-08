@@ -11,16 +11,23 @@ export interface ILoggerGlobalConfig {
 }
 
 export default function createLogger (opts: ILoggerOptions) : pino.Logger {
-  const globalLoggerConfig = config.get<ILoggerGlobalConfig>('logging')
-  const transport = globalLoggerConfig.prettyPrint
-    ? {
-        target: 'pino-pretty'
-      }
-    : undefined
+  if (config.has('logging')) {
+    const globalLoggerConfig = config.get<ILoggerGlobalConfig>('logging')
+    const transport = globalLoggerConfig.prettyPrint
+      ? {
+          target: 'pino-pretty'
+        }
+      : undefined
 
-  return pino({
-    name: opts.serviceName,
-    level: opts.level,
-    transport: transport
-  })
+    return pino({
+      name: opts.serviceName,
+      level: opts.level,
+      transport: transport
+    })
+  } else {
+    return pino({
+      name: opts.serviceName,
+      level: opts.level
+    })
+  }
 }

@@ -6,17 +6,17 @@ version: 0.1.0-alpha-2
 appVersion: "0.1.0"
 dependencies:
   - name: kafka
-    version: "15.5.1"
+    version: "16.2.3"
     repository: https://charts.bitnami.com/bitnami
     condition: kafka.enabled
     alias: kafka
   - name: redis
-    version: "16.6.0"
+    version: "16.8.5"
     repository: https://charts.bitnami.com/bitnami
     condition: redis.enabled
     alias: redis
   - name: mongodb
-    version: "11.1.1"
+    version: "11.1.5"
     repository: https://charts.bitnami.com/bitnami
     condition: mongodb.enabled
     alias: mongodb

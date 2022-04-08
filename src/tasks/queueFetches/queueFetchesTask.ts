@@ -40,9 +40,11 @@ export class QueueFetchesTask implements ITask {
     const client = new DataSourceClient(job.data.baseUrl)
     let fetchJobsQueued = 0
     let dataSourceResponse: IPaginatedResponse<DataSourceDTO> | null = null
+    const count = (job.data != null && job.data.batchSize != null) ? job.data.batchSize : 1000
+    let offset = 0
     try {
       do {
-        dataSourceResponse = await client.getDataSources(dataSourceResponse ? dataSourceResponse.offset + dataSourceResponse.limit : 0, job.data.batchSize || 1000)
+        dataSourceResponse = await client.getDataSources(offset, count)
         if (dataSourceResponse) {
           for (const dataSource of dataSourceResponse.items) {
             this.log.debug(`Queueing fetch job for data source id: ${dataSource.id}, type: ${dataSource.type}, name: ${dataSource.name}, uri: ${dataSource.uri}`)
@@ -54,8 +56,12 @@ export class QueueFetchesTask implements ITask {
             } as FetchTaskParams)
             fetchJobsQueued++
           }
+        } else {
+          this.log.warn('Response undefined, exiting!')
+          break
         }
-      } while (dataSourceResponse && dataSourceResponse.items.length > 0)
+        offset += count
+      } while (dataSourceResponse && dataSourceResponse.items.length === count)
       this.log.info(`Queued ${fetchJobsQueued} fetch jobs`)
       done(null, {
         jobQueueCount: fetchJobsQueued
