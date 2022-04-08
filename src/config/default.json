@@ -35,6 +35,12 @@
       "password": "mongodb"
     }
   },
+  "tartarus": {
+    "enabled": true,
+    "gates": [
+      
+    ]
+  },
   "task_runner": {
     "enabled": true,
     "redis": {
