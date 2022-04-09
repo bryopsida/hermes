@@ -48,6 +48,7 @@
     "fastify": "^3.27.4",
     "fastify-helmet": "^7.0.1",
     "librdkafka": "^0.0.0",
+    "middie": "^6.0.0",
     "mongoose": "^6.2.7",
     "node-rdkafka": "^2.12.0",
     "oidc-provider": "^7.10.6",

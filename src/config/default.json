@@ -59,5 +59,13 @@
     "kafka": {
       "brokers": ["localhost:29092"]
     }
+  },
+  "identity": {
+    "enabled": true,
+    "mountPath": "/api/identity/v1",
+    "issuer": "http://localhost:3000/api/identity/v1",
+    "providerConfig": {
+      
+    }
   }
 }

@@ -1,9 +1,13 @@
+/**
+ * This service is responsible for managing user accounts.
+ */
+import { FastifyInstance } from 'fastify'
 import { IService } from '../../common/interfaces/service'
 
 export class UserService implements IService {
   readonly ID: string;
 
-  constructor () {
+  constructor (app: FastifyInstance) {
     this.ID = 'user'
   }
 
@@ -20,14 +24,14 @@ export class UserService implements IService {
   }
 
   isAlive (): Promise<boolean> {
-    throw new Error('Method not implemented.')
+    return Promise.resolve(true)
   }
 
   canServeTraffic (): Promise<boolean> {
-    throw new Error('Method not implemented.')
+    return Promise.resolve(true)
   }
 
   servesTraffic (): boolean {
-    throw new Error('Method not implemented.')
+    return true
   }
 }
