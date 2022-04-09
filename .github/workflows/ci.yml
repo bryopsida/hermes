@@ -209,7 +209,7 @@ jobs:
       - name: Lint Helm Chart
         run: npm run helm:lint
   kube-scan:
-    name: Kubernetes Security Scan
+    name: Kubesec Scan
     runs-on: ubuntu-latest
     permissions:
       actions: read
@@ -258,7 +258,7 @@ jobs:
       - name: Run KICS
         run: |
           docker pull checkmarx/kics:latest
-          docker run -v $PWD​​​​:/path checkmarx/kics scan -p "/path" -o "/path/" --report-formats "sarif"
+          docker run -v ${{ github.workspace }}:/path checkmarx/kics scan -p "/path" -o "/path/" --report-formats "sarif"
       - name: actions/upload-artifact
         uses: actions/upload-artifact@v3
         with:
@@ -271,7 +271,7 @@ jobs:
           sarif_file: results.sarif
   test-deploy:
     name: "Test Deploy"
-    needs: [ build-container, smoke-test, helm-lint, kube-scan, analyze ]
+    needs: [ build-container, smoke-test, helm-lint, kube-scan, analyze, kics-scan]
     runs-on: ubuntu-latest
     env: 
       HELM_NAMESPACE: "hermes"
