@@ -71,7 +71,7 @@ jobs:
         uses: actions/checkout@v3
       - name: Install cosign
         if: github.event_name != 'pull_request'
-        uses: sigstore/cosign-installer@d6a3abf1bdea83574e28d40543793018b6035605
+        uses: sigstore/cosign-installer@2f775b49ed976590521e57e2aef1f11a20d6ea65
         with:
           cosign-release: 'v1.4.0'
       # for multi arch container builds
