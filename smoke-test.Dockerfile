@@ -9,4 +9,4 @@ COPY src ./src
 COPY tests ./tests
 COPY tsconfig.json .
 COPY .eslintrc.js .
-RUN npm run build && npm test && npm audit && npm run sonarscan --if-present && npm run lint
+RUN npm run build && npm test && npm run sonarscan --if-present && npm run lint
