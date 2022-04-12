@@ -63,6 +63,8 @@ certmanager:
   enabled: true
 grafana:
   enabled: true
+  rbac:
+    created: false
   ingress:
     enabled: true
     hosts:
