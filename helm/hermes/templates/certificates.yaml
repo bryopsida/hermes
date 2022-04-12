@@ -45,4 +45,21 @@ spec:
     kind: Issuer
     group: cert-manager.io
 {{- end }}
+{{- if .Values.grafana.enabled  }}
+{{- range .Values.grafana.ingress.tls }}
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: {{ $.Release.Name }}-tls-certificate-{{ .secretName}}
+spec:
+  secretName: {{ .secretName }}
+  dnsNames:
+  {{ .hosts | toYaml | indent 6 }}
+  issuerRef:
+    name: {{ $.Release.Name }}-issuer
+    kind: Issuer
+    group: cert-manager.io
+{{- end }}
+{{- end }}
 {{- end }}

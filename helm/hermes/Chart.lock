@@ -8,5 +8,8 @@ dependencies:
 - name: mongodb
   repository: https://charts.bitnami.com/bitnami
   version: 11.1.5
-digest: sha256:9f24e559104e917073557b5fc01aae66860606e5a71ca5fecbd3cc197cd71347
-generated: "2022-04-07T17:53:33.181502059Z"
+- name: grafana
+  repository: https://grafana.github.io/helm-charts
+  version: 6.26.0
+digest: sha256:267f4ef9320b3e9a99507db201f5972dab15c1f5d71a945a269678ac9f96ae8d
+generated: "2022-04-11T19:57:30.63246-05:00"
