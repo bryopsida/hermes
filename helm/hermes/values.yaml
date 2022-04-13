@@ -65,6 +65,7 @@ grafana:
   enabled: true
   rbac:
     create: false
+    pspEnabled: false
   ingress:
     enabled: true
     hosts:
