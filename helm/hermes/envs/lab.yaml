@@ -41,8 +41,12 @@ mongodb:
 redis:
   volumePermissions:
     enabled: true
-  nodeSelector:
-    kubernetes.io/arch: amd64
+  replica:
+    nodeSelector:
+      kubernetes.io/arch: amd64
+  master:
+    nodeSelector:
+      kubernetes.io/arch: amd64
   updateJob:
     nodeSelector:
       kubernetes.io/arch: amd64
