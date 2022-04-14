@@ -11,3 +11,9 @@ export interface IClientSession {
 export interface IClientSessionBuilder {
   build(socket: Socket): Promise<IClientSession>
 }
+
+export class TcpClientSessionBuilder implements IClientSessionBuilder {
+  build (socket: Socket): Promise<IClientSession> {
+    throw new Error('Method not implemented.')
+  }
+}
