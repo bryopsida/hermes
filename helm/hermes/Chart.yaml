@@ -6,17 +6,22 @@ version: 0.1.0-alpha-2
 appVersion: "0.1.0"
 dependencies:
   - name: kafka
-    version: "16.2.1"
+    version: "16.2.3"
     repository: https://charts.bitnami.com/bitnami
     condition: kafka.enabled
     alias: kafka
   - name: redis
-    version: "16.8.0"
+    version: "16.8.5"
     repository: https://charts.bitnami.com/bitnami
     condition: redis.enabled
     alias: redis
   - name: mongodb
-    version: "11.1.4"
+    version: "11.1.5"
     repository: https://charts.bitnami.com/bitnami
     condition: mongodb.enabled
     alias: mongodb
+  - name: grafana
+    version: "6.26.1"
+    repository: https://grafana.github.io/helm-charts
+    condition: grafana.enabled
+    alias: grafana

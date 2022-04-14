@@ -61,3 +61,16 @@ mongodb:
     existingSecret: "hermes-internal-mongodb"
 certmanager:
   enabled: true
+grafana:
+  enabled: true
+  rbac:
+    create: false
+    pspEnabled: false
+  ingress:
+    enabled: true
+    hosts:
+      - grafana.hermes.local
+    tls:
+      - secretName: grafana-hermes-tls
+        hosts:
+          - grafana.hermes.local

@@ -1,4 +1,4 @@
-FROM node:17.8.0-alpine as build-base
+FROM node:17.9.0-alpine as build-base
 RUN apk add --update --no-cache python3 make g++ bash
 
 FROM build-base AS smoke-test-stage
@@ -9,4 +9,4 @@ COPY src ./src
 COPY tests ./tests
 COPY tsconfig.json .
 COPY .eslintrc.js .
-RUN npm run build && npm test && npm audit && npm run sonarscan --if-present && npm run lint
+RUN npm run build && npm test && npm run sonarscan --if-present && npm run lint

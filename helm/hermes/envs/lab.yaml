@@ -18,7 +18,8 @@ kafka:
   zookeeper:
     volumePermissions:
       enabled: true
-    kubernetes.io/arch: amd64
+    nodeSelector:
+      kubernetes.io/arch: amd64
 mongodb:
   volumePermissions:
     enabled: true
@@ -40,8 +41,12 @@ mongodb:
 redis:
   volumePermissions:
     enabled: true
-  nodeSelector:
-    kubernetes.io/arch: amd64
+  replica:
+    nodeSelector:
+      kubernetes.io/arch: amd64
+  master:
+    nodeSelector:
+      kubernetes.io/arch: amd64
   updateJob:
     nodeSelector:
       kubernetes.io/arch: amd64
