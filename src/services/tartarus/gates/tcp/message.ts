@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import { Writable } from 'stream'
 
 export enum MessageType {

@@ -1,6 +1,9 @@
 import { ITCPGateConfig } from '../../../../config/gateConfig'
 import { IGate } from '../gate'
 import { createServer, Server, Socket } from 'net'
+import COMPUTED_CONSTANTS from '../../../../common/computedConstants'
+import createLogger from '../../../../common/logger/factory'
+import { IClientSession, IClientSessionBuilder } from './tcpClientSession'
 
 /**
  * Requirements:
@@ -75,12 +78,19 @@ import { createServer, Server, Socket } from 'net'
 export class TcpGate implements IGate {
   private readonly host: string
   private readonly port: number
-  private socketServer: Server
-  private readonly openSockets: Socket[] = []
+  private socketServer?: Server
+  private sessionBuilder: IClientSessionBuilder
+  private readonly clientSessions: IClientSession[] = []
 
-  constructor (config: ITCPGateConfig) {
+  private readonly log = createLogger({
+    serviceName: `tartarus-${COMPUTED_CONSTANTS.id}`,
+    level: 'debug'
+  })
+
+  constructor (config: ITCPGateConfig, sessionBuilder: IClientSessionBuilder) {
     this.host = config.host
     this.port = config.port
+    this.sessionBuilder = sessionBuilder
   }
 
   open (): Promise<void> {
@@ -88,15 +98,35 @@ export class TcpGate implements IGate {
     return Promise.resolve()
   }
 
-  close (): Promise<void> {
-    this.openSockets.map((s) => {
-      return new Promise((resolve, reject) => {
-        s.end()
+  async close (): Promise<void> {
+    await Promise.all(this.clientSessions.map((s) => {
+      return s.end()
+    }))
+    return new Promise((resolve, reject) => {
+      this.socketServer?.close((err) => {
+        if (err) {
+          return reject(err)
+        }
+        return resolve()
       })
     })
   }
 
-  onConnection (socket: Socket) :void {
+  private async onConnection (socket: Socket) : Promise<void> {
+    this.log.info(`New connection from ${socket.remoteAddress}`)
+    try {
+      const newSession = await this.completeHandshake(socket)
+      this.clientSessions.push(newSession)
+      this.log.info(`Completed handshake for ${socket.remoteAddress}`)
+    } catch (e) {
+      this.log.error('Error completing handshake for new session', e)
+    }
+  }
 
+  private async completeHandshake (socket: Socket) : Promise<IClientSession> {
+    const session = await this.sessionBuilder.build(socket)
+    await session.authenticate()
+    this.log.info(`Authenticated session for ${socket.remoteAddress}`)
+    return session
   }
 }
