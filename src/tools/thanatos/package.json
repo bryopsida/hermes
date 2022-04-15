@@ -1,0 +1,26 @@
+{
+  "name": "thanatos",
+  "version": "0.1.0",
+  "description": "A cli client for the tartarus service",
+  "scripts": {
+    "start": "node build/index.js",
+    "prestart": "npm run build",
+    "build": "ncc build --minify src/thanatos.ts -o build/",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "preinstall": "npm run build"
+  },
+  "files": [
+    "./build/index.js"
+  ],
+  "bin": {
+    "pandora": "./build/index.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@vercel/ncc": "^0.33.4"
+  },
+  "dependencies": {
+    "commander": "^9.1.0"
+  }
+}
