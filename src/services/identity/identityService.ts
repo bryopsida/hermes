@@ -29,7 +29,7 @@ export class IdentityService implements IService {
   async start (): Promise<void> {
     IdentityService.log.info('Starting identity service on: %s, with issuer: %s', this.config.mountPath, this.config.issuer)
     await this.app.register(middie)
-    this.app.use(this.config.mountPath, this.provider.callback())
+    this.app.use(this.config.mountPath, this.provider.callback)
   }
 
   stop (): Promise<void> {
