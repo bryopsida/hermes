@@ -1,5 +1,6 @@
 // runs all of the components in one node process with clustering to spread across cores, not ideal but decent for testing
 // for production use components will be deployed in k8s via helm chart as individuall containers
+
 import { fastify, FastifyInstance } from 'fastify'
 import cluster from 'cluster'
 import { cpus } from 'os'
@@ -19,6 +20,7 @@ import { BullBoardService } from './services/bullBoard/bullboardServices'
 import redisConfigFactory from './config/redisConfig'
 import { QueueOptions } from 'bull'
 import { Cluster, NodeConfiguration, ClusterOptions } from 'ioredis'
+import { ClassificationService } from './services/classificationManager/classificationService'
 
 const cpuCount = cpus().length
 const redisConfig = redisConfigFactory.buildConfig('task_runner')
@@ -77,7 +79,8 @@ if (cluster.isPrimary && process.env.USE_CLUSTERING === 'true') {
     isServiceEnabled(TaskRunnerService.NAME) ? new TaskRunnerService(queueOptions) : undefined,
     isServiceEnabled(WatchManagementService.NAME) ? new WatchManagementService(app) : undefined,
     isServiceEnabled(TheatreService.NAME) ? new TheatreService() : undefined,
-    isServiceEnabled(BullBoardService.NAME) ? new BullBoardService(app, queueOptions) : undefined
+    isServiceEnabled(BullBoardService.NAME) ? new BullBoardService(app, queueOptions) : undefined,
+    isServiceEnabled(ClassificationService.NAME) ? new ClassificationService() : undefined
   ].filter(s => s != null) as Array<IService>
 
   if (isSideKickEnabled(HealthSideKick.NAME)) {

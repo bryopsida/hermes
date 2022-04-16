@@ -24,6 +24,17 @@
       "password": "mongodb"
     }
   },
+  "classification_manager": {
+    "enabled": true,
+    "mongo": {
+      "authEnabled": true,
+      "host": "localhost",
+      "port": 27017,
+      "db": "classifications",
+      "username": "mongodb",
+      "password": "mongodb"
+    }
+  },
   "watch_manager": {
     "enabled": true,
     "mongo": {
