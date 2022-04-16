@@ -4,6 +4,7 @@ import createLogger from '../../common/logger/factory'
 import axios from 'axios'
 import { ProducerTask } from '../producerTask'
 import { Producer } from 'node-rdkafka'
+import { IUnprocesseedJsonData } from '../../common/models/watchModels'
 
 export interface FetchTaskParams {
     name: string;
@@ -50,7 +51,7 @@ export class FetchTask extends ProducerTask {
         sourceQueue: job.queue.name,
         timestamp: job.timestamp,
         data: data
-      })), COMPUTED_CONSTANTS.id as string, new Date().getTime())
+      } as IUnprocesseedJsonData)), COMPUTED_CONSTANTS.id as string, new Date().getTime())
       return Promise.resolve()
     }
 
