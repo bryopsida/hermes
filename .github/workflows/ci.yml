@@ -79,7 +79,7 @@ jobs:
         uses: actions/checkout@v3
       - name: Install cosign
         if: github.event_name != 'pull_request'
-        uses: sigstore/cosign-installer@d6a3abf1bdea83574e28d40543793018b6035605
+        uses: sigstore/cosign-installer@bb61838e7ee5bf314f85f2e219b3706835fa6306
         with:
           cosign-release: 'v1.4.0'
       # for multi arch container builds
@@ -90,11 +90,11 @@ jobs:
       - name: Setup Docker buildx
         id: buildx
         timeout-minutes: 4
-        uses: docker/setup-buildx-action@2a6fbda6d8bd6fe40f8b36c71fca20ffc286129e
+        uses: docker/setup-buildx-action@74283caced5fd781db4de393d8e45f49f031fead
       - name: Log into registry
         if: github.event_name != 'pull_request'
         timeout-minutes: 5
-        uses: docker/login-action@7c79b598eaa33458e78e8d0d71e0a9c217dd92af
+        uses: docker/login-action@1edf6180e07d2ffb423fc48a1a552855c0a1f508
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
@@ -306,7 +306,7 @@ jobs:
     - name: Create MicroK8S Cluster
       timeout-minutes: 15
       run: |
-        sudo snap install microk8s --classic --channel=1.22/stable
+        sudo snap install microk8s --classic --channel=1.23/stable
         sudo microk8s enable dns storage rbac ingress
         sudo microk8s status --wait-ready
         sudo microk8s kubectl rollout status deployment/hostpath-provisioner -n kube-system
@@ -399,7 +399,7 @@ jobs:
         name: image.tar.gz
     - name: Login to registry
       if: ${{ github.event_name != 'pull_request' }}
-      uses: docker/login-action@7c79b598eaa33458e78e8d0d71e0a9c217dd92af
+      uses: docker/login-action@1edf6180e07d2ffb423fc48a1a552855c0a1f508
       with:
         registry: ${{ env.REGISTRY }}
         username: ${{ github.actor }}

@@ -19,10 +19,10 @@ jobs:
         with:
           fetch-depth: 0
       - name: Install Helm
-        uses: azure/setup-helm@v2.0
+        uses: azure/setup-helm@v2.1
         with:
           version: v3.7.1
-      - uses: actions/setup-python@5d6f0c8a87d930c1f9308457abe4c4568399410a
+      - uses: actions/setup-python@91712e11bb36198065bf804db8a1c69241f2485b
         with:
           python-version: 3.7
       - name: Install chart-testing
@@ -81,7 +81,7 @@ jobs:
           fetch-depth: 0
 
       - name: Create kind ${{ matrix.k8s }} cluster
-        uses: helm/kind-action@2a525709fd0874b75d7ae842d257981b0e0f557d
+        uses: helm/kind-action@4c7909140acfc81a05fc96fed8fea6673ba8ce80
         with:
           node_image: kindest/node:${{ matrix.k8s }}
           version: v0.11.1 
