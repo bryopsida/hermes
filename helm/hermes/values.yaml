@@ -100,7 +100,7 @@ certmanager:
   enabled: true
 grafana:
   enabled: true
-  securityContext:
+  containerSecurityContext:
     allowPrivilegeEscalation: false
     seccompProfile:
       type: RuntimeDefault
