@@ -78,13 +78,22 @@ redis:
   auth:
     existingSecret: "hermes-internal-redis"
     existingSecretPasswordKey: "redisPassword"
-  containerSecurityContext:
-    allowPrivilegeEscalation: false
-    seccompProfile:
-      type: RuntimeDefault
-    capabilities:
-      drop:
-        - ALL
+  replica:
+    containerSecurityContext:
+      allowPrivilegeEscalation: false
+      seccompProfile:
+        type: RuntimeDefault
+      capabilities:
+        drop:
+          - ALL
+  master:
+    containerSecurityContext:
+      allowPrivilegeEscalation: false
+      seccompProfile:
+        type: RuntimeDefault
+      capabilities:
+        drop:
+          - ALL
 mongodb:
   enabled: true
   auth:
