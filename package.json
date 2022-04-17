@@ -4,7 +4,7 @@
   "description": "Collects and receives data which is ingested to a processing pipeline which normalizes to prep for watch evaluations, watches trigger alerts",
   "main": "build/monoApp.ts",
   "scripts": {
-    "test": "jest --coverage --testPathPattern='tests/.*\\.spec\\.ts' --testPathIgnorePatterns='tests/.*\\.rest\\.spec\\.ts'",
+    "test": "NODE_CONFIG_DIR=$PWD/src/config/ jest --coverage --testPathPattern='tests/.*\\.spec\\.ts' --testPathIgnorePatterns='tests/.*\\.rest\\.spec\\.ts'",
     "build": "node_modules/typescript/bin/tsc --project ./ && cp src/config/*.json build/src/config/",
     "docker:build": "docker build -t ghcr.io/bryopsida/hermes-mono:local .",
     "docker:push": "docker push ghcr.io/bryopsida/hermes-mono:local",
@@ -71,7 +71,9 @@
     "jest": "^27.5.1",
     "moq.ts": "^7.3.4",
     "nodemon": "^2.0.15",
+    "proxyquire": "^2.1.3",
     "supertest": "^6.2.2",
+    "testcontainers": "^8.7.1",
     "ts-jest": "^27.1.3",
     "ts-node": "^10.7.0",
     "typescript": "^4.6.2"

@@ -1,5 +1,6 @@
 // runs all of the components in one node process with clustering to spread across cores, not ideal but decent for testing
 // for production use components will be deployed in k8s via helm chart as individuall containers
+// TODO: refactor to testable components
 import { fastify, FastifyInstance } from 'fastify'
 import cluster from 'cluster'
 import { cpus } from 'os'
@@ -22,8 +23,9 @@ import { Cluster, NodeConfiguration, ClusterOptions } from 'ioredis'
 import { IdentityService } from './services/identity/identityService'
 
 const cpuCount = cpus().length
-const redisConfig = redisConfigFactory.buildConfig('task_runner')
 
+// TODO: (smell) move out to a config library/factory
+const redisConfig = redisConfigFactory.buildConfig('task_runner')
 const queueOptions = {
   redis: {
     host: redisConfig.host,
@@ -62,13 +64,13 @@ if (cluster.isPrimary && process.env.USE_CLUSTERING === 'true') {
   })
 
   // create fastify instance
+  // TODO: move out to factory
   const app :FastifyInstance = fastify({
     logger: createLogger({
       serviceName: `worker-${computedConstants.id}-fastify`,
       level: 'debug'
     })
   })
-
   app.register(fastifyHelmet)
 
   // TODO: fix as any cast
