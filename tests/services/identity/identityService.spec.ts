@@ -6,6 +6,7 @@ describe('Services.Identity', () => {
   it('Can Determine If It Can Serve Traffic', async () => {
     const app = fastify()
     const identityService = new IdentityService(app)
+    await identityService.start()
     const canServe = await identityService.canServeTraffic()
     expect(canServe).toBe(true)
   })
@@ -13,14 +14,14 @@ describe('Services.Identity', () => {
     const app = fastify()
     const identityService = new IdentityService(app)
     await identityService.start()
-    expect(await identityService.isAlive).toBe(true)
+    expect(await identityService.isAlive()).toBe(true)
   })
   it('Can Stop', async () => {
     const app = fastify()
     const identityService = new IdentityService(app)
     await identityService.start()
     await identityService.stop()
-    expect(await identityService.isAlive).toBe(false)
+    expect(await identityService.isAlive()).toBe(false)
   })
   it('Serves Traffic', async () => {
     const app = fastify()
@@ -33,11 +34,12 @@ describe('Services.Identity', () => {
     const identityService = new IdentityService(app)
     await identityService.start()
     await identityService.destroy()
-    expect(await identityService.isAlive).toBe(false)
+    expect(await identityService.isAlive()).toBe(false)
   })
   it('Can Determine Its Alive', async () => {
     const app = fastify()
     const identityService = new IdentityService(app)
+    await identityService.start()
     expect(identityService.isAlive()).resolves.toBe(true)
   })
 })

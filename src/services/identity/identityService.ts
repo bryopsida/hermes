@@ -14,26 +14,32 @@ export class IdentityService implements IService {
   })
 
   private readonly provider: Provider
-  private readonly app: FastifyInstance
   private readonly config: IIdentityConfig
   readonly ID: string
+  private _isAlive = false;
 
   constructor (app: FastifyInstance) {
     IdentityService.log.debug('Initializing identity service')
     this.ID = IdentityService.NAME
     this.config = IdentifyConfigFactory.buildConfig(this.ID)
     this.provider = new Provider(this.config.issuer, this.config.providerConfig)
-    this.app = app
+    app.register(middie).then(() => {
+      try {
+        app.use(this.config.mountPath, this.provider.callback)
+      } catch (err) {
+        IdentityService.log.error('Error registering identity service: %s', err)
+      }
+    })
   }
 
   async start (): Promise<void> {
     IdentityService.log.info('Starting identity service on: %s, with issuer: %s', this.config.mountPath, this.config.issuer)
-    await this.app.register(middie)
-    this.app.use(this.config.mountPath, this.provider.callback)
+    this._isAlive = true
   }
 
   stop (): Promise<void> {
     IdentityService.log.info('Stopping identity service')
+    this._isAlive = false
     return Promise.resolve()
   }
 
@@ -42,11 +48,11 @@ export class IdentityService implements IService {
   }
 
   isAlive (): Promise<boolean> {
-    return Promise.resolve(true)
+    return Promise.resolve(this._isAlive)
   }
 
   canServeTraffic (): Promise<boolean> {
-    return Promise.resolve(true)
+    return Promise.resolve(this._isAlive)
   }
 
   servesTraffic (): boolean {
