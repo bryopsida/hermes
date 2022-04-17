@@ -55,7 +55,7 @@ kafka:
   offsetsTopicReplicationFactor: 1
   transactionStateLogReplicationFactor: 1
   heapOpts: "-Xmx256m -Xms256m"
-  securityContext:
+  containerSecurityContext:
     allowPrivilegeEscalation: false
     seccompProfile:
       type: RuntimeDefault
@@ -65,7 +65,7 @@ kafka:
   zookeeper:
     replicaCount: 1
     heapSize: 256
-    securityContext:
+    containerSecurityContext:
       allowPrivilegeEscalation: false
       seccompProfile:
         type: RuntimeDefault
@@ -78,7 +78,7 @@ redis:
   auth:
     existingSecret: "hermes-internal-redis"
     existingSecretPasswordKey: "redisPassword"
-  securityContext:
+  containerSecurityContext:
     allowPrivilegeEscalation: false
     seccompProfile:
       type: RuntimeDefault
@@ -89,7 +89,7 @@ mongodb:
   enabled: true
   auth:
     existingSecret: "hermes-internal-mongodb"
-  securityContext:
+  containerSecurityContext:
     allowPrivilegeEscalation: false
     seccompProfile:
       type: RuntimeDefault
