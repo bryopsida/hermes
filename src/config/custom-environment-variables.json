@@ -20,6 +20,11 @@
       "password": "HERMES_TASK_RUNNER_REDIS_PASSWORD"
     }
   },
+  "identity": {
+    "redis": {
+      "password": "HERMES_IDENTITY_REDIS_PASSWORD"
+    }
+  },
   "bullboard": {
     "redis": {
       "password": "HERMES_BULLBOARD_REDIS_PASSWORD"

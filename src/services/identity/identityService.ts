@@ -1,10 +1,11 @@
 import { FastifyInstance } from 'fastify'
 import middie from 'middie'
-import { Provider } from 'oidc-provider'
+import { Provider, Configuration } from 'oidc-provider'
 import COMPUTED_CONSTANTS from '../../common/computedConstants'
 import { IService } from '../../common/interfaces/service'
 import createLogger from '../../common/logger/factory'
 import { IIdentityConfig, IdentifyConfigFactory } from '../../config/identityConfig'
+import { OidcRedisAdapter } from './redisAdapter'
 
 export class IdentityService implements IService {
   public static readonly NAME = 'identity'
@@ -22,7 +23,10 @@ export class IdentityService implements IService {
     IdentityService.log.debug('Initializing identity service')
     this.ID = IdentityService.NAME
     this.config = IdentifyConfigFactory.buildConfig(this.ID)
-    this.provider = new Provider(this.config.issuer, this.config.providerConfig)
+    const providerConfig = this.config.providerConfig as Configuration
+    providerConfig.adapter = OidcRedisAdapter
+
+    this.provider = new Provider(this.config.issuer, providerConfig)
     app.register(middie).then(() => {
       try {
         app.use(this.config.mountPath, this.provider.callback)
