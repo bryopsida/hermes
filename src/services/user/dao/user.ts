@@ -5,6 +5,7 @@ import mongoose, { Connection } from 'mongoose'
 import configFactory from '../../../config/mongodbConfig'
 import { using } from '../../../common/using'
 import { randomUUID } from 'crypto'
+import argon2 from 'argon2'
 
 const tableName = 'users'
 
@@ -18,7 +19,10 @@ export interface IUser {
   lastActivity?: Date;
   joined: Date;
   tags: string[];
+  // TODO: normalize
+  roles: string[];
   password?: string;
+  passwordChangeNeeded: boolean;
 }
 
 const schema = new mongoose.Schema<IUser>({
@@ -58,9 +62,17 @@ const schema = new mongoose.Schema<IUser>({
     type: String,
     required: true
   },
+  passwordChangeNeeded: {
+    type: Boolean,
+    required: true
+  },
   tags: {
     type: [String],
     required: false
+  },
+  roles: {
+    type: [String],
+    required: true
   }
 })
 
@@ -76,6 +88,8 @@ export class User implements IUser {
   public joined: Date
   public password?: string
   public tags: string[]
+  public roles: string[]
+  public passwordChangeNeeded: boolean
 
   private static readonly log = createLogger({
     serviceName: `user-dao-${COMPUTED_CONSTANTS.id}`,
@@ -93,7 +107,9 @@ export class User implements IUser {
       this.joined = new Date()
       this.password = ''
       this.tags = []
+      this.roles = []
       this.username = ''
+      this.passwordChangeNeeded = true
     } else {
       this.id = user.id
       this.email = user.email
@@ -105,6 +121,8 @@ export class User implements IUser {
       this.password = user.password
       this.tags = user.tags
       this.username = user.username
+      this.roles = user.roles
+      this.passwordChangeNeeded = user.passwordChangeNeeded
     }
   }
 
@@ -185,6 +203,8 @@ export class User implements IUser {
       isLocked: this.isLocked,
       lastActivity: this.lastActivity,
       joined: this.joined,
+      passwordChangeNeeded: this.passwordChangeNeeded,
+      roles: this.roles,
       tags: this.tags
     }
   }
@@ -200,8 +220,28 @@ export class User implements IUser {
       lastActivity: userDto.lastActivity,
       joined: userDto.joined,
       tags: userDto.tags,
+      passwordChangeNeeded: userDto.passwordChangeNeeded,
+      roles: userDto.roles,
       password: undefined
     })
+  }
+
+  static async hashPassword (password: string): Promise<string> {
+    return argon2.hash(password)
+  }
+
+  static async build (username: string, email: string, password: string, roles: string[]): Promise<IUser> {
+    return {
+      id: randomUUID(),
+      username: username,
+      email: email,
+      isLocked: false,
+      joined: new Date(),
+      password: await this.hashPassword(password),
+      passwordChangeNeeded: false,
+      tags: [],
+      roles: roles
+    }
   }
 
   // avoid inclusion of password in conversion to string

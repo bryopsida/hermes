@@ -8,4 +8,6 @@ export interface UserDTO {
   lastActivity?: Date;
   joined: Date;
   tags: string[];
+  roles: string[];
+  passwordChangeNeeded: boolean;
 }
