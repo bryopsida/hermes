@@ -4,12 +4,12 @@ dependencies:
   version: 16.2.7
 - name: redis
   repository: https://charts.bitnami.com/bitnami
-  version: 16.8.5
+  version: 16.8.7
 - name: mongodb
   repository: https://charts.bitnami.com/bitnami
   version: 11.1.8
 - name: grafana
   repository: https://grafana.github.io/helm-charts
   version: 6.26.5
-digest: sha256:7a366f9ac314f28cafbb438bfbb8bb086b8832c565b04f6264275939d0c90627
-generated: "2022-04-22T01:32:19.936753247Z"
+digest: sha256:94a9fa3a4bdc5e4eccab181a3b2137a98b1fa877f9521b20b0635463f6d70bf5
+generated: "2022-04-22T04:11:14.074311829Z"
