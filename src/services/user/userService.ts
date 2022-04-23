@@ -29,9 +29,11 @@ export class UserService implements IService {
   }
 
   private async hasSeedAlreadyOccurred (): Promise<boolean> {
+    // use a redis to get an operational lock, resolve false if another process has already entered the lock.
     return Promise.resolve(true)
   }
 
+  // TODO: interface with bull to get job done or check if it's already been done.
   private async seedAdminAccount (): Promise<void> {
     const executeSeed = process.env.SEED_ADMIN_ACCOUNT === 'true'
     if (!executeSeed) return Promise.resolve()

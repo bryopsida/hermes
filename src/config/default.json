@@ -66,6 +66,13 @@
   },
   "user_manager": {
     "enabled": true,
+    "redis": {
+      "host": "localhost",
+      "port": 6379,
+      "protocol": "redis",
+      "password": "redis",
+      "cluster": false
+    },
     "mongo": {
       "authEnabled": true,
       "host": "localhost",
