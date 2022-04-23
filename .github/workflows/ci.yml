@@ -107,7 +107,7 @@ jobs:
       - name: Extract Docker metadata
         id: meta
         timeout-minutes: 5
-        uses: docker/metadata-action@f2a13332ac1ce8c0a71aeac48a150dbb1838ab67
+        uses: docker/metadata-action@0950af0d7cc44517c4cf423a732b5ad02d839439
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
@@ -121,7 +121,7 @@ jobs:
       - name: Build Docker image
         id: build
         timeout-minutes: 25
-        uses: docker/build-push-action@9472e9021074a3cb3279ba431598b8836d40433f
+        uses: docker/build-push-action@84580d7737e95636c313a859ef41a3f5d77d18f3
         with:
           context: .
           load: true
@@ -174,7 +174,7 @@ jobs:
         if: github.event_name != 'pull_request'
         id: push
         timeout-minutes: 60
-        uses: docker/build-push-action@9472e9021074a3cb3279ba431598b8836d40433f
+        uses: docker/build-push-action@84580d7737e95636c313a859ef41a3f5d77d18f3
         with:
           context: .
           builder: ${{ steps.buildx.outputs.name }}
