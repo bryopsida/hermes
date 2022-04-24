@@ -171,10 +171,10 @@ export class User implements IUser {
     return result
   }
 
-  static async upsert (dataSource: User): Promise<User> {
+  static async upsert (dataSource: IUser): Promise<User> {
     return using<Connection, User>(await this.connect(), async (conn) => {
       const model = this.getModel(conn)
-      await model.updateOne({ id: dataSource.id }, dataSource.toDTO(), { upsert: true }).exec()
+      await model.updateOne({ id: dataSource.id }, dataSource, { upsert: true }).exec()
       return new User(await model.findOne({
         id: dataSource.id
       }).exec())
@@ -231,7 +231,7 @@ export class User implements IUser {
   }
 
   static async build (username: string, email: string, password: string, roles: string[]): Promise<IUser> {
-    return {
+    return new User({
       id: randomUUID(),
       username: username,
       email: email,
@@ -241,7 +241,7 @@ export class User implements IUser {
       passwordChangeNeeded: false,
       tags: [],
       roles: roles
-    }
+    })
   }
 
   // avoid inclusion of password in conversion to string

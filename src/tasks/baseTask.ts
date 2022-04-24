@@ -9,7 +9,11 @@ export abstract class BaseTask implements ITask {
 
   protected constructor (queue: Queue, name: string) {
     this.queue = queue
-    queue.process(name, this.run.bind(this))
+    this.shouldBeQueued().then((should) => {
+      if (should) {
+        queue.process(name, this.run.bind(this))
+      }
+    })
   }
 
   protected async run (job: Job<any>, done: DoneCallback) : Promise<unknown> {
@@ -28,6 +32,9 @@ export abstract class BaseTask implements ITask {
   }
 
   abstract processJob (job: Job<any>): Promise<unknown>;
+  protected shouldBeQueued (): Promise<boolean> {
+    return Promise.resolve(true)
+  }
 
   protected logToJob (message: string, job: Job<any>) {
     this.log.debug(message)

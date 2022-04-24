@@ -11,6 +11,7 @@ import COMPUTED_CONSTANTS from '../../common/computedConstants'
 import { QueueFetchesTask } from '../../tasks/queueFetches/queueFetchesTask'
 import taskConfigFactory, { IFetchTaskConfig } from '../../config/taskConfig'
 import kafkaConfigFactory from '../../config/kafkaConfig'
+import { SeedAdminUserTask } from '../../tasks/user/seedAdminAccount'
 
 // TODO: refactor to be more IoC friendly
 const fetchTaskConfig = taskConfigFactory<IFetchTaskConfig>('fetch')
@@ -114,7 +115,8 @@ export class TaskRunnerService implements IService {
       // check if the job with that ID already exists and has completed
       // if not add it to the queue
       if (!executeSeed) return Promise.resolve()
-      
+      const seedTask: ITask = new SeedAdminUserTask(this._queues.get(QueueNames.USER_QUEUE) as Queue)
+      this._tasks.set(seedTask.id, seedTask)
     }
 
     private async createUserQueue () : Promise<void> {

@@ -7,7 +7,6 @@ import { IService } from '../../common/interfaces/service'
 import registerUserRoutes from './routes/userRoutes'
 import createLogger from '../../common/logger/factory'
 import COMPUTED_CONSTANTS from '../../common/computedConstants'
-import { IUser } from './dao/user'
 
 export class UserService implements IService {
   readonly ID = UserService.NAME
@@ -28,30 +27,7 @@ export class UserService implements IService {
     registerUserRoutes(app)
   }
 
-  private async hasSeedAlreadyOccurred (): Promise<boolean> {
-    // use a redis to get an operational lock, resolve false if another process has already entered the lock.
-    return Promise.resolve(true)
-  }
-
-  // TODO: interface with bull to get job done or check if it's already been done.
-  private async seedAdminAccount (): Promise<void> {
-    const executeSeed = process.env.SEED_ADMIN_ACCOUNT === 'true'
-    if (!executeSeed) return Promise.resolve()
-    // check if seed marker already exists
-    if (await this.hasSeedAlreadyOccurred()) {
-      UserService.log.warn('Account has already been seeded!')
-      return Promise.resolve()
-    }
-    const adminUserAccount = process.env.INITIAL_ADMIN_USER_ACCOUNT
-    const adminPassword = process.env.INITIAL_ADMIN_PASSWORD
-    if (!adminUserAccount || !adminPassword) {
-      UserService.log.error('Admin account information not found! Cannot seed account!')
-      return Promise.resolve()
-    }
-  }
-
   async start (): Promise<void> {
-    await this.seedAdminAccount()
     this._isAlive = true
     return Promise.resolve()
   }
