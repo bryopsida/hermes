@@ -24,13 +24,13 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v3
     - name: Initialize CodeQL
-      uses: github/codeql-action/init@v1
+      uses: github/codeql-action/init@v2
       with:
         languages: javascript
     - name: Autobuild
-      uses: github/codeql-action/autobuild@v1
+      uses: github/codeql-action/autobuild@v2
     - name: Perform CodeQL Analysis
-      uses: github/codeql-action/analyze@v1
+      uses: github/codeql-action/analyze@v2
   smoke-test:
     name: "Smoke Test"
     runs-on: ubuntu-latest
@@ -133,7 +133,7 @@ jobs:
           output: 'scan-results.sarif'
       - name: Upload Container Scan SARIF report
         if: ${{ env.CODEQL_ENABLED }}
-        uses: github/codeql-action/upload-sarif@v1
+        uses: github/codeql-action/upload-sarif@v2
         with:
           sarif_file: 'scan-results.sarif'
       - name: Build SBOM
@@ -228,7 +228,7 @@ jobs:
           path: kubesec-results.sarif
       - name: Upload Kubesec scan results to GitHub Security tab
         if: ${{ env.CODEQL_ENABLED }}
-        uses: github/codeql-action/upload-sarif@v1
+        uses: github/codeql-action/upload-sarif@v2
         with:
           sarif_file: kubesec-results.sarif
   test-deploy:
