@@ -14,11 +14,18 @@ export class SeedAdminUserTask extends BaseTask {
 
   public constructor (queue: Queue) {
     super(queue, SeedAdminUserTask.ID)
+    this.log.debug('Created Admin Seed Task')
   }
 
   private async hasSeedAlreadyOccurred (): Promise<boolean> {
     const job = await this.queue.getJob(this.id)
-    return job != null
+    const hasSeedAlreadyOccurred = job != null
+    if (hasSeedAlreadyOccurred) {
+      this.log.debug('Admin seed already occurred, job will not be created')
+    } else {
+      this.log.debug('Admin seed has not occurred, job will be created')
+    }
+    return hasSeedAlreadyOccurred
   }
 
   /**

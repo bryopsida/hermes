@@ -4,6 +4,8 @@ services:
     image: redis:alpine
     ports:
       - "6379:6379"
+    command: >
+     --requirepass redis 
     volumes:
         - redis:/data
   zookeeper:

@@ -114,9 +114,14 @@ export class TaskRunnerService implements IService {
       const executeSeed = process.env.SEED_ADMIN_ACCOUNT === 'true'
       // check if the job with that ID already exists and has completed
       // if not add it to the queue
-      if (!executeSeed) return Promise.resolve()
-      const seedTask: ITask = new SeedAdminUserTask(this._queues.get(QueueNames.USER_QUEUE) as Queue)
-      this._tasks.set(seedTask.id, seedTask)
+      if (!executeSeed) {
+        this.log.debug('Not creating the admin seed task')
+        return Promise.resolve()
+      } else {
+        const seedTask: ITask = new SeedAdminUserTask(this._queues.get(QueueNames.USER_QUEUE) as Queue)
+        this._tasks.set(seedTask.id, seedTask)
+        this.log.info('Created admin seed task')
+      }
     }
 
     private async createUserQueue () : Promise<void> {

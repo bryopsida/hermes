@@ -5,13 +5,17 @@ import { ITask } from '../common/interfaces/task'
 export abstract class BaseTask implements ITask {
   public abstract id: string;
   protected abstract log: Logger;
+  protected shouldExecuteImmediately: boolean = false;
   protected readonly queue: Queue;
 
   protected constructor (queue: Queue, name: string) {
     this.queue = queue
+    // processor is registered for the queue
+    queue.process(name, this.run.bind(this))
     this.shouldBeQueued().then((should) => {
       if (should) {
-        queue.process(name, this.run.bind(this))
+        this.log.debug(`Queueing ${this.id}`)
+        this.queue.add(this.id, {})
       }
     })
   }
