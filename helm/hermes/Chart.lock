@@ -1,15 +1,15 @@
 dependencies:
 - name: kafka
   repository: https://charts.bitnami.com/bitnami
-  version: 16.2.7
+  version: 16.2.9
 - name: redis
   repository: https://charts.bitnami.com/bitnami
-  version: 16.8.7
+  version: 16.8.9
 - name: mongodb
   repository: https://charts.bitnami.com/bitnami
-  version: 11.1.10
+  version: 11.2.0
 - name: grafana
   repository: https://grafana.github.io/helm-charts
-  version: 6.26.5
-digest: sha256:ef562048bb549c1bd5267a70b925843a4e7c7d3f9876b8dc53442d3531274789
-generated: "2022-04-23T16:47:56.295935928Z"
+  version: 6.28.0
+digest: sha256:df1ada977fc2b05b66574952bf443cf5d75346385454eea0140a33a825257520
+generated: "2022-04-28T02:49:21.944795137Z"
