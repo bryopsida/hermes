@@ -453,7 +453,13 @@ jobs:
       timeout-minutes: 20
       run: |
         export SHORT_SHA=$(git rev-parse --short HEAD)
-        npm run helm:deploy --helm_namespace=$HELM_NAMESPACE --helm_args="-f helm/hermes/envs/lab.yaml --set image.repository=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }} --set image.tag=sha-$SHORT_SHA --timeout 10m"
+        helm repo add bitnami https://charts.bitnami.com/bitnami
+        helm repo add grafana https://grafana.github.io/helm-charts
+        helm repo add hermes https://bryopsida.github.io/hermes
+        helm repo update
+        helm --namespace $HELM_NAMESPACE upgrade --install hermes hermes/hermes \
+          --debug --wait -f helm/hermes/envs/lab.yaml --set image.repository=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }} \
+          --set image.tag=sha-$SHORT_SHA --timeout 10m"
     - name: Cleanup Wireguard
       timeout-minutes: 4
       if: always()
