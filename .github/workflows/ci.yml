@@ -43,7 +43,7 @@ jobs:
     - name: Run Smoke Tests
       id: build
       timeout-minutes: 25
-      uses: docker/build-push-action@fcd91249e5fa3d8dd25f0a6d707cd1aa263e59d3
+      uses: docker/build-push-action@c5e6528d5ddefc82f682165021e05edf58044bce
       with:
         context: .
         file: smoke-test.Dockerfile
@@ -108,7 +108,7 @@ jobs:
       - name: Build Docker image
         id: build
         timeout-minutes: 25
-        uses: docker/build-push-action@fcd91249e5fa3d8dd25f0a6d707cd1aa263e59d3
+        uses: docker/build-push-action@c5e6528d5ddefc82f682165021e05edf58044bce
         with:
           context: .
           load: true
@@ -161,7 +161,7 @@ jobs:
         if: github.event_name != 'pull_request'
         id: push
         timeout-minutes: 60
-        uses: docker/build-push-action@fcd91249e5fa3d8dd25f0a6d707cd1aa263e59d3
+        uses: docker/build-push-action@c5e6528d5ddefc82f682165021e05edf58044bce
         with:
           context: .
           builder: ${{ steps.buildx.outputs.name }}
