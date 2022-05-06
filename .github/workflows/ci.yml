@@ -39,7 +39,7 @@ jobs:
       uses: actions/checkout@v3
     - name: Setup Docker buildx
       timeout-minutes: 4
-      uses: docker/setup-buildx-action@f211e3e9ded2d9377c8cadc4489a4e38014bc4c9
+      uses: docker/setup-buildx-action@91cb32d715c128e5f0ede915cd7e196ab7799b83
     - name: Run Smoke Tests
       id: build
       timeout-minutes: 25
@@ -82,7 +82,7 @@ jobs:
       - name: Setup Docker buildx
         id: buildx
         timeout-minutes: 4
-        uses: docker/setup-buildx-action@f211e3e9ded2d9377c8cadc4489a4e38014bc4c9
+        uses: docker/setup-buildx-action@91cb32d715c128e5f0ede915cd7e196ab7799b83
       - name: Log into registry
         if: github.event_name != 'pull_request'
         timeout-minutes: 5
