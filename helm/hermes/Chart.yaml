@@ -20,8 +20,4 @@ dependencies:
     repository: https://charts.bitnami.com/bitnami
     condition: mongodb.enabled
     alias: mongodb
-  - name: grafana
-    version: 6.29.1
-    repository: https://grafana.github.io/helm-charts
-    condition: grafana.enabled
-    alias: grafana
+
