@@ -454,7 +454,6 @@ jobs:
       run: |
         export SHORT_SHA=$(git rev-parse --short HEAD)
         helm repo add bitnami https://charts.bitnami.com/bitnami
-        helm repo add grafana https://grafana.github.io/helm-charts
         helm repo add hermes https://bryopsida.github.io/hermes
         helm repo update
         helm --namespace $HELM_NAMESPACE upgrade --install hermes hermes/hermes \

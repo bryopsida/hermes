@@ -24,7 +24,6 @@ chmod +x .bin/semver2
 
 # add helm repos
 helm repo add bitnami https://charts.bitnami.com/bitnami
-helm repo add grafana https://grafana.github.io/helm-charts
 
 # Compute required kubernetes api versions
 apis=''
