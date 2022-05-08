@@ -31,7 +31,4 @@ jobs:
           git add .
           git commit -m "Bump Helm Version"
           git push
-      - name: Trigger Release
-        run: |
-          node scripts/triggerHelmRelease.js
         

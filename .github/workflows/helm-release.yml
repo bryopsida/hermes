@@ -1,7 +1,10 @@
 name: Release Charts
 on:
-  repository_dispatch:
-    types: [helm-release]
+  push:
+    branches:
+      - main
+    paths:
+      - "helm/hermes/Chart.yaml"
 jobs:
   release:
     runs-on: ubuntu-latest
