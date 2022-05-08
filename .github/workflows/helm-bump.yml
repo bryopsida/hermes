@@ -8,7 +8,7 @@ on:
       - ".github/workflows/helm-bump.yml"
       - "scripts/triggerHelmRelease.js"
 jobs:
-  release:
+  bump:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
