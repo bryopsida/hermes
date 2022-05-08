@@ -18,6 +18,12 @@ jobs:
         run: |
           git config user.name "$GITHUB_ACTOR"
           git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
+      - name: Bump Helm Version
+        run: |
+          node scripts/bumpHelmVersion.js
+          git add .
+          git commit -m "Bump Helm Version"
+          git push
       - name: Add Repos
         run: |
           helm repo add bitnami https://charts.bitnami.com/bitnami
