@@ -1,7 +1,7 @@
 const { Octokit } = require('@octokit/rest')
 const token = process.env.GITHUB_TOKEN
-const repo = process.env.GITHUB_REPO
-const owner = process.env.GITHUB_OWNER
+const repo = process.env.GITHUB_REPOSITORY
+const owner = process.env.GITHUB_REPOSITORY_OWNER
 const octokit = new Octokit({
   auth: token
 })
