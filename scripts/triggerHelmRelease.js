@@ -9,7 +9,7 @@ octokit.rest.repos.createDispatchEvent({
   owner: owner,
   repo: repo,
   event_type: 'helm-release',
-  client_payload: JSON.parse({})
+  client_payload: {}
 }).then(() => {
   console.log('Created dispatch for helm release...')
 }).catch((err) => {

@@ -6,6 +6,7 @@ on:
     paths:
       - "helm/**"
       - ".github/workflows/helm-bump.yml"
+      - "scripts/triggerHelmRelease.js"
 jobs:
   release:
     runs-on: ubuntu-latest
