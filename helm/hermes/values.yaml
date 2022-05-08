@@ -60,4 +60,4 @@ mongodb:
   auth:
     existingSecret: "hermes-internal-mongodb"
 certmanager:
-local  enabled: true
+  enabled: true
