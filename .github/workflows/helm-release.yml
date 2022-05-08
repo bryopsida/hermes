@@ -1,11 +1,7 @@
 name: Release Charts
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - "helm/**"
-      - ".github/workflows/helm-release.yml"
+  repository_dispatch:
+    types: [helm-release]
 jobs:
   release:
     runs-on: ubuntu-latest
@@ -18,18 +14,6 @@ jobs:
         run: |
           git config user.name "$GITHUB_ACTOR"
           git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
-      - name: Setup Node.JS
-        uses: actions/setup-node@v3
-        with:
-          node-version: 16
-      - name: Install Dependencies
-        run: npm ci
-      - name: Bump Helm Version
-        run: |
-          node scripts/bumpHelmVersion.js
-          git add .
-          git commit -m "Bump Helm Version"
-          git push
       - name: Add Repos
         run: |
           helm repo add bitnami https://charts.bitnami.com/bitnami
