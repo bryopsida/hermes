@@ -23,6 +23,6 @@
     "@vercel/ncc": "^0.33.3"
   },
   "dependencies": {
-    "commander": "^9.1.0"
+    "commander": "^9.2.0"
   }
 }
