@@ -107,23 +107,3 @@ mongodb:
         - ALL
 certmanager:
   enabled: true
-grafana:
-  enabled: true
-  containerSecurityContext:
-    allowPrivilegeEscalation: false
-    seccompProfile:
-      type: RuntimeDefault
-    capabilities:
-      drop:
-        - ALL
-  rbac:
-    create: false
-    pspEnabled: false
-  ingress:
-    enabled: true
-    hosts:
-      - grafana.hermes.local
-    tls:
-      - secretName: grafana-hermes-tls
-        hosts:
-          - grafana.hermes.local
