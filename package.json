@@ -45,7 +45,7 @@
     "axios": "^0.26.1",
     "bull": "^4.8.2",
     "config": "^3.3.7",
-    "fastify": "^3.27.4",
+    "fastify": "^3.29.0",
     "fastify-helmet": "^7.0.1",
     "librdkafka": "^0.0.0",
     "mongoose": "^6.3.1",
