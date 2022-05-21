@@ -6,7 +6,7 @@ version: 0.1.32
 appVersion: 0.1.0
 dependencies:
   - name: kafka
-    version: 16.3.1
+    version: 16.3.2
     repository: https://charts.bitnami.com/bitnami
     condition: kafka.enabled
     alias: kafka
