@@ -1,12 +1,12 @@
 dependencies:
 - name: kafka
   repository: https://charts.bitnami.com/bitnami
-  version: 17.0.0
+  version: 17.1.0
 - name: redis
   repository: https://charts.bitnami.com/bitnami
   version: 16.9.11
 - name: mongodb
   repository: https://charts.bitnami.com/bitnami
   version: 12.1.12
-digest: sha256:9f60e2699bf50b6ebeaf07db22c8ab21c56265daa5e36fd809b0eeb96fb10c07
-generated: "2022-05-26T10:35:15.429755329Z"
+digest: sha256:f837e4ffd0e878dea64fbdb9e8f91e1c16cd17023139a294adc3729264b7916e
+generated: "2022-05-26T18:50:43.266065779Z"
