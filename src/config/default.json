@@ -65,6 +65,12 @@
       "enabled": true
     }
   },
+  "tartarus": {
+    "enabled": true,
+    "gates": [
+      
+    ]
+  },
   "task_runner": {
     "enabled": true,
     "redis": {
