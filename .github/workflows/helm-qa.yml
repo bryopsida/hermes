@@ -22,11 +22,11 @@ jobs:
         uses: azure/setup-helm@v2.1
         with:
           version: v3.7.1
-      - uses: actions/setup-python@98f2ad02fd48d057ee3b4d4f66525b231c3e52b6
+      - uses: actions/setup-python@081a3cf1a51ab5fff2ae9d70f0cfacf0686293ea
         with:
           python-version: 3.7
       - name: Install chart-testing
-        uses: helm/chart-testing-action@c027be8bc4049de5fee5d05cb300bcbbdebb2903
+        uses: helm/chart-testing-action@e38d23e463607d96fd08c2464363b1ce104446d3
         with:
           version: v3.4.0
       - name: Run lint
@@ -47,7 +47,6 @@ jobs:
     strategy:
       matrix:
         k8s:
-          - v1.20.15 
           - v1.21.9
           - v1.22.6
           - v1.23.3
@@ -70,7 +69,6 @@ jobs:
     strategy:
       matrix:
         k8s:
-          - v1.20.7
           - v1.21.2
           - v1.22.5
           - v1.23.3
@@ -81,13 +79,13 @@ jobs:
           fetch-depth: 0
 
       - name: Create kind ${{ matrix.k8s }} cluster
-        uses: helm/kind-action@4c7909140acfc81a05fc96fed8fea6673ba8ce80
+        uses: helm/kind-action@deab45fc8df9de5090a604e8ec11778eea7170bd
         with:
           node_image: kindest/node:${{ matrix.k8s }}
           version: v0.11.1 
 
       - name: Install chart-testing
-        uses: helm/chart-testing-action@c027be8bc4049de5fee5d05cb300bcbbdebb2903 
+        uses: helm/chart-testing-action@e38d23e463607d96fd08c2464363b1ce104446d3 
         with:
           version: v3.4.0 
 

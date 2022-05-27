@@ -11,8 +11,14 @@ import COMPUTED_CONSTANTS from '../../common/computedConstants'
 import { QueueFetchesTask } from '../../tasks/queueFetches/queueFetchesTask'
 import taskConfigFactory, { IFetchTaskConfig } from '../../config/taskConfig'
 import kafkaConfigFactory from '../../config/kafkaConfig'
+import { SeedAdminUserTask } from '../../tasks/user/seedAdminAccount'
 
+// TODO: refactor to be more IoC friendly
 const fetchTaskConfig = taskConfigFactory<IFetchTaskConfig>('fetch')
+
+/**
+ * Houses the tasks executed by the task backend (Bull)
+ */
 export class TaskRunnerService implements IService {
     public static readonly NAME = 'task_runner'
     private readonly _queues: Map<QueueNames, Queue> = new Map();
@@ -41,9 +47,7 @@ export class TaskRunnerService implements IService {
       return false
     }
 
-    public async start (): Promise<void> {
-      this.log.info('Starting task runner service')
-
+    private async createFetchQueue () {
       const fetchQueueOptions = {
         ...this._queueOptions,
         ...{
@@ -51,14 +55,6 @@ export class TaskRunnerService implements IService {
         }
       } as QueueOptions
 
-      const heartbeatQueueOptions = {
-        ...this._queueOptions,
-        ...{
-          prefix: '{heartbeat}'
-        }
-      } as QueueOptions
-
-      // TODO: refactor be clean, generic
       const FETCH_QUEUE = new BullQueue(QueueNames.FETCH_QUEUE, fetchQueueOptions).on('error', (err) => {
         this.log.error('Fetch queue error')
         this.log.error(err)
@@ -71,39 +67,93 @@ export class TaskRunnerService implements IService {
         this.log.error(error)
       })
 
-      const HEARTBEAT_QUEUE = new BullQueue(QueueNames.HEARTBEAT_QUEUE, heartbeatQueueOptions).on('error', (err) => {
-        this.log.error('Heartbeat queue error')
-        this.log.error(err)
-      })
-      this.log.info(`Heartbeat queue ${HEARTBEAT_QUEUE.name} created, with prefix ${heartbeatQueueOptions.prefix}`)
-      HEARTBEAT_QUEUE.on('Error in heartbeat queue', (error) => {
-        this.log.error(error)
-      })
-      HEARTBEAT_QUEUE.add('heartbeat', {}, { repeat: { cron: '*/1 * * * *' } })
       FETCH_QUEUE.add('queue_fetches', {
         baseUrl: fetchTaskConfig.sourceApiUrl,
         batchSize: fetchTaskConfig.batchSize
       }, { repeat: { cron: '*/5 * * * *' } })
 
       this._queues.set(QueueNames.FETCH_QUEUE, FETCH_QUEUE)
-      this._queues.set(QueueNames.HEARTBEAT_QUEUE, HEARTBEAT_QUEUE)
-
-      // load seed tasks from json file
-
-      // TODO: this smells, evaluate and refactor
       const fetchTask: ITask = new FetchTask(this._queues.get(QueueNames.FETCH_QUEUE)as Queue, new Producer({
         'metadata.broker.list': kafkaConfigFactory.buildConfig(TaskRunnerService.NAME).brokers.join(',')
       }, kafkaTopicConfig.jsonData.producer as ProducerTopicConfig))
 
+      const queueFetchTask: ITask = new QueueFetchesTask(this._queues.get(QueueNames.FETCH_QUEUE) as Queue)
+      this._tasks.set(fetchTask.id, fetchTask)
+      this._tasks.set(queueFetchTask.id, queueFetchTask)
+    }
+
+    private async createHeartbeatQueue (): Promise<void> {
+      const heartbeatQueueOptions = {
+        ...this._queueOptions,
+        ...{
+          prefix: '{heartbeat}'
+        }
+      } as QueueOptions
+
+      const HEARTBEAT_QUEUE = new BullQueue(QueueNames.HEARTBEAT_QUEUE, heartbeatQueueOptions).on('error', (err) => {
+        this.log.error('Heartbeat queue error')
+        this.log.error(err)
+      })
+
+      this.log.info(`Heartbeat queue ${HEARTBEAT_QUEUE.name} created, with prefix ${heartbeatQueueOptions.prefix}`)
+
+      HEARTBEAT_QUEUE.on('error', (error) => {
+        this.log.error('Error in heartbeat queue')
+        this.log.error(error)
+      })
+      HEARTBEAT_QUEUE.add('heartbeat', {}, { repeat: { cron: '*/1 * * * *' } })
+
+      this._queues.set(QueueNames.HEARTBEAT_QUEUE, HEARTBEAT_QUEUE)
       const heartbeatTask: ITask = new HeartbeatTask(this._queues.get(QueueNames.HEARTBEAT_QUEUE) as Queue, new Producer({
         'metadata.broker.list': kafkaConfigFactory.buildConfig(TaskRunnerService.NAME).brokers.join(',')
       }, kafkaTopicConfig.heartbeats.producer as ProducerTopicConfig))
-      const queueFetchTask: ITask = new QueueFetchesTask(this._queues.get(QueueNames.FETCH_QUEUE) as Queue)
-      this._tasks.set(fetchTask.id, fetchTask)
       this._tasks.set(heartbeatTask.id, heartbeatTask)
-      this._tasks.set(queueFetchTask.id, queueFetchTask)
+    }
 
-      return Promise.resolve()
+    private async addSeedAdminUserJobIfEnabled () : Promise<void> {
+      const executeSeed = process.env.SEED_ADMIN_ACCOUNT === 'true'
+      // check if the job with that ID already exists and has completed
+      // if not add it to the queue
+      if (!executeSeed) {
+        this.log.debug('Not creating the admin seed task')
+        return Promise.resolve()
+      } else {
+        const seedTask: ITask = new SeedAdminUserTask(this._queues.get(QueueNames.USER_QUEUE) as Queue)
+        this._tasks.set(seedTask.id, seedTask)
+        this.log.info('Created admin seed task')
+      }
+    }
+
+    private async createUserQueue () : Promise<void> {
+      this.log.info('Creating user manamgent queue')
+      const userQueueOptions = {
+        ...this._queueOptions,
+        ...{
+          prefix: '{user}'
+        }
+      } as QueueOptions
+
+      const USER_QUEUE = new BullQueue(QueueNames.USER_QUEUE, userQueueOptions).on('error', (err) => {
+        this.log.error('User queue error')
+        this.log.error(err)
+      })
+
+      this.log.info(`User queue ${USER_QUEUE.name} created, with prefix ${userQueueOptions.prefix}`)
+
+      USER_QUEUE.on('error', (error) => {
+        this.log.error('Error in user queue')
+        this.log.error(error)
+      })
+      this._queues.set(QueueNames.USER_QUEUE, USER_QUEUE)
+      await this.addSeedAdminUserJobIfEnabled()
+    }
+
+    public async start (): Promise<void> {
+      this.log.info('Starting task runner service')
+      await this.createFetchQueue()
+      await this.createHeartbeatQueue()
+      await this.createUserQueue()
+      this.log.info('Task runner service started')
     }
 
     async stop (): Promise<void> {

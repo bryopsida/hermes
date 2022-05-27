@@ -1,5 +1,6 @@
 // runs all of the components in one node process with clustering to spread across cores, not ideal but decent for testing
 // for production use components will be deployed in k8s via helm chart as individuall containers
+// TODO: refactor to testable components
 import { fastify, FastifyInstance } from 'fastify'
 import cluster from 'cluster'
 import { cpus } from 'os'
@@ -19,11 +20,14 @@ import { BullBoardService } from './services/bullBoard/bullboardServices'
 import redisConfigFactory from './config/redisConfig'
 import { QueueOptions } from 'bull'
 import { Cluster, NodeConfiguration, ClusterOptions } from 'ioredis'
+import { IdentityService } from './services/identity/identityService'
+import { UserService } from './services/user/userService'
 import { TartarusService } from './services/tartarus/tartarusServices'
 
 const cpuCount = cpus().length
-const redisConfig = redisConfigFactory.buildConfig('task_runner')
 
+// TODO: (smell) move out to a config library/factory
+const redisConfig = redisConfigFactory.buildConfig('task_runner')
 const queueOptions = {
   redis: {
     host: redisConfig.host,
@@ -62,13 +66,13 @@ if (cluster.isPrimary && process.env.USE_CLUSTERING === 'true') {
   })
 
   // create fastify instance
+  // TODO: move out to factory
   const app :FastifyInstance = fastify({
     logger: createLogger({
       serviceName: `worker-${computedConstants.id}-fastify`,
       level: 'debug'
     })
   })
-
   app.register(fastifyHelmet)
 
   // TODO: fix as any cast
@@ -79,6 +83,8 @@ if (cluster.isPrimary && process.env.USE_CLUSTERING === 'true') {
     isServiceEnabled(WatchManagementService.NAME) ? new WatchManagementService(app) : undefined,
     isServiceEnabled(TheatreService.NAME) ? new TheatreService() : undefined,
     isServiceEnabled(BullBoardService.NAME) ? new BullBoardService(app, queueOptions) : undefined,
+    isServiceEnabled(IdentityService.NAME) ? new IdentityService(app) : undefined,
+    isServiceEnabled(UserService.NAME) ? new UserService(app) : undefined,
     isServiceEnabled(TartarusService.NAME) ? new TartarusService() : undefined
   ].filter(s => s != null) as Array<IService>
 

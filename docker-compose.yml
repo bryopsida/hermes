@@ -4,10 +4,13 @@ services:
     image: redis:alpine
     ports:
       - "6379:6379"
+    command: >
+     --requirepass redis 
     volumes:
         - redis:/data
   zookeeper:
     image: confluentinc/cp-zookeeper:latest
+    platform: linux/amd64
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
       ZOOKEEPER_TICK_TIME: 2000
@@ -27,6 +30,7 @@ services:
     - mongodb:/mongo/db
   kafka:
     image: confluentinc/cp-kafka:latest
+    platform: linux/amd64
     depends_on:
       - zookeeper
     ports:
@@ -41,9 +45,6 @@ services:
       KAFKA_DEFAULT_REPLICATION_FACTOR: 1
     volumes: 
       - kafka:/var/lib/kafka/data
-networks:
-  elastic:
-    driver: bridge
 volumes:
   redis:
   zookeeperdata:

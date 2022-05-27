@@ -12,8 +12,17 @@ serviceAccount:
   annotations: {}
   name: ""
 podAnnotations: {}
-podSecurityContext: {}
-securityContext: {}
+podSecurityContext:
+  runAsUser: 1000
+  runAsGroup: 1000
+  fsGroup: 1000
+securityContext:
+  allowPrivilegeEscalation: false
+  seccompProfile:
+    type: RuntimeDefault
+  capabilities:
+    drop:
+      - ALL
 service:
   type: ClusterIP
   port: 80
@@ -46,31 +55,55 @@ kafka:
   offsetsTopicReplicationFactor: 1
   transactionStateLogReplicationFactor: 1
   heapOpts: "-Xmx256m -Xms256m"
+  containerSecurityContext:
+    allowPrivilegeEscalation: false
+    seccompProfile:
+      type: RuntimeDefault
+    capabilities:
+      drop:
+        - ALL
   zookeeper:
     replicaCount: 1
     heapSize: 256
+    containerSecurityContext:
+      allowPrivilegeEscalation: false
+      seccompProfile:
+        type: RuntimeDefault
+      capabilities:
+        drop:
+          - ALL
 redis:
   enabled: true
   architecture: "standalone"
   auth:
     existingSecret: "hermes-internal-redis"
     existingSecretPasswordKey: "redisPassword"
+  replica:
+    containerSecurityContext:
+      allowPrivilegeEscalation: false
+      seccompProfile:
+        type: RuntimeDefault
+      capabilities:
+        drop:
+          - ALL
+  master:
+    containerSecurityContext:
+      allowPrivilegeEscalation: false
+      seccompProfile:
+        type: RuntimeDefault
+      capabilities:
+        drop:
+          - ALL
 mongodb:
   enabled: true
   auth:
     existingSecret: "hermes-internal-mongodb"
+  containerSecurityContext:
+    allowPrivilegeEscalation: false
+    seccompProfile:
+      type: RuntimeDefault
+    capabilities:
+      drop:
+        - ALL
 certmanager:
   enabled: true
-grafana:
-  enabled: true
-  rbac:
-    create: false
-    pspEnabled: false
-  ingress:
-    enabled: true
-    hosts:
-      - grafana.hermes.local
-    tls:
-      - secretName: grafana-hermes-tls
-        hosts:
-          - grafana.hermes.local

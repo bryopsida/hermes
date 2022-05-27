@@ -5,11 +5,19 @@ import { ITask } from '../common/interfaces/task'
 export abstract class BaseTask implements ITask {
   public abstract id: string;
   protected abstract log: Logger;
+  protected shouldExecuteImmediately: boolean = false;
   protected readonly queue: Queue;
 
   protected constructor (queue: Queue, name: string) {
     this.queue = queue
+    // processor is registered for the queue
     queue.process(name, this.run.bind(this))
+    this.shouldBeQueued().then((should) => {
+      if (should) {
+        this.log.debug(`Queueing ${this.id}`)
+        this.queue.add(this.id, {})
+      }
+    })
   }
 
   protected async run (job: Job<any>, done: DoneCallback) : Promise<unknown> {
@@ -28,6 +36,9 @@ export abstract class BaseTask implements ITask {
   }
 
   abstract processJob (job: Job<any>): Promise<unknown>;
+  protected shouldBeQueued (): Promise<boolean> {
+    return Promise.resolve(true)
+  }
 
   protected logToJob (message: string, job: Job<any>) {
     this.log.debug(message)
