@@ -2,9 +2,37 @@ import Redis from 'ioredis'
 import { isEmpty } from 'lodash'
 import { Adapter, AdapterPayload } from 'oidc-provider'
 import configFactory from '../../config/redisConfig'
+import { IUsableClosable } from '../../common/using'
 
 const redisConfig = configFactory.buildConfig('identity')
-const client = new Redis(`redis://${redisConfig.host}:${redisConfig.port}`, { keyPrefix: 'oidc:', password: redisConfig.password })
+
+export class RedisClientSingleton {
+  private static _instance : RedisClientSingleton;
+  private _isDisposed : boolean;
+
+  private readonly _redisClient: Redis.Redis;
+
+  private constructor () {
+    this._isDisposed = false
+    this._redisClient = new Redis(`redis://${redisConfig.host}:${redisConfig.port}`, { keyPrefix: 'oidc:', password: redisConfig.password })
+  }
+
+  public getClient () : Redis.Redis {
+    if (this._isDisposed) throw new Error('Redis client object disposed')
+    return this._redisClient
+  }
+
+  public closeClient () : Promise<unknown> {
+    this._isDisposed = true
+    this._redisClient.disconnect(false)
+    return Promise.resolve()
+  }
+
+  public static getInstance () {
+    if (!this._instance) this._instance = new RedisClientSingleton()
+    return this._instance
+  }
+}
 
 const grantable = new Set([
   'AccessToken',
@@ -33,16 +61,20 @@ function uidKeyFor (uid : string) : string {
   return `uid:${uid}`
 }
 
-export class OidcRedisAdapter implements Adapter {
+export class OidcRedisAdapter implements Adapter, IUsableClosable {
   private readonly name: string;
 
   constructor (name : string) {
     this.name = name
   }
 
+  public async close (): Promise<void> {
+    await RedisClientSingleton.getInstance().closeClient()
+  }
+
   async upsert (id: string, payload: AdapterPayload, expiresIn: number): Promise<void | undefined> {
     const key = this.key(id)
-    const multi = client.multi()
+    const multi = RedisClientSingleton.getInstance().getClient().multi()
     if (consumable.has(this.name)) {
       const store = {
         payload: JSON.stringify(payload)
@@ -62,7 +94,7 @@ export class OidcRedisAdapter implements Adapter {
       multi.rpush(grantKey, key)
       // if you're seeing grant key lists growing out of acceptable proportions consider using LTRIM
       // here to trim the list to an appropriate length
-      const ttl = await client.ttl(grantKey)
+      const ttl = await RedisClientSingleton.getInstance().getClient().ttl(grantKey)
       if (expiresIn > ttl) {
         multi.expire(grantKey, expiresIn)
       }
@@ -85,8 +117,8 @@ export class OidcRedisAdapter implements Adapter {
 
   async find (id: string|null): Promise<void | AdapterPayload | undefined> {
     const data = consumable.has(this.name)
-      ? await client.hgetall(this.key(id))
-      : await client.get(this.key(id))
+      ? await RedisClientSingleton.getInstance().getClient().hgetall(this.key(id))
+      : await RedisClientSingleton.getInstance().getClient().get(this.key(id))
 
     if (isEmpty(data)) {
       return undefined
@@ -105,12 +137,12 @@ export class OidcRedisAdapter implements Adapter {
   }
 
   async findByUserCode (userCode: string): Promise<void | AdapterPayload | undefined> {
-    const id = await client.get(userCodeKeyFor(userCode))
+    const id = await RedisClientSingleton.getInstance().getClient().get(userCodeKeyFor(userCode))
     return this.find(id)
   }
 
   async findByUid (uid: string): Promise<void | AdapterPayload | undefined> {
-    const id = await client.get(uidKeyFor(uid))
+    const id = await RedisClientSingleton.getInstance().getClient().get(uidKeyFor(uid))
     return this.find(id)
   }
 
@@ -120,12 +152,12 @@ export class OidcRedisAdapter implements Adapter {
 
   async destroy (id: string): Promise<void | undefined> {
     const key = this.key(id)
-    await client.del(key)
+    await RedisClientSingleton.getInstance().getClient().del(key)
   }
 
   async revokeByGrantId (grantId: string): Promise<void | undefined> {
-    const multi = client.multi()
-    const tokens = await client.lrange(grantKeyFor(grantId), 0, -1)
+    const multi = RedisClientSingleton.getInstance().getClient().multi()
+    const tokens = await RedisClientSingleton.getInstance().getClient().lrange(grantKeyFor(grantId), 0, -1)
     tokens.forEach((token) => multi.del(token))
     multi.del(grantKeyFor(grantId))
     await multi.exec()

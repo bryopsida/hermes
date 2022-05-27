@@ -5,7 +5,7 @@ import COMPUTED_CONSTANTS from '../../common/computedConstants'
 import { IService } from '../../common/interfaces/service'
 import createLogger from '../../common/logger/factory'
 import { IIdentityConfig, IdentifyConfigFactory } from '../../config/identityConfig'
-import { OidcRedisAdapter } from './redisAdapter'
+import { OidcRedisAdapter, RedisClientSingleton } from './redisAdapter'
 
 export class IdentityService implements IService {
   public static readonly NAME = 'identity'
@@ -47,8 +47,9 @@ export class IdentityService implements IService {
     return Promise.resolve()
   }
 
-  destroy (): Promise<void> {
-    return this.stop()
+  async destroy (): Promise<void> {
+    await this.stop()
+    await RedisClientSingleton.getInstance().closeClient()
   }
 
   isAlive (): Promise<boolean> {
