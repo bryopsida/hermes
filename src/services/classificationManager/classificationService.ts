@@ -15,6 +15,11 @@ import { IService } from '../../common/interfaces/service'
 // TODO
 export class ClassificationService implements IService {
   public static readonly NAME : string = 'classification_manager'
+
+  constructor () {
+    this.ID = ClassificationService.NAME
+  }
+
   start (): Promise<void> {
     throw new Error('Method not implemented.')
   }
@@ -39,5 +44,5 @@ export class ClassificationService implements IService {
     throw new Error('Method not implemented.')
   }
 
-  ID: string;
+  ID: string
 }

@@ -84,7 +84,7 @@ if (cluster.isPrimary && process.env.USE_CLUSTERING === 'true') {
     isServiceEnabled(TheatreService.NAME) ? new TheatreService() : undefined,
     isServiceEnabled(BullBoardService.NAME) ? new BullBoardService(app, queueOptions) : undefined,
     isServiceEnabled(IdentityService.NAME) ? new IdentityService(app) : undefined,
-    isServiceEnabled(UserService.NAME) ? new UserService(app) : undefined
+    isServiceEnabled(UserService.NAME) ? new UserService(app) : undefined,
     isServiceEnabled(BullBoardService.NAME) ? new BullBoardService(app, queueOptions) : undefined,
     isServiceEnabled(ClassificationService.NAME) ? new ClassificationService() : undefined
   ].filter(s => s != null) as Array<IService>
