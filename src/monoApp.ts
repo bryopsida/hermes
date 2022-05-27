@@ -23,6 +23,7 @@ import { Cluster, NodeConfiguration, ClusterOptions } from 'ioredis'
 import { IdentityService } from './services/identity/identityService'
 import { UserService } from './services/user/userService'
 import { TartarusService } from './services/tartarus/tartarusServices'
+import { ClassificationService } from './services/classificationManager/classificationService'
 
 const cpuCount = cpus().length
 
@@ -85,7 +86,8 @@ if (cluster.isPrimary && process.env.USE_CLUSTERING === 'true') {
     isServiceEnabled(BullBoardService.NAME) ? new BullBoardService(app, queueOptions) : undefined,
     isServiceEnabled(IdentityService.NAME) ? new IdentityService(app) : undefined,
     isServiceEnabled(UserService.NAME) ? new UserService(app) : undefined,
-    isServiceEnabled(TartarusService.NAME) ? new TartarusService() : undefined
+    isServiceEnabled(TartarusService.NAME) ? new TartarusService() : undefined,
+    isServiceEnabled(ClassificationService.NAME) ? new ClassificationService() : undefined
   ].filter(s => s != null) as Array<IService>
 
   if (isSideKickEnabled(HealthSideKick.NAME)) {

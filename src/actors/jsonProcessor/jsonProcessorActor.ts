@@ -1,11 +1,11 @@
 import COMPUTED_CONSTANTS from '../../common/computedConstants'
 import { IActorConfig } from '../../common/interfaces/actor'
 import createLogger from '../../common/logger/factory'
-import { IJsonWatchResult, IWatchedJsonData } from '../../common/models/watchModels'
+import { IUnprocesseedJsonData, IWatchedJsonData } from '../../common/models/watchModels'
 import { KafkaConsumer } from 'node-rdkafka'
 import { KafkaConsumerActor } from '../kafkaConsumerActor'
 
-export class JsonWatchActor extends KafkaConsumerActor<IWatchedJsonData, IJsonWatchResult> {
+export class JsonProcessorActor extends KafkaConsumerActor<IUnprocesseedJsonData, IWatchedJsonData> {
     public readonly log = createLogger({
       serviceName: `theatre-${COMPUTED_CONSTANTS.id}`,
       level: 'debug'
@@ -19,13 +19,13 @@ export class JsonWatchActor extends KafkaConsumerActor<IWatchedJsonData, IJsonWa
     constructor (config : IActorConfig) {
       super()
       this.config = config
-      this.name = 'jsonWatchActor'
-      this.topic = 'processed.jsonData'
+      this.name = 'jsonProcessorActor'
+      this.topic = 'jsonData'
       this.log.info(`${this.name} actor created`)
     }
 
-    actOn (message: IWatchedJsonData): Promise<IJsonWatchResult> {
+    actOn (message: IUnprocesseedJsonData): Promise<IWatchedJsonData> {
       this.log.debug('json watch actor acting on message')
-      return Promise.resolve({} as IJsonWatchResult)
+      return Promise.resolve({} as IWatchedJsonData)
     }
 }

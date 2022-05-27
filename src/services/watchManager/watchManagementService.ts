@@ -3,6 +3,21 @@ import mongoose from 'mongoose'
 import { IService } from '../../common/interfaces/service'
 import registerWatchRoutes from './routes/watchRoutes'
 
+// What is a watch?
+// A condition that when triggered something should happen. For example if a numerical value
+// Goes above a certain threshold, the watch should flip it's state and say it's triggered, but...
+// A watch should not be tightly coupled to the things that it triggers. The actions that happen
+// when a watch changes state should be their own seperate entities reacting to watch state changes.
+// It should create a global state for that's flipped when any source triggers it, and individual states for each source to allow scoped actions for each.
+// A watch should generate data that can also be watched (watch watching a watch state)
+// A watch is an actor and reactive, meaning it works off of topics and messages.
+//
+// What is needed to define a watch
+// 1) A unique ID
+// 2) A name
+// 3) A query ideally looking at classifier metadata to work with a wide range of sources, not a specific format.
+// 4) Time/Duration conditions to filter flappiness on state transitions
+// 5) A list of topics to watch/query against
 export class WatchManagementService implements IService {
   public static readonly NAME = 'watch_manager'
   public readonly ID = WatchManagementService.NAME
