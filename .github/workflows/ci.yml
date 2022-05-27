@@ -84,7 +84,7 @@ jobs:
         uses: actions/checkout@v3
       - name: Install cosign
         if: github.event_name != 'pull_request'
-        uses: sigstore/cosign-installer@536b37ec5d5b543420bdfd9b744c5965bd4d8730
+        uses: sigstore/cosign-installer@3d3d32a83e307c72740f6095be918624b57e65fa
         with:
           cosign-release: 'v1.4.0'
       # for multi arch container builds
@@ -121,7 +121,7 @@ jobs:
       - name: Build Docker image
         id: build
         timeout-minutes: 25
-        uses: docker/build-push-action@a571ccfa72059c1f1dbabfebed15b0101338bade
+        uses: docker/build-push-action@a806b8fe1858aa27c1da44ef4b721a70460b75aa
         with:
           context: .
           load: true
@@ -174,7 +174,7 @@ jobs:
         if: github.event_name != 'pull_request'
         id: push
         timeout-minutes: 60
-        uses: docker/build-push-action@a571ccfa72059c1f1dbabfebed15b0101338bade
+        uses: docker/build-push-action@a806b8fe1858aa27c1da44ef4b721a70460b75aa
         with:
           context: .
           builder: ${{ steps.buildx.outputs.name }}
