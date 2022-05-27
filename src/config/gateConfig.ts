@@ -1,6 +1,7 @@
 import config from 'config'
 
 export enum GateType {
+  // eslint-disable-next-line no-unused-vars
   TCP = 'tcp'
 }
 

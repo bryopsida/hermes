@@ -1,6 +1,6 @@
 import { GateType, IGateConfig, ITCPGateConfig } from '../../../config/gateConfig'
 import { IGate } from './gate'
-import { TcpClientSessionBuilder } from './tcp/tcpClientSession';
+import { TcpClientSessionBuilder } from './tcp/tcpClientSession'
 import { TcpGate } from './tcp/tcpGate'
 
 export interface IGateFactory {
