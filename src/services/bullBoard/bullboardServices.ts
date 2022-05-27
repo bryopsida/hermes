@@ -27,6 +27,13 @@ export class BullBoardService implements IService {
         ...{
           prefix: '{fetch}'
         }
+      } as QueueOptions
+      ),
+      bull(QueueNames.USER_QUEUE, {
+        ...this._queueOptions,
+        ...{
+          prefix: '{user}'
+        }
       } as QueueOptions)
     ]
     this._queueAdapters = this._queues.map(queue => new BullAdapter(queue))
