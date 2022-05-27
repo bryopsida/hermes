@@ -39,7 +39,10 @@
           "run-script", "start:dev"
       ],
       "env": {
-        "USE_CLUSTERING": "true",
+        "USE_CLUSTERING": "false",
+        "SEED_ADMIN_ACCOUNT": "true",
+        "INITIAL_ADMIN_USER_ACCOUNT": "admin",
+        "INITIAL_ADMIN_PASSWORD": "admin",
         "NODE_CONFIG_DIR": "${workspaceFolder}/src/config"
       }
     },
@@ -52,7 +55,7 @@
           "run-script", "start:dev"
       ],
       "env": {
-        "USE_CLUSTERING": "true",
+        "USE_CLUSTERING": "false",
       }
     }
   ]

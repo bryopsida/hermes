@@ -1,15 +1,6 @@
 {
   "hostname": "localhost",
   "port": 3000,
-  "sidekicks": {
-    "health": {
-      "enabled": true
-    }
-  },
-  "logging": {
-    "level": "debug",
-    "pretty": false
-  }, 
   "bullboard": {
     "enabled": true
   },
@@ -24,15 +15,28 @@
       "password": "mongodb"
     }
   },
-  "watch_manager": {
+  "identity": {
     "enabled": true,
-    "mongo": {
-      "authEnabled": true,
+    "mountPath": "/api/identity/v1",
+    "issuer": "http://localhost:3000/api/identity/v1",
+    "providerConfig": {
+      
+    },
+    "redis": {
       "host": "localhost",
-      "port": 27017,
-      "db": "watches",
-      "username": "mongodb",
-      "password": "mongodb"
+      "port": 6379,
+      "protocol": "redis",
+      "password": "redis",
+      "cluster": false
+    }
+  },
+  "logging": {
+    "level": "debug",
+    "pretty": false
+  }, 
+  "sidekicks": {
+    "health": {
+      "enabled": true
     }
   },
   "task_runner": {
@@ -58,6 +62,35 @@
     "enabled": true,
     "kafka": {
       "brokers": ["localhost:29092"]
+    }
+  },
+  "user_manager": {
+    "enabled": true,
+    "redis": {
+      "host": "localhost",
+      "port": 6379,
+      "protocol": "redis",
+      "password": "redis",
+      "cluster": false
+    },
+    "mongo": {
+      "authEnabled": true,
+      "host": "localhost",
+      "port": 27017,
+      "db": "users",
+      "username": "mongodb",
+      "password": "mongodb"
+    }
+  },
+  "watch_manager": {
+    "enabled": true,
+    "mongo": {
+      "authEnabled": true,
+      "host": "localhost",
+      "port": 27017,
+      "db": "watches",
+      "username": "mongodb",
+      "password": "mongodb"
     }
   }
 }
