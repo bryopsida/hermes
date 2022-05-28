@@ -20,6 +20,7 @@ import registerWatchRoutes from './routes/watchRoutes'
 // 5) A list of topics to watch/query against
 export class WatchManagementService implements IService {
   public static readonly NAME = 'watch_manager'
+  public readonly ORDER: number = 1
   public readonly ID = WatchManagementService.NAME
   constructor (private readonly fastify: FastifyInstance) {
     // register routes

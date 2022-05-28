@@ -10,20 +10,26 @@ export interface ILoggerGlobalConfig {
   prettyPrint: boolean;
 }
 
+function buildLoggerOpts (opts: ILoggerOptions, prettyPrint: boolean) : pino.LoggerOptions {
+  const retOpt : pino.LoggerOptions = {
+    name: opts.serviceName,
+    level: opts.level
+  }
+  if (prettyPrint) {
+    retOpt.prettyPrint = {
+      levelFirst: true
+    }
+  }
+  return retOpt
+}
+
 export default function createLogger (opts: ILoggerOptions) : pino.Logger {
   if (config.has('logging')) {
     const globalLoggerConfig = config.get<ILoggerGlobalConfig>('logging')
-    const transport = globalLoggerConfig.prettyPrint
-      ? {
-          target: 'pino-pretty'
-        }
-      : undefined
+    const prettyPrintEnabled = globalLoggerConfig.prettyPrint || process.env.LOGGING_PRETTY_PRINT === 'true'
+    const logOpts = buildLoggerOpts(opts, prettyPrintEnabled)
 
-    return pino({
-      name: opts.serviceName,
-      level: opts.level,
-      transport: transport
-    })
+    return pino(logOpts)
   } else {
     return pino({
       name: opts.serviceName,

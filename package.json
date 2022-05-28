@@ -11,7 +11,7 @@
     "docker:sbom": "syft packages $npm_config_image_tag -o cyclonedx-json --file sbom.json",
     "install:syft": "sudo node scripts/installSyft.js",
     "start": "NODE_CONFIG_DIR=./build/src/config node build/src/monoApp.js",
-    "start:dev": "NODE_CONFIG_DIR=./src/config nodemon",
+    "start:dev": "LOGGING_PRETTY_PRINT=true NODE_CONFIG_DIR=./src/config nodemon",
     "start:services": "docker-compose -f docker-compose.yml up -d",
     "stop:services": "docker-compose -f docker-compose.yml down",
     "lint": "eslint --ext .ts src/",

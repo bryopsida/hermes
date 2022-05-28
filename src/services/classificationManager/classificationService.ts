@@ -48,4 +48,5 @@ export class ClassificationService implements IService {
   }
 
   ID: string = ClassificationService.NAME
+  ORDER: number = 1
 }

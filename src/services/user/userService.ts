@@ -10,6 +10,7 @@ import COMPUTED_CONSTANTS from '../../common/computedConstants'
 
 export class UserService implements IService {
   readonly ID = UserService.NAME
+  readonly ORDER = 1
   public static readonly NAME: string = 'user_manager'
   private _isAlive = false
 

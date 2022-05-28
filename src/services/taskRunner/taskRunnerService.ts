@@ -25,6 +25,7 @@ export class TaskRunnerService implements IService {
     private readonly _tasks: Map<string, ITask> = new Map();
     private readonly _queueOptions: QueueOptions;
     public readonly ID = TaskRunnerService.NAME
+    public readonly ORDER: number = 1
 
     private readonly log = createLogger({
       serviceName: `task-runner-${COMPUTED_CONSTANTS.id}`,

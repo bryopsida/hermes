@@ -16,6 +16,7 @@ export class TheatreService implements IService {
 
     private readonly actors : Array<IActor<unknown, unknown>> = [];
     public readonly ID = TheatreService.NAME
+    public readonly ORDER = 1
 
     constructor () {
       this.log.info('Theatre service created')

@@ -17,6 +17,7 @@ export class IdentityService implements IService {
   private readonly provider: Provider
   private readonly config: IIdentityConfig
   readonly ID: string
+  readonly ORDER = 0
   private _isAlive = false;
 
   constructor (app: FastifyInstance) {

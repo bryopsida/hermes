@@ -6,6 +6,7 @@ import mongoose from 'mongoose'
 export class DataSourceService implements IService {
   public static readonly NAME = 'data_source_manager'
   public readonly ID = DataSourceService.NAME
+  public readonly ORDER = 1
   constructor (private readonly fastify: FastifyInstance) {
     this.registerRoutes()
   }

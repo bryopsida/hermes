@@ -18,6 +18,7 @@ import { IGateFactory, GateFactory } from './gates/gateFactory'
 export class TartarusService implements IService {
   public static readonly NAME = 'tartarus'
   ID: string = TartarusService.NAME
+  ORDER: number = 1
 
   private readonly _gates: IGate[] = []
 

@@ -88,7 +88,7 @@ if (cluster.isPrimary && process.env.USE_CLUSTERING === 'true') {
     isServiceEnabled(UserService.NAME) ? new UserService(app) : undefined,
     isServiceEnabled(TartarusService.NAME) ? new TartarusService() : undefined,
     isServiceEnabled(ClassificationService.NAME) ? new ClassificationService() : undefined
-  ].filter(s => s != null) as Array<IService>
+  ].filter(s => s != null).sort() as Array<IService>
 
   if (isSideKickEnabled(HealthSideKick.NAME)) {
     const healthSideKick = new HealthSideKick(app, '/api/health/v1')

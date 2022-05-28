@@ -26,7 +26,7 @@ export abstract class BaseTask implements ITask {
       done(null, result)
       return result
     } catch (err) {
-      this.logToJob(`Error while executing job ${this.id} on ${this.queue.name}:  ${err}`, job)
+      this.logToJob(`Error while executing job ${this.id} on ${this.queue.name}:  ${err}`, job, 'error')
       done(err as Error)
     }
   }
@@ -40,8 +40,8 @@ export abstract class BaseTask implements ITask {
     return Promise.resolve(true)
   }
 
-  protected logToJob (message: string, job: Job<any>) {
-    this.log.debug(message)
+  protected logToJob (message: string, job: Job<any>, level: string = 'debug'): void {
+    (this.log as any)[level](`${message}`)
     job.log(message)
   }
 }

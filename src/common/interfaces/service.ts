@@ -5,5 +5,6 @@ export interface IService {
     isAlive(): Promise<boolean>;
     canServeTraffic(): Promise<boolean>;
     servesTraffic(): boolean;
-    readonly ID: string
+    readonly ID: string;
+    readonly ORDER: number;
 }
