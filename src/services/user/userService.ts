@@ -6,7 +6,6 @@ import { FastifyInstance } from 'fastify'
 import registerUserRoutes from './routes/userRoutes'
 import createLogger from '../../common/logger/factory'
 import COMPUTED_CONSTANTS from '../../common/computedConstants'
-import oauthPlugin, { FastifyOAuth2Options } from '@fastify/oauth2'
 import { BaseRestService } from '../common/BaseRestServices'
 
 export class UserService extends BaseRestService {
@@ -23,33 +22,7 @@ export class UserService extends BaseRestService {
   constructor (app: FastifyInstance) {
     super()
     UserService.log.debug('Initializing user service')
-    this.loadAuthScheme(app)
     this.registerRoutes(app)
-  }
-
-  private loadAuthScheme (app: FastifyInstance): void {
-    const opts : FastifyOAuth2Options = {
-      name: 'customOauth2',
-      scope: ['profile', 'email'],
-      credentials: {
-        client: {
-          id: '<CLIENT_ID>',
-          secret: '<CLIENT_SECRET>'
-        },
-        auth: {
-          authorizeHost: 'https://my-site.com',
-          authorizePath: '/authorize',
-          tokenHost: 'https://token.my-site.com',
-          tokenPath: '/api/token'
-        }
-      },
-      startRedirectPath: '/login',
-      callbackUri: 'http://localhost:3000/login/callback',
-      callbackUriParams: {
-        exampleParam: 'example param value'
-      }
-    }
-    app.register(oauthPlugin, opts)
   }
 
   private registerRoutes (app: FastifyInstance): void {
