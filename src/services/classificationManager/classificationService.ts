@@ -15,34 +15,37 @@ import { IService } from '../../common/interfaces/service'
 // TODO
 export class ClassificationService implements IService {
   public static readonly NAME : string = 'classification_manager'
+  private _isAlive: boolean = false;
 
   constructor () {
     this.ID = ClassificationService.NAME
   }
 
   start (): Promise<void> {
-    throw new Error('Method not implemented.')
+    this._isAlive = true
+    return Promise.resolve()
   }
 
   stop (): Promise<void> {
-    throw new Error('Method not implemented.')
+    this._isAlive = false
+    return Promise.resolve()
   }
 
-  destroy (): Promise<void> {
-    throw new Error('Method not implemented.')
+  async destroy (): Promise<void> {
+    await this.stop()
   }
 
   isAlive (): Promise<boolean> {
-    throw new Error('Method not implemented.')
+    return Promise.resolve(this._isAlive)
   }
 
   canServeTraffic (): Promise<boolean> {
-    throw new Error('Method not implemented.')
+    return this.isAlive()
   }
 
   servesTraffic (): boolean {
-    throw new Error('Method not implemented.')
+    return true
   }
 
-  ID: string
+  ID: string = ClassificationService.NAME
 }

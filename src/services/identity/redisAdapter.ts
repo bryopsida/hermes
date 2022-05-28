@@ -129,7 +129,7 @@ export class OidcRedisAdapter implements Adapter, IUsableClosable {
     }
     const payload = data ? JSON.parse(data.payload) : undefined
     if (data) {
-      delete data.payload;
+      delete data.payload
     }
     const rest = data
     return {
