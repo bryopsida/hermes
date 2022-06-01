@@ -11,7 +11,6 @@ import COMPUTED_CONSTANTS from '../../common/computedConstants'
 import { QueueFetchesTask } from '../../tasks/queueFetches/queueFetchesTask'
 import taskConfigFactory, { IFetchTaskConfig } from '../../config/taskConfig'
 import kafkaConfigFactory from '../../config/kafkaConfig'
-import { SeedAdminUserTask } from '../../tasks/user/seedAdminAccount'
 
 // TODO: refactor to be more IoC friendly
 const fetchTaskConfig = taskConfigFactory<IFetchTaskConfig>('fetch')
@@ -111,49 +110,10 @@ export class TaskRunnerService implements IService {
       this._tasks.set(heartbeatTask.id, heartbeatTask)
     }
 
-    private async addSeedAdminUserJobIfEnabled () : Promise<void> {
-      const executeSeed = process.env.SEED_ADMIN_ACCOUNT === 'true'
-      // check if the job with that ID already exists and has completed
-      // if not add it to the queue
-      if (!executeSeed) {
-        this.log.debug('Not creating the admin seed task')
-        return Promise.resolve()
-      } else {
-        const seedTask: ITask = new SeedAdminUserTask(this._queues.get(QueueNames.USER_QUEUE) as Queue)
-        this._tasks.set(seedTask.id, seedTask)
-        this.log.info('Created admin seed task')
-      }
-    }
-
-    private async createUserQueue () : Promise<void> {
-      this.log.info('Creating user manamgent queue')
-      const userQueueOptions = {
-        ...this._queueOptions,
-        ...{
-          prefix: '{user}'
-        }
-      } as QueueOptions
-
-      const USER_QUEUE = new BullQueue(QueueNames.USER_QUEUE, userQueueOptions).on('error', (err) => {
-        this.log.error('User queue error')
-        this.log.error(err)
-      })
-
-      this.log.info(`User queue ${USER_QUEUE.name} created, with prefix ${userQueueOptions.prefix}`)
-
-      USER_QUEUE.on('error', (error) => {
-        this.log.error('Error in user queue')
-        this.log.error(error)
-      })
-      this._queues.set(QueueNames.USER_QUEUE, USER_QUEUE)
-      await this.addSeedAdminUserJobIfEnabled()
-    }
-
     public async start (): Promise<void> {
       this.log.info('Starting task runner service')
       await this.createFetchQueue()
       await this.createHeartbeatQueue()
-      await this.createUserQueue()
       this.log.info('Task runner service started')
     }
 

@@ -41,7 +41,20 @@ export class BullBoardService implements IService {
     this._serverAdapter = new FastifyAdapter()
     // TODO: put this on a proper sub path
     this._serverAdapter.setBasePath('/taskboard')
-    this._app.register(this._serverAdapter.registerPlugin(), { basePath: '/', prefix: '/taskboard' })
+
+    this._app.register((instance, opts, done) => {
+      instance.register(this._serverAdapter.registerPlugin(), { basePath: '/', prefix: '/taskboard' })
+      instance.addHook('onRequest', (request, reply, next) => {
+        instance.verifyCredentials(request, reply, (err: any) => {
+          if (!err) {
+            return next()
+          }
+          reply.code(err.statusCode || 500 >= 400).send({ error: err.name })
+        })
+      })
+      done()
+    })
+
     createBullBoard({
       serverAdapter: this._serverAdapter,
       queues: this._queueAdapters

@@ -4,6 +4,9 @@
   "bullboard": {
     "enabled": true
   },
+  "auth": {
+    "type": "external"
+  },
   "data_source_manager": {
     "enabled": true,
     "mongo": {

@@ -1,52 +1,55 @@
-import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
+import { FastifyInstance, FastifyPluginOptions, FastifyReply, FastifyRequest } from 'fastify'
 import { IQeuryLimit } from '../../../common/interfaces/commonRest'
 import { WatchDTO } from '../dto/watch'
 import { Watch } from '../dao/watch'
 
-const routeMountPoint = '/api/watch_manager/v1'
+export default function watchRoutes (fastify: FastifyInstance, options: FastifyPluginOptions, done: Function) {
+  try {
+    fastify.addHook('preHandler', fastify.auth([
+      fastify.verifyCredentials
+    ]))
 
-export default function registerWatchRoutes (fastify: FastifyInstance): void {
-  fastify.get<{
-        Querystring: IQeuryLimit,
-        Reply: Array<WatchDTO>
-    }>(`${routeMountPoint}/watches`, async (request, reply) => {
+    fastify.get<{
+      Querystring: IQeuryLimit,
+      Reply: Array<WatchDTO>
+    }>('/watches', async (request, reply) => {
       reply.send(await Watch.findAll(request.query.offset, request.query.limit))
     })
 
-  fastify.get<{
-        Reply: WatchDTO,
-        Parameters: {
-          id: string
-        }
-      }>(`${routeMountPoint}/watches/:id`, async (request, reply) => {
-        const params = request.params as { id: string }
-        const watch = await Watch.findById(params.id)
-        if (watch == null) {
-          reply.statusCode = 404
-          return
-        }
-        reply.send(watch.toDTO())
-      })
+    fastify.get<{
+      Reply: WatchDTO,
+      Parameters: {
+        id: string
+      }
+    }>('/watches/:id', async (request, reply) => {
+      const params = request.params as { id: string }
+      const watch = await Watch.findById(params.id)
+      if (watch == null) {
+        reply.statusCode = 404
+        return
+      }
+      reply.send(watch.toDTO())
+    })
 
-  fastify.put<{
-        Body: WatchDTO,
-        Reply: WatchDTO,
-        Parameters: {
-            id: string
-        }
-    }>(`${routeMountPoint}/watches/:id`, async (request, reply) => {
+    fastify.put<{
+      Body: WatchDTO,
+      Reply: WatchDTO,
+      Parameters: {
+        id: string
+      }
+    }>('/watches/:id', async (request, reply) => {
       reply.send(await Watch.upsert(Watch.fromDTO(request.body)))
     })
 
-  // TODO: fix this type coercion, its ugly
-  fastify.delete<{
-        Reply: FastifyReply,
-        Parameters: {
-            id: string
-        }
-    }>(`${routeMountPoint}/tasks/:id`, async (request : FastifyRequest, reply: FastifyReply) => {
-      const req:FastifyRequest = request
-      const params = req.params as {id: string}
+    // TODO: fix this type coercion, its ugly
+    fastify.delete<{
+      Reply: FastifyReply,
+      Parameters: {
+        id: string
+      }
+    }>('/tasks/:id', async (request: FastifyRequest, reply: FastifyReply) => {
+      const req: FastifyRequest = request
+      const params = req.params as { id: string }
       const hasRecord = await Watch.has(params.id)
 
       if (!hasRecord) {
@@ -55,4 +58,9 @@ export default function registerWatchRoutes (fastify: FastifyInstance): void {
         reply.send(await Watch.delete(params.id))
       }
     })
+  } catch (err) {
+    done(err)
+  }
+
+  done()
 }

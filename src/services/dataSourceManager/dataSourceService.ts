@@ -1,6 +1,6 @@
 import { IService } from '../../common/interfaces/service'
 import { FastifyInstance } from 'fastify'
-import registerDataSourceRoute from './routes/dataSource'
+import dataSourceRoutes from './routes/dataSource'
 import mongoose from 'mongoose'
 
 export class DataSourceService implements IService {
@@ -24,7 +24,7 @@ export class DataSourceService implements IService {
   }
 
   private registerRoutes (): void {
-    registerDataSourceRoute(this.fastify)
+    this.fastify.register(dataSourceRoutes, { prefix: '/api/data_source_manager/v1' })
   }
 
   start (): Promise<void> {

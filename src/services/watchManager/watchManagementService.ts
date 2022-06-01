@@ -1,7 +1,7 @@
 import { FastifyInstance } from 'fastify'
 import mongoose from 'mongoose'
 import { IService } from '../../common/interfaces/service'
-import registerWatchRoutes from './routes/watchRoutes'
+import watchRoutes from './routes/watchRoutes'
 
 // What is a watch?
 // A condition that when triggered something should happen. For example if a numerical value
@@ -24,7 +24,7 @@ export class WatchManagementService implements IService {
   public readonly ID = WatchManagementService.NAME
   constructor (private readonly fastify: FastifyInstance) {
     // register routes
-    registerWatchRoutes(fastify)
+    fastify.register(watchRoutes, { prefix: '/api/watch_manager/v1' })
   }
 
   isAlive (): Promise<boolean> {

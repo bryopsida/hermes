@@ -20,11 +20,10 @@ import { BullBoardService } from './services/bullBoard/bullboardServices'
 import redisConfigFactory from './config/redisConfig'
 import { QueueOptions } from 'bull'
 import { Cluster, NodeConfiguration, ClusterOptions } from 'ioredis'
-import { IdentityService } from './services/identity/identityService'
-import { UserService } from './services/user/userService'
 import { TartarusService } from './services/tartarus/tartarusServices'
 import { ClassificationService } from './services/classificationManager/classificationService'
-import oauth2Plugin, { FastifyOAuth2Options } from '@fastify/oauth2'
+import { AuthenticationDecorator } from './decorators/fastify/authenticationDecorator'
+import { ErrorHandlerDecorator } from './decorators/fastify/errorHandlerDecorator'
 
 const cpuCount = cpus().length
 
@@ -76,26 +75,8 @@ if (cluster.isPrimary && process.env.USE_CLUSTERING === 'true') {
     })
   })
   app.register(fastifyHelmet)
-  const opts : FastifyOAuth2Options = {
-    name: 'customOauth2',
-    scope: ['profile', 'email'],
-    credentials: {
-      client: {
-        id: 'hermes-mono-app',
-        // deepcode ignore HardcodedNonCryptoSecret: <test value, not a secret>
-        secret: 'change-it'
-      },
-      auth: {
-        authorizeHost: 'https://lab.hermes.local',
-        authorizePath: '/api/identity/v1/authorize',
-        tokenHost: 'https://lab.hermes.local',
-        tokenPath: '/api/identity/v1/token'
-      }
-    },
-    startRedirectPath: '/login',
-    callbackUri: 'https://lab.hermes.local/login/callback'
-  }
-  app.register(oauth2Plugin, opts)
+  ErrorHandlerDecorator.decorate(app)
+  AuthenticationDecorator.decorate(app)
 
   // TODO: fix as any cast
   // define services managed by this mono app entry point
@@ -105,8 +86,6 @@ if (cluster.isPrimary && process.env.USE_CLUSTERING === 'true') {
     isServiceEnabled(WatchManagementService.NAME) ? new WatchManagementService(app) : undefined,
     isServiceEnabled(TheatreService.NAME) ? new TheatreService() : undefined,
     isServiceEnabled(BullBoardService.NAME) ? new BullBoardService(app, queueOptions) : undefined,
-    isServiceEnabled(IdentityService.NAME) ? new IdentityService(app) : undefined,
-    isServiceEnabled(UserService.NAME) ? new UserService(app) : undefined,
     isServiceEnabled(TartarusService.NAME) ? new TartarusService() : undefined,
     isServiceEnabled(ClassificationService.NAME) ? new ClassificationService() : undefined
   ].filter(s => s != null).sort() as Array<IService>

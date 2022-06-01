@@ -43,6 +43,8 @@
         "SEED_ADMIN_ACCOUNT": "true",
         "INITIAL_ADMIN_USER_ACCOUNT": "admin",
         "INITIAL_ADMIN_PASSWORD": "admin",
+        "HERMES_TASK_RUNNER_FETCH_USERNAME": "admin",
+        "HERMES_TASK_RUNNER_FETCH_PASSWORD": "admin",
         "NODE_CONFIG_DIR": "${workspaceFolder}/src/config"
       }
     },

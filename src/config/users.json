@@ -1,0 +1,67 @@
+[
+  {
+    "username": "admin",
+    "password": "$argon2i$v=19$m=4096,t=3,p=1$he28T9u/OQfCDhubit1tXw$YzAdYhlKw6LeZrEwNwR17mr9eC6T0r2C/50uKtl7+zA",
+    "org": "org1",
+    "services": {
+      "data_source_manager": {
+        "roles": [
+          "admin"
+        ]
+      },
+      "tartarus": {
+        "roles": [
+          "admin"
+        ]
+      },
+      "watch_manager": {
+        "roles": [
+          "admin"
+        ]
+      },
+      "classification_manager": {
+        "roles": [
+          "admin"
+        ]
+      },
+      "taskboard": {
+        "roles": [
+          "admin"
+        ]
+      }
+    }
+  },{
+    "username": "watch_manager_client",
+    "password": "$argon2i$v=19$m=4096,t=3,p=1$C0DEuWM7y47xvdrJ8DAICA$vfzicEK6pcZO7aQkD29UdGDfHmN7X1CFu25Mp2OIebI",
+    "org": "org1",
+    "services": {
+      "watch_manager": {
+        "roles": [
+          "manager"
+        ]
+      }
+    }
+  },{
+    "username": "data_source_manager_client",
+    "password": "$argon2i$v=19$m=4096,t=3,p=1$kR1gTJzH5oZZ7rKNXwdAZw$fFnVQVhDvCtaKffSlwpikeEvC71uFMRYFQ4uJIzJl8Q",
+    "org": "org1",
+    "services": {
+      "data_source_managerr": {
+        "roles": [
+          "manager"
+        ]
+      }
+    }
+  },{
+    "username": "taskboard_client",
+    "password": "$argon2i$v=19$m=4096,t=3,p=1$5xuHw97NwWreTWbO/44rkA$ZTCsqGpd2Xwdmzp1v5XBYUgddKnEHIu3/Z4ukHb07GY",
+    "org": "org1",
+    "services": {
+      "task_board": {
+        "roles": [
+          "manager"
+        ]
+      }
+    }
+  }
+]

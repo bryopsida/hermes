@@ -6,6 +6,7 @@ import { EnvironmentCommand } from './commands/environment'
 import { ConfigurationManager } from './utils/config'
 import { randomUUID } from 'crypto'
 import { DataSourceDTO } from '../../../services/dataSourceManager/dto/dataSource'
+import fs from 'fs/promises'
 
 const configurationManager = new ConfigurationManager()
 const environmentCommand = new EnvironmentCommand(configurationManager)
@@ -22,7 +23,23 @@ async function buildDataSourceCommandObj (): Promise<DataSourceCommand> {
     console.error('Failed to get context for current environment')
     process.exit(1)
   }
-  const dataSourceClient = new DataSourceClient(`${context.baseUrl}/api/data_source_manager/v1`)
+  const dataSourceClient = new DataSourceClient({
+    baseUrl: `${context.baseUrl}/api/data_source_manager/v1`,
+    loggerEnabled: false,
+    credentialProvider: async (options) => {
+      if (context.auth) {
+        console.log('adding auth')
+        const username = await fs.readFile(context.auth.usernameFilePath, 'utf8')
+        const password = await fs.readFile(context.auth.passwordFilePath, 'utf8')
+        options.auth = {
+          username: username,
+          password: password
+        }
+      }
+      console.log('returning options')
+      return Promise.resolve(options)
+    }
+  })
   return new DataSourceCommand(dataSourceClient)
 }
 

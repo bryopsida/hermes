@@ -4,6 +4,11 @@ import os from 'os'
 
 export interface IContext {
   baseUrl: string;
+  auth?: {
+    type: string;
+    usernameFilePath: string;
+    passwordFilePath: string;
+  }
 }
 
 export interface IConfig {

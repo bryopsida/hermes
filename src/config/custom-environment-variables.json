@@ -15,19 +15,15 @@
       "password": "HERMES_DATA_SOURCES_MONGODB_PASSWORD"
     }
   },
-  "user_manager": {
-    "redis": {
-      "password": "HERMES_TASK_RUNNER_REDIS_PASSWORD"
-    }
-  },
   "task_runner": {
     "redis": {
       "password": "HERMES_TASK_RUNNER_REDIS_PASSWORD"
-    }
-  },
-  "identity": {
-    "redis": {
-      "password": "HERMES_IDENTITY_REDIS_PASSWORD"
+    },
+    "tasks": {
+      "fetch": {
+        "username": "HERMES_TASK_RUNNER_FETCH_USERNAME",
+        "password": "HERMES_TASK_RUNNER_FETCH_PASSWORD"
+      }
     }
   },
   "bullboard": {

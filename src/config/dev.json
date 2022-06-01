@@ -1,0 +1,6 @@
+{
+  "auth": {
+    "type": "embedded",
+    "userStorePath": "../config/users.json"
+  }
+}

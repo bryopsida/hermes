@@ -11,7 +11,7 @@
     "docker:sbom": "syft packages $npm_config_image_tag -o cyclonedx-json --file sbom.json",
     "install:syft": "sudo node scripts/installSyft.js",
     "start": "NODE_CONFIG_DIR=./build/src/config node build/src/monoApp.js",
-    "start:dev": "LOGGING_PRETTY_PRINT=true NODE_CONFIG_DIR=./src/config nodemon",
+    "start:dev": "LOGGING_PRETTY_PRINT=true NODE_CONFIG_DIR=./src/config NODE_ENV=dev nodemon",
     "start:services": "docker-compose -f docker-compose.yml up -d",
     "stop:services": "docker-compose -f docker-compose.yml down",
     "lint": "eslint --ext .ts src/",
@@ -42,6 +42,8 @@
   "homepage": "https://github.com/bryopsida/hermes#readme",
   "dependencies": {
     "@bull-board/fastify": "^3.11.0",
+    "@fastify/auth": "^2.0.0",
+    "@fastify/basic-auth": "^3.0.2",
     "@fastify/helmet": "^8.1.0",
     "@fastify/oauth2": "^5.0.0",
     "argon2": "^0.28.5",
@@ -54,7 +56,6 @@
     "middie": "^6.0.0",
     "mongoose": "^6.3.2",
     "node-rdkafka": "^2.12.0",
-    "oidc-provider": "^6.27.5",
     "pino": "^7.11.0",
     "pino-pretty": "^7.6.1"
   },

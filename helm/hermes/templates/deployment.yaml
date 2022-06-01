@@ -34,6 +34,14 @@ spec:
             items:
               - key: production.json
                 path: production.json
+        {{- if .Values.accountsSecretName }}
+        - name: accounts-volume
+          secret:
+            secretName: {{ .Values.accountsSecretName }}
+            items:
+              - key: accounts.json
+                path: accounts.json
+        {{- end }}
       containers:
         - name: {{ .Chart.Name }}
           livenessProbe:
@@ -88,10 +96,19 @@ spec:
               secretKeyRef:
                 name: "{{ .Release.Name }}-internal-mongodb"
                 key: "mongodb-root-password"
+          {{- if .Values.accountsSecretName }}
+          - name: 
+            value: /var/run/accounts/accounts.json
+          {{- end }}
           volumeMounts:
             - name: config-volume
               mountPath: /var/run/config/
               readOnly: true
+            {{- if .Values.accountsSecretName }}
+            - name: accounts-volume
+              mountPath: /var/run/accounts/
+              readOnly: true
+            {{- end }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
       {{- with .Values.nodeSelector }}

@@ -4,8 +4,10 @@ import COMPUTED_CONSTANTS from '../../common/computedConstants'
 import { ITask } from '../../common/interfaces/task'
 import createLogger from '../../common/logger/factory'
 import { IPaginatedResponse } from '../../common/models/paginatedResponse'
+import { ClientCredentialProviderFactory } from '../../factories/clientCredentialProvider'
 import { DataSourceDTO } from '../../services/dataSourceManager/dto/dataSource'
 import { FetchTaskParams } from '../fetch/fetchTask'
+import config from 'config'
 
 export interface IQueueFetchOptions {
   baseUrl: string;
@@ -37,7 +39,12 @@ export class QueueFetchesTask implements ITask {
     // then iterate over all the data sources in batches
     // queue each individual data source as a fetch job
     // record the result in the done callback
-    const client = new DataSourceClient(job.data.baseUrl)
+    const client = new DataSourceClient({
+      baseUrl: job.data.baseUrl,
+      loggerEnabled: false,
+      credentialProvider: ClientCredentialProviderFactory.create(config)
+    })
+
     let fetchJobsQueued = 0
     let dataSourceResponse: IPaginatedResponse<DataSourceDTO> | null = null
     const count = (job.data != null && job.data.batchSize != null) ? job.data.batchSize : 1000

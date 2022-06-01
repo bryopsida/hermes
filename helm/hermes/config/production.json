@@ -1,4 +1,12 @@
 {
+  "auth": {
+    "type": "{{ .Values.auth.type}}",
+    {{- if .Values.accountsSecretName }}
+    "userStorePath": "/var/run/accounts/accounts.json"
+    {{- else }}
+    "userStorePath": "../config/users.json"
+    {{- end}}
+  },
   "hostname": "{{ (first .Values.ingress.hosts).host }}",
   "port": 80,
   "data_source_manager": {
