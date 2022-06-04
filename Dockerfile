@@ -9,11 +9,6 @@ RUN apk add --update --no-cache \
   musl-dev \
   cyrus-sasl-dev \
   openssl-dev
-WORKDIR /usr/src/app
-
-# see if we can create stable layer to cache the node-gyp build for alpine + arm64 for the node bindings around librdkafka
-# otherwise the build can take 20-30 minutes to get the kafka client package on musl arm64
-RUN npm install node-rdkafka
 
 FROM build-base AS build
 WORKDIR /usr/src/app
