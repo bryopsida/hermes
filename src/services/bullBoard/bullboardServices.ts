@@ -5,6 +5,8 @@ import { BullAdapter } from '@bull-board/api/bullAdapter'
 import { FastifyAdapter } from '@bull-board/fastify'
 import bull, { QueueOptions } from 'bull'
 import { QueueNames } from '../../common/queues/queueNameConstants'
+import createLogger from '../../common/logger/factory'
+import COMPUTED_CONSTANTS from '../../common/computedConstants'
 
 export class BullBoardService implements IService {
   public static readonly NAME = 'bullboard'
@@ -13,6 +15,10 @@ export class BullBoardService implements IService {
   private readonly _serverAdapter: FastifyAdapter
   private readonly _queues: bull.Queue[] = []
   private readonly _queueAdapters: Array<BullAdapter>
+  private readonly log = createLogger({
+    serviceName: `taskboard-${COMPUTED_CONSTANTS.id}`,
+    level: 'debug'
+  })
 
   constructor (private _app: FastifyInstance, private _queueOptions: QueueOptions) {
     this._queues = [
@@ -49,6 +55,7 @@ export class BullBoardService implements IService {
           if (!err) {
             return next()
           }
+          this.log.warn(`Request error: status code = ${err.statusCode}, message = ${err.message}`)
           reply.code(err.statusCode || 500 >= 400).send({ error: err.name })
         })
       })

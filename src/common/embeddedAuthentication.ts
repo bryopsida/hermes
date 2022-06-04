@@ -36,12 +36,15 @@ export class EmbeddedAuthentication {
     // check if the user exists
     const user = this._users.find(u => u.username === username)
     if (!user) {
+      this.log.debug(`Attempted authentication for user ${username} failed, username does not exist!`)
       return done(new Error('Invalid username or password'))
     }
     argon2.verify(user.password, password).then((result) => {
       if (!result) {
+        this.log.debug(`Attempted authentication for user ${username} failed, invalid credentials!`)
         return done(new Error('Invalid username or password'))
       }
+      this.log.debug(`User ${username} successfully authenticated`)
       return done()
     })
   }
