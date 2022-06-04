@@ -5,8 +5,8 @@ import { ITask } from '../common/interfaces/task'
 export abstract class BaseTask implements ITask {
   public abstract id: string;
   protected abstract log: Logger;
-  protected shouldExecuteImmediately: boolean = false;
-  protected readonly queue: Queue;
+  protected shouldExecuteImmediately: boolean = false
+  protected readonly queue: Queue
 
   protected constructor (queue: Queue, name: string) {
     this.queue = queue

@@ -5,10 +5,10 @@ import axios, { AxiosRequestConfig } from 'axios'
 import { ClientOptions, CredentialProvider } from '../common/interfaces/client'
 
 export class DataSourceClient {
-  private readonly logger: Logger | undefined;
-  private readonly baseUrl: string;
-  private readonly loggerEnabled;
-  private readonly credentialProvider: CredentialProvider | undefined;
+  private readonly logger: Logger | undefined
+  private readonly baseUrl: string
+  private readonly loggerEnabled
+  private readonly credentialProvider: CredentialProvider | undefined
 
   constructor (options: ClientOptions) {
     this.baseUrl = options.baseUrl

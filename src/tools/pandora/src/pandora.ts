@@ -32,8 +32,8 @@ async function buildDataSourceCommandObj (): Promise<DataSourceCommand> {
         const username = await fs.readFile(context.auth.usernameFilePath, 'utf8')
         const password = await fs.readFile(context.auth.passwordFilePath, 'utf8')
         options.auth = {
-          username: username,
-          password: password
+          username,
+          password
         }
       }
       console.log('returning options')
@@ -84,10 +84,10 @@ function buildDataSourcesCommand (): Command {
     .action(async (name, type, url) => {
       const dataSourceCommand = await buildDataSourceCommandObj()
       const dataSource : DataSourceDTO = {
-        type: type,
+        type,
         uri: url,
         id: randomUUID(),
-        name: name,
+        name,
         tags: []
       }
       await dataSourceCommand.addDataSource(process.stdout, dataSource)

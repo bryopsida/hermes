@@ -8,7 +8,7 @@ export class HermesWorker {
   readonly logger = createLogger({
     serviceName: `worker-${computedConstants.id}-runner`,
     level: 'debug'
-  });
+  })
 
   constructor (private readonly services: Array<IService>, private readonly app: FastifyInstance) {
     this.logger.info('Creating worker')

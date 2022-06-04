@@ -9,12 +9,12 @@ export class HealthSideKick implements IHealthSidekick {
   private readonly logger = createLogger({
     serviceName: 'health-sidekick',
     level: 'debug'
-  });
+  })
 
   public static readonly NAME: string = 'health'
 
   private readonly _services: Map<string, IService> = new Map()
-  private readonly _basePath: string;
+  private readonly _basePath: string
 
   constructor (fastify: FastifyInstance, basePath: string) {
     this._basePath = basePath

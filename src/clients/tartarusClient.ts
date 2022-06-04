@@ -51,7 +51,7 @@ export interface ITartarusClient {
 
 // Client is leveraged in CLI tool
 export class TartarusClient implements ITartarusClient {
-  private readonly apiUrl: string;
+  private readonly apiUrl: string
 
   constructor (apiUrl: string) {
     this.apiUrl = apiUrl

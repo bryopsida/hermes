@@ -40,109 +40,109 @@ const schema = new mongoose.Schema<IDataSource>({
 
 const config = configFactory.buildConfig('data_source_manager')
 export class DataSource implements IDataSource {
-    public id: string;
-    public type: string;
-    public name: string;
-    public uri: string;
-    public tags: string[] = []
+  public id: string
+  public type: string
+  public name: string
+  public uri: string
+  public tags: string[] = []
 
-    private static readonly log = createLogger({
-      serviceName: `data-source-dao-${COMPUTED_CONSTANTS.id}`,
-      level: 'debug'
+  private static readonly log = createLogger({
+    serviceName: `data-source-dao-${COMPUTED_CONSTANTS.id}`,
+    level: 'debug'
+  })
+
+  constructor (dataSource: IDataSource | null = null) {
+    if (dataSource == null) {
+      this.id = ''
+      this.type = ''
+      this.name = ''
+      this.uri = ''
+    } else {
+      this.id = dataSource.id
+      this.type = dataSource.type
+      this.name = dataSource.name
+      this.uri = dataSource.uri
+    }
+  }
+
+  // TODO refactor to be more dry
+  private static connect (): Promise<Connection> {
+    return new Promise((resolve, reject) => {
+      mongoose.createConnection(config.getServerUrl(), config.getMongooseOptions(), (err, conn) => {
+        if (err) {
+          reject(err)
+        } else {
+          resolve(conn)
+        }
+      })
     })
+  }
 
-    constructor (dataSource: IDataSource | null = null) {
-      if (dataSource == null) {
-        this.id = ''
-        this.type = ''
-        this.name = ''
-        this.uri = ''
-      } else {
-        this.id = dataSource.id
-        this.type = dataSource.type
-        this.name = dataSource.name
-        this.uri = dataSource.uri
-      }
-    }
+  private static getModel (conn: Connection): mongoose.Model<IDataSource> {
+    return conn.model(tableName, schema)
+  }
 
-    // TODO refactor to be more dry
-    private static connect (): Promise<Connection> {
-      return new Promise((resolve, reject) => {
-        mongoose.createConnection(config.getServerUrl(), config.getMongooseOptions(), (err, conn) => {
-          if (err) {
-            reject(err)
-          } else {
-            resolve(conn)
-          }
-        })
-      })
-    }
+  static async count () : Promise<number> {
+    return using<Connection, number>(await this.connect(), async (conn) => {
+      return this.getModel(conn).countDocuments()
+    })
+  }
 
-    private static getModel (conn: Connection): mongoose.Model<IDataSource> {
-      return conn.model(tableName, schema)
-    }
+  static async findById (id: string): Promise<DataSource> {
+    return using<Connection, DataSource>(await this.connect(), async (conn) => {
+      return new DataSource(await this.getModel(conn).findOne({ id }).exec())
+    })
+  }
 
-    static async count () : Promise<number> {
-      return using<Connection, number>(await this.connect(), async (conn) => {
-        return this.getModel(conn).countDocuments()
-      })
+  static async findAll (offset: number, count: number): Promise<Array<DataSource>> {
+    if (offset == null || isNaN(offset)) {
+      DataSource.log.warn('offset is not defined or NaN, defaulting to 0')
+      offset = 0
     }
+    if (count == null || isNaN(count)) {
+      DataSource.log.warn('count is not defined or NaN, defaulting to 10')
+      count = 10
+    }
+    DataSource.log.debug(`Fetching data sources from offset: ${offset} and count: ${count}`)
+    const conn = await this.connect()
+    const result = (await this.getModel(conn).find().skip(offset).limit(count).exec()).map(doc => new DataSource(doc))
+    await conn.close()
+    return result
+  }
 
-    static async findById (id: string): Promise<DataSource> {
-      return using<Connection, DataSource>(await this.connect(), async (conn) => {
-        return new DataSource(await this.getModel(conn).findOne({ id: id }).exec())
-      })
-    }
+  static async upsert (dataSource: DataSource): Promise<DataSource> {
+    return using<Connection, DataSource>(await this.connect(), async (conn) => {
+      const model = this.getModel(conn)
+      await model.updateOne({ id: dataSource.id }, dataSource.toDTO(), { upsert: true }).exec()
+      return new DataSource(await model.findOne({
+        id: dataSource.id
+      }).exec())
+    })
+  }
 
-    static async findAll (offset: number, count: number): Promise<Array<DataSource>> {
-      if (offset == null || isNaN(offset)) {
-        DataSource.log.warn('offset is not defined or NaN, defaulting to 0')
-        offset = 0
-      }
-      if (count == null || isNaN(count)) {
-        DataSource.log.warn('count is not defined or NaN, defaulting to 10')
-        count = 10
-      }
-      DataSource.log.debug(`Fetching data sources from offset: ${offset} and count: ${count}`)
-      const conn = await this.connect()
-      const result = (await this.getModel(conn).find().skip(offset).limit(count).exec()).map(doc => new DataSource(doc))
-      await conn.close()
-      return result
-    }
+  static async has (id: string): Promise<boolean> {
+    return using<Connection, boolean>(await this.connect(), async (conn) => {
+      return (await this.getModel(conn).findOne({ id }).exec()) !== null
+    })
+  }
 
-    static async upsert (dataSource: DataSource): Promise<DataSource> {
-      return using<Connection, DataSource>(await this.connect(), async (conn) => {
-        const model = this.getModel(conn)
-        await model.updateOne({ id: dataSource.id }, dataSource.toDTO(), { upsert: true }).exec()
-        return new DataSource(await model.findOne({
-          id: dataSource.id
-        }).exec())
-      })
-    }
+  static async delete (id: string): Promise<void> {
+    return using<Connection, void>(await this.connect(), async (conn) => {
+      await this.getModel(conn).deleteOne({ id }).exec()
+    })
+  }
 
-    static async has (id: string): Promise<boolean> {
-      return using<Connection, boolean>(await this.connect(), async (conn) => {
-        return (await this.getModel(conn).findOne({ id: id }).exec()) !== null
-      })
+  toDTO (): DataSourceDTO {
+    return {
+      id: this.id,
+      type: this.type,
+      name: this.name,
+      uri: this.uri,
+      tags: this.tags
     }
+  }
 
-    static async delete (id: string): Promise<void> {
-      return using<Connection, void>(await this.connect(), async (conn) => {
-        await this.getModel(conn).deleteOne({ id: id }).exec()
-      })
-    }
-
-    toDTO (): DataSourceDTO {
-      return {
-        id: this.id,
-        type: this.type,
-        name: this.name,
-        uri: this.uri,
-        tags: this.tags
-      }
-    }
-
-    static fromDTO (dataSourceDTO: DataSourceDTO): DataSource {
-      return new DataSource(dataSourceDTO)
-    }
+  static fromDTO (dataSourceDTO: DataSourceDTO): DataSource {
+    return new DataSource(dataSourceDTO)
+  }
 }

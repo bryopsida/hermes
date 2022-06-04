@@ -15,12 +15,12 @@ export interface IMongoDBConfig extends IMongoDBConfigProps{
 }
 
 class MongoDbConfig {
-  public readonly username: string;
-  public readonly password: string;
-  public readonly host: string;
-  public readonly port: number;
-  public readonly db: string;
-  public readonly authEnabled: boolean;
+  public readonly username: string
+  public readonly password: string
+  public readonly host: string
+  public readonly port: number
+  public readonly db: string
+  public readonly authEnabled: boolean
 
   constructor (c: IMongoDBConfigProps) {
     this.username = c.username

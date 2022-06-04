@@ -6,27 +6,27 @@ import { IHeartbeat } from '../../common/interfaces/heartbeat'
 import { KafkaConsumerActor } from '../kafkaConsumerActor'
 
 export class HeartbeatActor extends KafkaConsumerActor<IHeartbeat, boolean> {
-    protected readonly log = createLogger({
-      serviceName: `theatre-${COMPUTED_CONSTANTS.id}`,
-      level: 'debug'
-    })
+  protected readonly log = createLogger({
+    serviceName: `theatre-${COMPUTED_CONSTANTS.id}`,
+    level: 'debug'
+  })
 
-    readonly name: string;
-    readonly topic: string;
-    readonly config: IActorConfig;
+  readonly name: string
+  readonly topic: string
+  readonly config: IActorConfig
 
-    kafkaConsumer?: KafkaConsumer;
+  kafkaConsumer?: KafkaConsumer
 
-    constructor (config: IActorConfig) {
-      super()
-      this.config = config
-      this.name = 'heartbeatActor'
-      this.topic = 'heartbeats'
-      this.log.info(`${this.name} actor created`)
-    }
+  constructor (config: IActorConfig) {
+    super()
+    this.config = config
+    this.name = 'heartbeatActor'
+    this.topic = 'heartbeats'
+    this.log.info(`${this.name} actor created`)
+  }
 
-    actOn (message: IHeartbeat): Promise<boolean> {
-      this.log.debug('heartbeat actor acting on message')
-      return Promise.resolve(true)
-    }
+  actOn (message: IHeartbeat): Promise<boolean> {
+    this.log.debug('heartbeat actor acting on message')
+    return Promise.resolve(true)
+  }
 }

@@ -15,7 +15,7 @@ import { IService } from '../../common/interfaces/service'
 // TODO
 export class ClassificationService implements IService {
   public static readonly NAME : string = 'classification_manager'
-  private _isAlive: boolean = false;
+  private _isAlive: boolean = false
 
   constructor () {
     this.ID = ClassificationService.NAME

@@ -7,13 +7,13 @@ export class Primary {
   private readonly logger = createLogger({
     serviceName: 'primary-runner',
     level: 'debug'
-  });
+  })
 
   // eslint-disable-next-line no-undef
-  private statTimer?: NodeJS.Timer;
+  private statTimer?: NodeJS.Timer
   // eslint-disable-next-line no-undef
-  private workerRestartTimers: Array<NodeJS.Timer> = [];
-  private isShuttingDown = false;
+  private workerRestartTimers: Array<NodeJS.Timer> = []
+  private isShuttingDown = false
 
   constructor (private workerCount: number) {
     this.logger.trace('Created primary runner')

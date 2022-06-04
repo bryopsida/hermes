@@ -10,9 +10,9 @@ export class BullBoardService implements IService {
   public static readonly NAME = 'bullboard'
   public readonly ID = BullBoardService.NAME
   public readonly ORDER = 1
-  private readonly _serverAdapter: FastifyAdapter;
-  private readonly _queues: bull.Queue[] = [];
-  private readonly _queueAdapters: Array<BullAdapter>;
+  private readonly _serverAdapter: FastifyAdapter
+  private readonly _queues: bull.Queue[] = []
+  private readonly _queueAdapters: Array<BullAdapter>
 
   constructor (private _app: FastifyInstance, private _queueOptions: QueueOptions) {
     this._queues = [

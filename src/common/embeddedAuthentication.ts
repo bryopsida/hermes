@@ -18,7 +18,7 @@ interface IStoredUser {
 
 export class EmbeddedAuthentication {
   private readonly _userStorePath: string
-  private readonly _users: IStoredUser[];
+  private readonly _users: IStoredUser[]
 
   constructor (userStorePath: string) {
     this._userStorePath = userStorePath

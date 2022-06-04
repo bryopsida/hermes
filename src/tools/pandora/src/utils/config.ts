@@ -37,9 +37,9 @@ export interface IConfigurationManager {
 }
 
 export class ConfigurationManager implements IConfigurationManager {
-  private readonly configFilePath: string;
-  private pendingOperation: Promise<unknown> | undefined;
-  private multiStepOperation: Promise<unknown> | undefined;
+  private readonly configFilePath: string
+  private pendingOperation: Promise<unknown> | undefined
+  private multiStepOperation: Promise<unknown> | undefined
 
   constructor (configFilePath: string|undefined = undefined) {
     this.configFilePath = configFilePath || process.env.PANDORA_CONFIG_FILE_PATH || path.join(os.homedir(), '.pandora/config.json')

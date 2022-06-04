@@ -1,7 +1,7 @@
 import { IConfigurationManager, IContext } from '../utils/config'
 
 export class EnvironmentCommand {
-  private readonly config;
+  private readonly config
 
   constructor (config: IConfigurationManager) {
     this.config = config

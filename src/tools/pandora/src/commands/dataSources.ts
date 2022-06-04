@@ -4,7 +4,7 @@ import { IPaginatedResponse } from '../../../../common/models/paginatedResponse'
 import { DataSourceDTO } from '../../../../services/dataSourceManager/dto/dataSource'
 
 export class DataSourceCommand {
-  private readonly dataSourceClient: DataSourceClient;
+  private readonly dataSourceClient: DataSourceClient
 
   constructor (dataSourceClient: DataSourceClient) {
     this.dataSourceClient = dataSourceClient

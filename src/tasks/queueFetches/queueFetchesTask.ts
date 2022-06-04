@@ -15,7 +15,7 @@ export interface IQueueFetchOptions {
 }
 
 export class QueueFetchesTask implements ITask {
-  id: string;
+  id: string
   private readonly log = createLogger({
     serviceName: `queue-fetch-task-${COMPUTED_CONSTANTS.id}`,
     level: 'debug'

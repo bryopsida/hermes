@@ -6,26 +6,26 @@ import { KafkaConsumer } from 'node-rdkafka'
 import { KafkaConsumerActor } from '../kafkaConsumerActor'
 
 export class JsonWatchActor extends KafkaConsumerActor<IWatchedJsonData, IJsonWatchResult> {
-    public readonly log = createLogger({
-      serviceName: `theatre-${COMPUTED_CONSTANTS.id}`,
-      level: 'debug'
-    });
+  public readonly log = createLogger({
+    serviceName: `theatre-${COMPUTED_CONSTANTS.id}`,
+    level: 'debug'
+  })
 
-    readonly config: IActorConfig;
-    readonly name: string;
-    readonly topic: string;
-    kafkaConsumer?: KafkaConsumer;
+  readonly config: IActorConfig
+  readonly name: string
+  readonly topic: string
+  kafkaConsumer?: KafkaConsumer
 
-    constructor (config : IActorConfig) {
-      super()
-      this.config = config
-      this.name = 'jsonWatchActor'
-      this.topic = 'processed.jsonData'
-      this.log.info(`${this.name} actor created`)
-    }
+  constructor (config : IActorConfig) {
+    super()
+    this.config = config
+    this.name = 'jsonWatchActor'
+    this.topic = 'processed.jsonData'
+    this.log.info(`${this.name} actor created`)
+  }
 
-    actOn (message: IWatchedJsonData): Promise<IJsonWatchResult> {
-      this.log.debug('json watch actor acting on message')
-      return Promise.resolve({} as IJsonWatchResult)
-    }
+  actOn (message: IWatchedJsonData): Promise<IJsonWatchResult> {
+    this.log.debug('json watch actor acting on message')
+    return Promise.resolve({} as IJsonWatchResult)
+  }
 }
