@@ -109,3 +109,4 @@ mongodb:
         - ALL
 certmanager:
   enabled: true
+  useSelfSignedIssuer: true
