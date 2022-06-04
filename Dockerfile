@@ -4,7 +4,9 @@ RUN apk add --update --no-cache \
   make \
   g++ \
   bash \
-  gcc
+  gcc \
+  librdkafka \
+  librdkafka-dev
 
 FROM build-base AS build
 WORKDIR /usr/src/app
@@ -21,7 +23,7 @@ RUN npm ci --only=production
 
 
 FROM node:17.9.0-alpine
-RUN apk add dumb-init curl
+RUN apk add --update --no-cache dumb-init curl librdkafka
 ENV NODE_ENV production
 USER node
 WORKDIR /usr/src/app
