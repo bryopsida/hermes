@@ -3,6 +3,9 @@
     "level": "HERMES_LOG_LEVEL",
     "pretty": "HERMES_LOG_PRETTY"
   },
+  "auth": {
+    "userStorePath": "HERMES_AUTH_USER_STORE_PATH"
+  },
   "watch_manager": {
     "mongo": {
       "username": "HERMES_WATCHES_MONGODB_USERNAME",

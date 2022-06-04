@@ -5,7 +5,8 @@
     "enabled": true
   },
   "auth": {
-    "type": "external"
+    "type": "embedded",
+    "userStorePath": "../config/users.json"
   },
   "data_source_manager": {
     "enabled": true,

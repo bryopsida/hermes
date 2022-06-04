@@ -1,14 +1,19 @@
-imagePullPolicy: Always
+imagePullPolicy: IfNotPresent
+replicaCount: 1
 ingress:
   hosts:
-    - host: dev.hermes.local
+    - host: dev.hermes.curium.rocks
       paths:
         - path: /
           pathType: ImplementationSpecific
   tls: 
     - secretName: hermes-tls
       hosts:
-        - dev.hermes.local
+        - dev.hermes.curium.rocks
+certmanager:
+  useSelfSignedIssuer: false
+  issuerName: letsencrypt-prod
+accountsSecretName: dev-hermes-accounts
 kafka:
   volumePermissions:
     enabled: true
@@ -27,15 +32,25 @@ mongodb:
   arbiter:
     nodeSelector:
       kubernetes.io/arch: amd64
-  hidden:
+  mongos:
+    nodeSelector:
+      kubernetes.io/arch: amd64
+  shardsvr:
+    dataNode:
+      nodeSelector:
+        kubernetes.io/arch: amd64
+  configsvr:
     nodeSelector:
       kubernetes.io/arch: amd64
 redis:
   volumePermissions:
     enabled: true
+  replica:
+    nodeSelector:
+      kubernetes.io/arch: amd64
   master:
     nodeSelector:
       kubernetes.io/arch: amd64
-  replica:
+  updateJob:
     nodeSelector:
       kubernetes.io/arch: amd64

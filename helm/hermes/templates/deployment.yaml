@@ -97,7 +97,7 @@ spec:
                 name: "{{ .Release.Name }}-internal-mongodb"
                 key: "mongodb-root-password"
           {{- if .Values.accountsSecretName }}
-          - name: 
+          - name: HERMES_AUTH_USER_STORE_PATH
             value: /var/run/accounts/accounts.json
           {{- end }}
           volumeMounts:
