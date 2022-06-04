@@ -1,5 +1,18 @@
 FROM node:17.9.0-alpine as build-base
-RUN apk add --update --no-cache python3 make g++ bash
+RUN apk add --update --no-cache \
+  python3 \
+  make \
+  g++ \
+  bash \
+  ca-certificates \
+  lz4-dev \
+  musl-dev \
+  cyrus-sasl-dev \
+  openssl-dev
+
+# see if we can create stable layer to cache the node-gyp build for alpine + arm64 for the node bindings around librdkafka
+# otherwise the build can take 20-30 minutes to get the kafka client package on musl arm64
+RUN npm install node-rdkafka
 
 FROM build-base AS build
 WORKDIR /usr/src/app
