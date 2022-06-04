@@ -8,7 +8,12 @@ RUN apk add --update --no-cache \
   lz4-dev \
   musl-dev \
   cyrus-sasl-dev \
-  openssl-dev
+  openssl-dev \
+  gcc \
+  zlib-dev \
+  libc-dev \
+  bsd-compat-headers \
+  py-setuptools
 
 FROM build-base AS build
 WORKDIR /usr/src/app
