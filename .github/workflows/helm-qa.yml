@@ -22,7 +22,7 @@ jobs:
         uses: azure/setup-helm@v2.1
         with:
           version: v3.7.1
-      - uses: actions/setup-python@081a3cf1a51ab5fff2ae9d70f0cfacf0686293ea
+      - uses: actions/setup-python@53e15292cd6a522cb460037b6f031eadbd6f6920
         with:
           python-version: 3.7
       - name: Install chart-testing
