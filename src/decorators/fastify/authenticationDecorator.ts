@@ -5,6 +5,8 @@ import { AuthType, IAuthConfig } from '../../config/authConfig'
 import oauth2Plugin, { FastifyOAuth2Options } from '@fastify/oauth2'
 import fastifyAuth from '@fastify/auth'
 import fastifyBasicAuth, { FastifyBasicAuthOptions } from '@fastify/basic-auth'
+import createLogger from '../../common/logger/factory'
+import COMPUTED_CONSTANTS from '../../common/computedConstants'
 
 declare module 'fastify' {
   // eslint-disable-next-line no-unused-vars
@@ -16,6 +18,11 @@ declare module 'fastify' {
 }
 
 export class AuthenticationDecorator {
+  private static log = createLogger({
+    serviceName: `auth-decorator-${COMPUTED_CONSTANTS.id}`,
+    level: 'debug'
+  })
+
   /**
    * Creates an embedded authentication middleware that loads a json file defining the users and caches it
    * for http basic auth, setups the necessary middleware on the fastify app instance to enforce this.
@@ -83,8 +90,10 @@ export class AuthenticationDecorator {
     const authConfig = config.get<IAuthConfig>('auth')
     switch (authConfig.type) {
       case AuthType.EMBEDDED:
+        AuthenticationDecorator.log.info('Using embedded authentication')
         return AuthenticationDecorator.decorateEmbeddedAuthentication(app, authConfig)
       default:
+        AuthenticationDecorator.log.info('Using oauth authentication')
         return AuthenticationDecorator.decorateExternalAuthentication(app, authConfig)
     }
   }

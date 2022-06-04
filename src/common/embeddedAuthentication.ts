@@ -1,5 +1,7 @@
 import argon2 from 'argon2'
 import { FastifyReply, FastifyRequest } from 'fastify'
+import COMPUTED_CONSTANTS from './computedConstants'
+import createLogger from './logger/factory'
 
 interface IServiceRoleMap {
   roles: string[]
@@ -19,10 +21,15 @@ interface IStoredUser {
 export class EmbeddedAuthentication {
   private readonly _userStorePath: string
   private readonly _users: IStoredUser[]
+  private log = createLogger({
+    serviceName: `auth-embedded-${COMPUTED_CONSTANTS.id}`,
+    level: 'debug'
+  })
 
   constructor (userStorePath: string) {
     this._userStorePath = userStorePath
     this._users = require(userStorePath)
+    this.log.debug(`Loaded account information from: ${userStorePath}`)
   }
 
   public authenticate (username: string, password: string, request: FastifyRequest, reply: FastifyReply, done: Function) {
