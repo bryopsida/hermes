@@ -2,14 +2,18 @@ imagePullPolicy: IfNotPresent
 replicaCount: 4
 ingress:
   hosts:
-    - host: lab.hermes.local
+    - host: lab.hermes.curium.rocks
       paths:
         - path: /
           pathType: ImplementationSpecific
   tls: 
     - secretName: hermes-tls
       hosts:
-        - lab.hermes.local
+        - lab.hermes.curium.rocks
+certmanager:
+  useSelfSignedIssuer: false
+  issuerName: letsencrypt-prod
+accountsSecretName: lab-hermes-accounts
 kafka:
   volumePermissions:
     enabled: true

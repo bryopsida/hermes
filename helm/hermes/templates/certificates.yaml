@@ -1,4 +1,5 @@
 {{- if .Values.certmanager.enabled }}
+{{- if .Values.certmanager.useSelfSignedIssuer }}
 ---
 apiVersion: cert-manager.io/v1
 kind: ClusterIssuer
@@ -30,6 +31,7 @@ metadata:
 spec:
   ca:
     secretName: {{ .Release.Name }}-root-ca-secret
+{{- end }}
 {{- range .Values.ingress.tls }}
 ---
 apiVersion: cert-manager.io/v1
@@ -40,9 +42,16 @@ spec:
   secretName: {{ .secretName }}
   dnsNames:
   {{ .hosts | toYaml | indent 6 }}
+  {{- if $.Values.certmanager.useSelfSignedIssuer }}
   issuerRef:
     name: {{ $.Release.Name }}-issuer
     kind: Issuer
     group: cert-manager.io
+  {{- else }}
+  issuerRef:
+    name: {{ required "certmanager.issuerName is required when not using self signed issuer" $.Values.certmanager.issuerName }}
+    kind: ClusterIssuer
+    group: cert-manager.io
+  {{- end }}
 {{- end }}
 {{- end }}
