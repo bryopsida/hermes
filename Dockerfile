@@ -1,4 +1,6 @@
 FROM node:17.9.0-alpine as build-base
+# inform noderd-kafka we want to link against the system librdkafka already installed to save build time
+ENV BUILD_LIBRDKAFKA=0
 RUN apk add --update --no-cache \
   python3 \
   make \
