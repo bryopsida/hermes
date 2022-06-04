@@ -4,16 +4,7 @@ RUN apk add --update --no-cache \
   make \
   g++ \
   bash \
-  ca-certificates \
-  lz4-dev \
-  musl-dev \
-  cyrus-sasl-dev \
-  openssl-dev \
-  gcc \
-  zlib-dev \
-  libc-dev \
-  bsd-compat-headers \
-  py-setuptools
+  gcc
 
 FROM build-base AS build
 WORKDIR /usr/src/app
