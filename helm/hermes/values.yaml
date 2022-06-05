@@ -9,6 +9,11 @@ imagePullSecrets:
   - name: ghcr-credentials
 nameOverride: ""
 fullnameOverride: ""
+fetchCredentialsSecretName: ~
+fetchUsernameKey: username
+fetchPasswordKey: password
+fetchUsername: "data_source_manager_client"
+fetchPassword: "data_source_manager"
 serviceAccount:
   create: true
   annotations: {}

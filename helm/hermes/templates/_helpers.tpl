@@ -60,3 +60,10 @@ Create the name of the service account to use
 {{- default "default" .Values.serviceAccount.name }}
 {{- end }}
 {{- end }}
+
+{{/*
+Reference the secret name for the fetch user account
+*/}}
+{{- define "hermes.fetch-secret-name" -}}
+{{- .Values.fetchCredentialsSecretName | default (printf "%s-internal-hermes-fetch" .Release.Name ) -}}
+{{- end }}

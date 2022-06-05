@@ -14,6 +14,7 @@ certmanager:
   useSelfSignedIssuer: false
   issuerName: letsencrypt-prod
 accountsSecretName: dev-hermes-accounts
+fetchCredentialsSecretName: dev-hermes-fetch-credentials
 kafka:
   volumePermissions:
     enabled: true

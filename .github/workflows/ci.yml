@@ -379,6 +379,7 @@ jobs:
         kubectl -n $HELM_NAMESPACE describe deployments > /tmp/microk8s-hermes/hermes.deployments.describe
         kubectl -n $HELM_NAMESPACE describe configmaps > /tmp/microk8s-hermes/hermes.configmaps.describe
         kubectl -n $HELM_NAMESPACE describe secrets > /tmp/microk8s-hermes/hermes.secrets.describe
+        kubectl -n $HELM_NAMESPACE logs deployment/hermes > /tmp/microk8s-hermes/hermes.log
         inspectTarball=$(sudo microk8s inspect | grep -Po "/var/snap/microk8s/.*\.tar\.gz")
         sudo cp $inspectTarball /tmp/microk8s-hermes/
     - name: Upload Info On Failure

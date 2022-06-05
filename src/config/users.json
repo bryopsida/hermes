@@ -43,7 +43,7 @@
     }
   },{
     "username": "data_source_manager_client",
-    "password": "$argon2i$v=19$m=4096,t=3,p=1$kR1gTJzH5oZZ7rKNXwdAZw$fFnVQVhDvCtaKffSlwpikeEvC71uFMRYFQ4uJIzJl8Q",
+    "password": "$argon2i$v=19$m=4096,t=3,p=1$ZQSBWgNMdogUd9y6TE+2CQ$Igy0ljiLzLvcgVAxPZ+8t6BAnGRzJjFQoJ/dyho5QbE",
     "org": "org1",
     "services": {
       "data_source_managerr": {

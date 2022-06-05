@@ -96,6 +96,16 @@ spec:
               secretKeyRef:
                 name: "{{ .Release.Name }}-internal-mongodb"
                 key: "mongodb-root-password"
+          - name: HERMES_TASK_RUNNER_FETCH_USERNAME
+            valueFrom:
+              secretKeyRef:
+                name: "{{ include "hermes.fetch-secret-name" . }}"
+                key: "{{ .Values.fetchUsernameKey }}"
+          - name: HERMES_TASK_RUNNER_FETCH_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: "{{ include "hermes.fetch-secret-name" . }}"
+                key: "{{ .Values.fetchPasswordKey }}"
           {{- if .Values.accountsSecretName }}
           - name: HERMES_AUTH_USER_STORE_PATH
             value: /var/run/accounts/accounts.json
