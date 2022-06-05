@@ -71,7 +71,20 @@ if (cluster.isPrimary && process.env.USE_CLUSTERING === 'true') {
   const app :FastifyInstance = fastify({
     logger: createLogger({
       serviceName: `worker-${computedConstants.id}-fastify`,
-      level: 'debug'
+      level: 'debug',
+      redact: ['req.headers.authorization'],
+      serializers: {
+        req: (request) => {
+          return {
+            method: request.method,
+            url: request.url,
+            headers: request.headers,
+            hostname: request.hostname,
+            remoteAddress: request.ip,
+            remotePort: request.socket.remotePort
+          }
+        }
+      }
     })
   })
   app.register(fastifyHelmet)
