@@ -30,9 +30,13 @@ export class EmbeddedAuthentication {
     this._userStorePath = userStorePath
     this._users = require(userStorePath)
     this.log.debug(`Loaded account information from: ${userStorePath}`)
+    if (this._users == null || this._users.length === 0) {
+      throw new Error(`No users found in ${userStorePath}`)
+    }
   }
 
   public authenticate (username: string, password: string, request: FastifyRequest, reply: FastifyReply, done: Function) {
+    this.log.debug('Validating credentials with embedded basic auth')
     // check if the user exists
     const user = this._users.find(u => u.username === username)
     if (!user) {
