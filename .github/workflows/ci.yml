@@ -128,8 +128,8 @@ jobs:
           push: false
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=registry,ref=ghcr.io/bryopsida/hermes-mono:buildcache
-          cache-to: type=registry,ref=ghcr.io/bryopsida/hermes-mono:buildcache,mode=max
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
       - name: Get Short SHA
         id: short-sha
         run: |
@@ -182,8 +182,8 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=registry,ref=ghcr.io/bryopsida/hermes-mono:buildcache
-          cache-to: type=registry,ref=ghcr.io/bryopsida/hermes-mono:buildcache,mode=max
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
           platforms: linux/amd64,linux/arm64
       - name: Sign the published Docker image
         if: ${{ github.event_name != 'pull_request' }}
@@ -359,14 +359,15 @@ jobs:
       run: |
         kubectl -n $HELM_NAMESPACE get secret hermes-tls -o jsonpath="{.data['tls\.crt']}" | base64 -d > /tmp/hermes.local.tls.crt
         kubectl -n $HELM_NAMESPACE get secret hermes-root-ca-secret -o jsonpath="{.data['ca\.crt']}" | base64 -d > /tmp/hermes.local.ca.crt
-        sudo mv /tmp/*.crt /usr/local/share/ca-certificates/
+        sudo cp /tmp/*.crt /usr/local/share/ca-certificates/
         sudo update-ca-certificates
     - name: E2E Tests
       timeout-minutes: 10
       env:
-        TEST_PROTO: "http"
+        TEST_PROTO: "https"
         TEST_HOST: "hermes.local"
-        TEST_PORT: "80"
+        TEST_PORT: "443"
+        NODE_EXTRA_CA_CERTS: /tmp/hermes.local.ca.crt
       run: npm run test:e2e
     - name: Collect Info On Failure
       if: failure()

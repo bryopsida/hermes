@@ -1,5 +1,3 @@
-import { Agent } from 'https'
-
 const options = {
   host: process.env.TEST_HOST || 'localhost',
   port: process.env.TEST_PORT || '3000',
@@ -8,10 +6,7 @@ const options = {
     auth: {
       username: process.env.TEST_USERNAME || 'admin',
       password: process.env.TEST_PASSWORD || 'admin'
-    },
-    httpsAgent: new Agent({
-      rejectUnauthorized: false
-    })
+    }
   }
 }
 export default options

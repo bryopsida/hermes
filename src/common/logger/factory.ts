@@ -1,8 +1,16 @@
-import pino from 'pino'
+import pino, { SerializerFn } from 'pino'
 import config from 'config'
+export interface IRedactOptions {
+    paths: string[];
+    censor?: string | ((value: any, path: string[]) => any);
+    remove?: boolean;
+}
+
 export interface ILoggerOptions {
     serviceName: string;
     level: string;
+    serializers?: { [key: string]: SerializerFn },
+    redact?: string[] | IRedactOptions;
 }
 
 export interface ILoggerGlobalConfig {
@@ -13,7 +21,9 @@ export interface ILoggerGlobalConfig {
 function buildLoggerOpts (opts: ILoggerOptions, prettyPrint: boolean) : pino.LoggerOptions {
   const retOpt : pino.LoggerOptions = {
     name: opts.serviceName,
-    level: opts.level
+    level: opts.level,
+    redact: opts.redact,
+    serializers: opts.serializers
   }
   if (prettyPrint) {
     retOpt.prettyPrint = {
@@ -33,7 +43,9 @@ export default function createLogger (opts: ILoggerOptions) : pino.Logger {
   } else {
     return pino({
       name: opts.serviceName,
-      level: opts.level
+      level: opts.level,
+      serializers: opts.serializers,
+      redact: opts.redact
     })
   }
 }
