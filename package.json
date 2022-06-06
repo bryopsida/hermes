@@ -57,7 +57,7 @@
     "mongoose": "^6.3.2",
     "node-rdkafka": "^2.12.0",
     "pino": "^8.0.0",
-    "pino-pretty": "^7.6.1"
+    "pino-pretty": "^8.0.0"
   },
   "devDependencies": {
     "@octokit/rest": "^18.12.0",
