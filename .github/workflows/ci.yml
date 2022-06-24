@@ -19,7 +19,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        language: [ 'javascript', 'typescript' ]
+        language: [ 'javascript']
     permissions:
       actions: read
       contents: read
