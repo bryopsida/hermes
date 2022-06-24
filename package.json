@@ -43,7 +43,7 @@
   "dependencies": {
     "@bull-board/fastify": "^3.11.0",
     "@fastify/auth": "^2.0.0",
-    "@fastify/basic-auth": "^3.0.2",
+    "@fastify/basic-auth": "^4.0.0",
     "@fastify/helmet": "^8.1.0",
     "@fastify/oauth2": "^5.0.0",
     "argon2": "^0.28.5",
