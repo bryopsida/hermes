@@ -59,7 +59,7 @@ jobs:
     - name: Test
       run: npm test
     - name: Audit
-      run: npm audit
+      run: npm audit --omit=dev
     - name: SonarCloud Scan
       if: always()
       uses: SonarSource/sonarcloud-github-action@master
