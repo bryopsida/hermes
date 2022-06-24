@@ -16,6 +16,10 @@ jobs:
   analyze:
     name: Analyze
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [ 'javascript']
     permissions:
       actions: read
       contents: read
@@ -26,7 +30,7 @@ jobs:
     - name: Initialize CodeQL
       uses: github/codeql-action/init@v2
       with:
-        languages: javascript
+        languages: ${{ matrix.language }}
     - name: Autobuild
       uses: github/codeql-action/autobuild@v2
     - name: Perform CodeQL Analysis
@@ -59,7 +63,7 @@ jobs:
     - name: Test
       run: npm test
     - name: Audit
-      run: npm audit
+      run: npm audit --omit=dev
     - name: SonarCloud Scan
       if: always()
       uses: SonarSource/sonarcloud-github-action@master
