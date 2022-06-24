@@ -5,6 +5,7 @@ import { IService } from '../src/common/interfaces/service'
 
 /* eslint-disable no-undef */
 describe('Worker', () => {
+  jest.setTimeout(30000)
   it('Can start sub services', async () => {
     const app = new Mock<FastifyInstance>()
       .setup(s => s.listen(It.IsAny(), It.IsAny())).returns(await Promise.resolve())

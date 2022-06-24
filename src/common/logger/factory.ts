@@ -25,11 +25,6 @@ function buildLoggerOpts (opts: ILoggerOptions, prettyPrint: boolean) : pino.Log
     redact: opts.redact,
     serializers: opts.serializers
   }
-  if (prettyPrint) {
-    retOpt.prettyPrint = {
-      levelFirst: true
-    }
-  }
   return retOpt
 }
 

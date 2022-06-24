@@ -31,7 +31,14 @@ export class HermesWorker {
   public async start () : Promise<void> {
     this.logger.info('Starting sub services')
     await Promise.all(this.services.map(service => service.start()))
-    await this.app.listen(process.env.HERMES_SERVER_LISTEN_PORT || 3000, process.env.HERMES_SERVER_LISTEN_ADDRESS || '127.0.0.1')
+    this.logger.info('Finished starting sub services')
+    const listenOpts = {
+      port: process.env.HERMES_SERVER_LISTEN_PORT ? parseInt(process.env.HERMES_SERVER_LISTEN_PORT) : 3000,
+      host: process.env.HERMES_SERVER_LISTEN_HOST || '0.0.0.0'
+    }
+    this.logger.info(`Binding to ${listenOpts.host}:${listenOpts.port}`)
+    await this.app.listen(listenOpts)
+    this.logger.info(`Listening on ${listenOpts.host}:${listenOpts.port}`)
   }
 
   public async stop () : Promise<void> {
