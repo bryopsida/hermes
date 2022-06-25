@@ -70,6 +70,12 @@ export class Watch implements IWatch {
     return conn.model(tableName, schema)
   }
 
+  static async count () : Promise<number> {
+    return using<Connection, number>(await this.connect(), async (conn) => {
+      return this.getModel(conn).countDocuments().exec()
+    })
+  }
+
   static async findAll (offset: number, count: number): Promise<Array<Watch>> {
     return using<Connection, Array<Watch>>(await this.connect(), async (conn) => {
       const model = this.getModel(conn)

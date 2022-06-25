@@ -32,7 +32,7 @@ export default function dataSourceRoutes (fastify: FastifyInstance, options: Fas
     }>('/sources/:id', async (request, reply) => {
       const params = request.params as { id: string }
       const dataSource = await DataSource.findById(params.id)
-      if (dataSource == null) {
+      if (dataSource == null || dataSource.id == null || dataSource.id === '') {
         await reply.code(404).send()
       } else {
         await reply.code(200).send(dataSource.toDTO())
@@ -64,12 +64,16 @@ export default function dataSourceRoutes (fastify: FastifyInstance, options: Fas
       }>('/sources/:id', async (request : FastifyRequest, reply: FastifyReply) => {
         const req:FastifyRequest = request
         const params = req.params as {id: string}
-        const hasRecord = await DataSource.has(params.id)
+        const record = await DataSource.findById(params.id)
+        const hasRecord = record != null && record.id != null && record.id !== ''
 
         if (!hasRecord) {
           reply.status(404).send()
         } else {
-          reply.send(await DataSource.delete(params.id))
+          reply.send({
+            success: true,
+            source: record.toDTO()
+          })
         }
       })
   } catch (err) {
