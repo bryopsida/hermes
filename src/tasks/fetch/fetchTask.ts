@@ -71,6 +71,7 @@ export class FetchTask extends ProducerTask {
   }
 
   private getFullUrl (uri: string) : string {
+    if (!uri) throw new Error('Undefined URI provided')
     if (uri.startsWith('http')) {
       return uri
     } else {
@@ -79,6 +80,7 @@ export class FetchTask extends ProducerTask {
   }
 
   override async processJob (job: Job<FetchTaskParams>) : Promise<unknown> {
+    if (job.data.name == null || job.data.uri == null) throw new Error('Missing name or uri')
     this.logToJob(`Processing job ${job.id} on queue ${job.queue.name}`, job)
     this.logToJob(`Checking if there is new data sources for ${job.data.name} at ${job.data.uri}`, job)
     const fullUri = this.getFullUrl(job.data.uri)

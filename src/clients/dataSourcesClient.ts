@@ -43,7 +43,8 @@ export class DataSourceClient {
     }
     const url = `${this.baseUrl}/sources?offset=${offset}&limit=${count}`
     this.logger?.debug(`Fetching data sources from url: ${url}`)
-    const response = await axios.get<IPaginatedResponse<DataSourceDTO>>(url, await this.getAxiosRequestOptions())
+    const reqOpts = await this.getAxiosRequestOptions()
+    const response = await axios.get<IPaginatedResponse<DataSourceDTO>>(url, reqOpts)
     return response.data
   }
 

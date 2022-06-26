@@ -372,7 +372,9 @@ jobs:
         TEST_HOST: "hermes.local"
         TEST_PORT: "443"
         NODE_EXTRA_CA_CERTS: /tmp/hermes.local.ca.crt
-      run: npm run test:e2e
+      run: |
+        npm run test:e2e
+        npm run test:postman:k8s
     - name: Collect Info On Failure
       if: failure()
       run: |

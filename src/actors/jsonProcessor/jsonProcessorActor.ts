@@ -25,7 +25,7 @@ export class JsonProcessorActor extends KafkaConsumerActor<IUnprocesseedJsonData
   }
 
   actOn (message: IUnprocesseedJsonData): Promise<IWatchedJsonData> {
-    this.log.debug('json watch actor acting on message')
+    this.log.debug('json processor actor acting on message')
     return Promise.resolve({} as IWatchedJsonData)
   }
 }
