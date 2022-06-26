@@ -34,8 +34,8 @@ export class HermesWorker {
     await Promise.all(this.services.map(service => service.start()))
     this.logger.info('Finished starting sub services')
     const listenOpts = {
-      port: config.get<number>('port'),
-      host: '0.0.0.0'
+      port: config.get<number>('fastify.port'),
+      host: config.get<string>('fastify.address')
     }
     this.logger.info(`Binding to ${listenOpts.host}:${listenOpts.port}`)
     await this.app.listen(listenOpts)
