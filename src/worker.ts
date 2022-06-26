@@ -35,7 +35,7 @@ export class HermesWorker {
     this.logger.info('Finished starting sub services')
     const listenOpts = {
       port: config.get<number>('port'),
-      host: config.get<string>('hostname')
+      host: '0.0.0.0'
     }
     this.logger.info(`Binding to ${listenOpts.host}:${listenOpts.port}`)
     await this.app.listen(listenOpts)
