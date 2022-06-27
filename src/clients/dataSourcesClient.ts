@@ -62,10 +62,15 @@ export class DataSourceClient {
     await axios.delete(url, await this.getAxiosRequestOptions())
   }
 
-  public async getDataSource (dataSourceId: string): Promise<DataSourceDTO> {
+  public async getDataSource (dataSourceId: string, includeCredentials?: boolean): Promise<DataSourceDTO> {
     const url = `${this.baseUrl}/sources/${dataSourceId}`
     this.logger?.debug(`Fetching data source from: ${url}`)
-    const response = await axios.get<DataSourceDTO>(url, await this.getAxiosRequestOptions())
+    const response = await axios.get<DataSourceDTO>(url, {
+      params: {
+        includeCredentials: includeCredentials ? 'true' : 'false'
+      },
+      ...(await this.getAxiosRequestOptions())
+    })
     return response.data
   }
 }

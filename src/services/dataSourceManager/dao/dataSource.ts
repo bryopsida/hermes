@@ -7,13 +7,62 @@ import { using } from '../../../common/using'
 
 const tableName = 'data_sources'
 
+export enum CredentialType {
+  BASIC = 'basic',
+  DIGEST = 'digest',
+  API_KEY = 'apiKey',
+  OAUTH2 = 'oauth2',
+}
+export interface IDataSourceCredentials {
+  type: CredentialType
+  username: string | undefined
+  password: string | undefined
+  apiKey: string | undefined
+  apiKeyHeader: string | undefined,
+  clientId: string | undefined
+  clientSecret: string | undefined
+}
+
 export interface IDataSource {
     id: string;
     type: string;
     name: string;
     uri: string;
+    credentials?: IDataSourceCredentials;
     tags: string[];
 }
+
+// TODO: this should be encrypted at rest
+const credentialSchema = new mongoose.Schema({
+  type: {
+    type: String,
+    required: true
+  },
+  username: {
+    type: String,
+    required: false
+  },
+  password: {
+    type: String,
+    required: false
+  },
+  apiKey: {
+    type: String,
+    required: false
+  },
+  apiKeyHeader: {
+    type: String,
+    required: false
+  },
+  clientId: {
+    type: String,
+    required: false
+  },
+  clientSecret: {
+    type: String,
+    required: false
+  }
+})
 
 const schema = new mongoose.Schema<IDataSource>({
   id: {
@@ -32,6 +81,10 @@ const schema = new mongoose.Schema<IDataSource>({
     type: String,
     required: true
   },
+  credentials: {
+    type: credentialSchema,
+    required: false
+  },
   tags: {
     type: [String],
     required: false
@@ -45,6 +98,7 @@ export class DataSource implements IDataSource {
   public name: string
   public uri: string
   public tags: string[] = []
+  public credentials: IDataSourceCredentials | undefined
 
   private static readonly log = createLogger({
     serviceName: `data-source-dao-${COMPUTED_CONSTANTS.id}`,
@@ -62,6 +116,7 @@ export class DataSource implements IDataSource {
       this.type = dataSource.type
       this.name = dataSource.name
       this.uri = dataSource.uri
+      this.credentials = dataSource.credentials
     }
   }
 
@@ -113,7 +168,7 @@ export class DataSource implements IDataSource {
   static async upsert (dataSource: DataSource): Promise<DataSource> {
     return using<Connection, DataSource>(await this.connect(), async (conn) => {
       const model = this.getModel(conn)
-      await model.updateOne({ id: dataSource.id }, dataSource.toDTO(), { upsert: true }).exec()
+      await model.updateOne({ id: dataSource.id }, dataSource, { upsert: true }).exec()
       return new DataSource(await model.findOne({
         id: dataSource.id
       }).exec())
@@ -132,13 +187,15 @@ export class DataSource implements IDataSource {
     })
   }
 
-  toDTO (): DataSourceDTO {
+  toDTO (includeCredentials?: boolean): DataSourceDTO {
     return {
       id: this.id,
       type: this.type,
       name: this.name,
       uri: this.uri,
-      tags: this.tags
+      tags: this.tags,
+      hasCredentials: this.credentials != null,
+      credentials: includeCredentials ? this.credentials : undefined
     }
   }
 

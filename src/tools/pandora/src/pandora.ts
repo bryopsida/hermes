@@ -7,6 +7,7 @@ import { ConfigurationManager } from './utils/config'
 import { randomUUID } from 'crypto'
 import { DataSourceDTO } from '../../../services/dataSourceManager/dto/dataSource'
 import fs from 'fs/promises'
+import { IDataSourceCredentials } from '../../../services/dataSourceManager/dao/dataSource'
 
 const configurationManager = new ConfigurationManager()
 const environmentCommand = new EnvironmentCommand(configurationManager)
@@ -15,6 +16,10 @@ const program = new Command()
 program
   .name('pandora')
   .description('A tool to manage hermes')
+
+async function loadDataSourceCredentialsFromFile (pathToCredentials: string): Promise<IDataSourceCredentials> {
+  return JSON.parse(await fs.readFile(pathToCredentials, 'utf8'))
+}
 
 async function buildDataSourceCommandObj (): Promise<DataSourceCommand> {
   const env = await configurationManager.getCurrentContext()
@@ -81,10 +86,13 @@ function buildDataSourcesCommand (): Command {
     .argument('<name>', 'The name of the data source')
     .argument('<type>', 'The type of the data source')
     .argument('<url>', 'The url of the data source')
-    .action(async (name, type, url) => {
+    .argument('[credentials]', 'Path to the credentials file if applicable')
+    .action(async (name, type, url, pathToCredentials) => {
       const dataSourceCommand = await buildDataSourceCommandObj()
       const dataSource : DataSourceDTO = {
         type,
+        hasCredentials: !!pathToCredentials,
+        credentials: pathToCredentials != null ? await loadDataSourceCredentialsFromFile(pathToCredentials) : undefined,
         uri: url,
         id: randomUUID(),
         name,

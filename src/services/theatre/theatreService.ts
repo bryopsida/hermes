@@ -1,4 +1,5 @@
 import { HeartbeatActor } from '../../actors/heartbeat/heartbeatActor'
+import { JsonProcessorActor } from '../../actors/jsonProcessor/jsonProcessorActor'
 import { JsonWatchActor } from '../../actors/jsonWatch/jsonWatchActor'
 import COMPUTED_CONSTANTS from '../../common/computedConstants'
 import { IActor } from '../../common/interfaces/actor'
@@ -23,6 +24,7 @@ export class TheatreService implements IService {
     const config = kafkaConfigFactory.buildConfig(TheatreService.NAME)
     this.actors.push(new JsonWatchActor(config))
     this.actors.push(new HeartbeatActor(config))
+    this.actors.push(new JsonProcessorActor(config))
   }
 
   isAlive (): Promise<boolean> {

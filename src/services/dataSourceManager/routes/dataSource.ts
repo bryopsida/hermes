@@ -26,6 +26,9 @@ export default function dataSourceRoutes (fastify: FastifyInstance, options: Fas
 
     fastify.get<{
       Reply: DataSourceDTO,
+      Querystring: {
+        includeCredentials?: boolean
+      },
       Params: {
         id: string
       }
@@ -35,7 +38,7 @@ export default function dataSourceRoutes (fastify: FastifyInstance, options: Fas
       if (dataSource == null || dataSource.id == null || dataSource.id === '') {
         await reply.code(404).send()
       } else {
-        await reply.code(200).send(dataSource.toDTO())
+        await reply.code(200).send(dataSource.toDTO(request.query.includeCredentials))
       }
     })
 

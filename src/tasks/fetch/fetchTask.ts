@@ -1,7 +1,7 @@
 import { Queue, Job } from 'bull'
 import COMPUTED_CONSTANTS from '../../common/computedConstants'
 import createLogger from '../../common/logger/factory'
-import axios from 'axios'
+import axios, { AxiosRequestConfig } from 'axios'
 import { ProducerTask } from '../producerTask'
 import { Producer } from 'node-rdkafka'
 import { IUnprocesseedJsonData } from '../../common/models/watchModels'
@@ -34,14 +34,40 @@ export class FetchTask extends ProducerTask {
     return Promise.resolve(true)
   }
 
-  private async fetchData (uri: string): Promise<unknown> {
-    // TODO: in the future support more than get
-    const response = await axios.get<unknown>(uri, {
+  private async getRequestOptions (uri: string, properties: Record<string, unknown>): Promise<AxiosRequestConfig> {
+    const opts: AxiosRequestConfig = {
+      url: uri,
+      method: properties.method as string || 'GET',
       headers: {
         'Content-Type': 'application/json',
         accept: 'application/json'
       }
-    })
+    }
+    if (properties.credentials) {
+      this.log.debug('Setting credentials')
+      const creds = properties.credentials as Record<string, string>
+      switch (creds.type) {
+        case 'digest':
+        case 'basic': {
+          opts.auth = {
+            username: creds.username,
+            password: creds.password
+          }
+          break
+        }
+        case 'apiKey': {
+          const headers = opts.headers as Record<string, string>
+          headers[creds.apiKeyHeader] = creds.apiKey
+          break
+        }
+      }
+    }
+    return Promise.resolve(opts)
+  }
+
+  private async fetchData (uri: string, properties: Record<string, unknown>): Promise<unknown> {
+    // TODO: in the future support more than get
+    const response = await axios.request(await this.getRequestOptions(uri, properties))
     return response.data
   }
 
@@ -90,7 +116,7 @@ export class FetchTask extends ProducerTask {
     }
 
     this.logToJob(`New data, fetching data sources for ${job.data.name} at ${job.data.uri}`, job)
-    const data = await this.fetchData(fullUri)
+    const data = await this.fetchData(fullUri, job.data.properties)
 
     if (!this.isJson(data)) {
       this.logToJob(`Data is not JSON for ${job.data.name} at ${job.data.uri}, data: ${data}`, job)

@@ -55,12 +55,20 @@ export class QueueFetchesTask implements ITask {
         if (dataSourceResponse) {
           for (const dataSource of dataSourceResponse.items) {
             this.log.debug(`Queueing fetch job for data source id: ${dataSource.id}, type: ${dataSource.type}, name: ${dataSource.name}, uri: ${dataSource.uri}`)
-            await this.queue.add('fetch', {
+            const fetchTaskParams: FetchTaskParams = {
               name: dataSource.name,
               uri: dataSource.uri,
               type: dataSource.type,
-              properties: {}
-            } as FetchTaskParams)
+              properties: {
+                hasCredentials: dataSource.hasCredentials
+              }
+            }
+            if (dataSource.hasCredentials) {
+              const fullDataSource = await client.getDataSource(dataSource.id, true)
+              // TODO: encrypt this so it's not plain text in redis
+              fetchTaskParams.properties.credentials = fullDataSource.credentials
+            }
+            await this.queue.add('fetch', fetchTaskParams)
             fetchJobsQueued++
           }
         } else {
