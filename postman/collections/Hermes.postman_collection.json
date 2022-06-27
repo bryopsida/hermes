@@ -54,7 +54,7 @@
 								"method": "GET",
 								"header": [],
 								"url": {
-									"raw": "{{BASE_URL}}/api/data_source_manager/v1/sources",
+									"raw": "{{BASE_URL}}/api/data_source_manager/v1/sources?offset=0&limit=50",
 									"host": [
 										"{{BASE_URL}}"
 									],
@@ -63,6 +63,16 @@
 										"data_source_manager",
 										"v1",
 										"sources"
+									],
+									"query": [
+										{
+											"key": "offset",
+											"value": "0"
+										},
+										{
+											"key": "limit",
+											"value": "50"
+										}
 									]
 								}
 							},
@@ -82,6 +92,29 @@
 										"exec": [
 											"const uuid = require('uuid')",
 											"pm.variables.set('dataSourceId', uuid())"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test('Status code is 200', () => {",
+											"    pm.expect(pm.response.code).to.be.eq(200)",
+											"})",
+											"",
+											"pm.test('ID matches', () => {",
+											"    pm.expect(pm.response.json().id).to.be.eq(pm.variables.get('dataSourceId'))",
+											"})",
+											"",
+											"pm.test('Does not have credentials', () => {",
+											"    pm.expect(pm.response.json().hasCredentials).to.be.false",
+											"})",
+											"",
+											"pm.test('Credentials are not returned', () => {",
+											"    pm.expect(pm.response.json().credentials).to.be.undefined",
+											"})"
 										],
 										"type": "text/javascript"
 									}
@@ -107,7 +140,7 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n\n    \"id\": \"{{REQ_DATA_SOURCE_ID}}\",\n    \"type\": \"JSON\",\n    \"name\": \"{{$randomProductName}}\",\n    \"uri\": \"https://random-data-api.com/api/address/random_address\",\n    \"tags\": [\n        \"{{$randomDomainName}}\",\n        \"{{$randomDomainName}}\"\n    ]\n}",
+									"raw": "{\n\n    \"id\": \"{{dataSourceId}}\",\n    \"type\": \"JSON\",\n    \"name\": \"{{$randomProductName}}\",\n    \"uri\": \"https://random-data-api.com/api/address/random_address\",\n    \"tags\": [\n        \"{{$randomDomainName}}\",\n        \"{{$randomDomainName}}\"\n    ]\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -125,6 +158,89 @@
 										"v1",
 										"sources",
 										"{{dataSourceId}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Add Data Source With Credentials",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"const uuid = require('uuid')",
+											"pm.variables.set('credDataSourceId', uuid())",
+											"pm.variables.set('randomPassword', uuid())",
+											"pm.variables.set('randomUsername', uuid())",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test('Status code is 200', () => {",
+											"    pm.expect(pm.response.code).to.be.eq(200)",
+											"})",
+											"",
+											"pm.test('ID matches', () => {",
+											"    pm.expect(pm.response.json().id).to.be.eq(pm.variables.get('credDataSourceId'))",
+											"})",
+											"",
+											"pm.test('Has Credentials', () => {",
+											"    pm.expect(pm.response.json().hasCredentials).to.be.true",
+											"})",
+											"",
+											"pm.test('Credentials are not returned', () => {",
+											"    pm.expect(pm.response.json().credentials).to.be.undefined",
+											"})"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "basic",
+									"basic": [
+										{
+											"key": "username",
+											"value": "{{USERNAME}}",
+											"type": "string"
+										},
+										{
+											"key": "password",
+											"value": "{{PASSWORD}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\n    \"id\": \"{{credDataSourceId}}\",\n    \"type\": \"JSON\",\n    \"name\": \"{{$randomProductName}}\",\n    \"uri\": \"https://random-data-api.com/api/address/random_address\",\n    \"credentials\": {\n        \"type\": \"basic\",\n        \"username\": \"{{randomUsername}}\",\n        \"password\": \"{{randomPassword}}\"\n    },\n    \"tags\": [\n        \"{{$randomDomainName}}\",\n        \"{{$randomDomainName}}\"\n    ]\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{BASE_URL}}/api/data_source_manager/v1/sources/{{credDataSourceId}}",
+									"host": [
+										"{{BASE_URL}}"
+									],
+									"path": [
+										"api",
+										"data_source_manager",
+										"v1",
+										"sources",
+										"{{credDataSourceId}}"
 									]
 								}
 							},
@@ -271,6 +387,226 @@
 										"v1",
 										"sources",
 										"{{$randomUUID}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Can Fetch Credentials",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"const uuid = require('uuid')",
+											"const dataSourceId = uuid()",
+											"pm.variables.set('getDataSourceIdWithCreds', dataSourceId)",
+											"const req = {",
+											"  url: `${pm.variables.get('BASE_URL')}/api/data_source_manager/v1/sources/${dataSourceId}`,",
+											"  method: 'PUT',",
+											"  header: {",
+											"    'Content-Type': 'application/json',",
+											"  },",
+											"  auth:{",
+											"    type: 'basic',",
+											"    basic: [",
+											"        { key: \"username\", value: pm.variables.get('USERNAME') },",
+											"        { key: \"password\", value: pm.variables.get('PASSWORD') }",
+											"    ]",
+											"  },",
+											"  body: {",
+											"    mode: 'raw',",
+											"    raw: JSON.stringify({",
+											"        \"id\": dataSourceId,",
+											"        \"type\": \"JSON\",",
+											"        \"name\": \"TEST\",",
+											"        \"uri\": \"https://random-data-api.com/api/address/random_address\",",
+											"        \"credentials\": {",
+											"            \"type\": \"basic\",",
+											"            \"username\": \"username\",",
+											"            \"password\": \"password\"",
+											"        },",
+											"        \"tags\": [",
+											"            \"TEST1\",",
+											"            \"TEST2\"",
+											"        ]",
+											"    })",
+											"  }",
+											"};",
+											"pm.sendRequest(req)"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test('Status code is 200', () => {",
+											"    pm.expect(pm.response.code).to.be.eq(200)",
+											"})",
+											"",
+											"pm.test('Id Should be the same', () => {",
+											"    pm.expect(pm.response.json().id).to.be.eq(pm.variables.get('getDataSourceIdWithCreds'))",
+											"})",
+											"",
+											"pm.test('Has Credentials is true', () => {",
+											"    pm.expect(pm.response.json().hasCredentials).to.be.true",
+											"})",
+											"",
+											"pm.test('Credentails are returned', () => {",
+											"    const json = pm.response.json()",
+											"    pm.expect(json.credentials.type).to.be.eq('basic')",
+											"    pm.expect(json.credentials.username).to.be.eq('username')",
+											"    pm.expect(json.credentials.password).to.be.eq('password')",
+											"})"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "basic",
+									"basic": [
+										{
+											"key": "username",
+											"value": "{{USERNAME}}",
+											"type": "string"
+										},
+										{
+											"key": "password",
+											"value": "{{PASSWORD}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{BASE_URL}}/api/data_source_manager/v1/sources/{{getDataSourceIdWithCreds}}?includeCredentials=true",
+									"host": [
+										"{{BASE_URL}}"
+									],
+									"path": [
+										"api",
+										"data_source_manager",
+										"v1",
+										"sources",
+										"{{getDataSourceIdWithCreds}}"
+									],
+									"query": [
+										{
+											"key": "includeCredentials",
+											"value": "true"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Credentials Are Not Returned By Default",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"const uuid = require('uuid')",
+											"const dataSourceId = uuid()",
+											"pm.variables.set('getDataSourceIdWithoutCreds', dataSourceId)",
+											"const req = {",
+											"  url: `${pm.variables.get('BASE_URL')}/api/data_source_manager/v1/sources/${dataSourceId}`,",
+											"  method: 'PUT',",
+											"  header: {",
+											"    'Content-Type': 'application/json',",
+											"  },",
+											"  auth:{",
+											"    type: 'basic',",
+											"    basic: [",
+											"        { key: \"username\", value: pm.variables.get('USERNAME') },",
+											"        { key: \"password\", value: pm.variables.get('PASSWORD') }",
+											"    ]",
+											"  },",
+											"  body: {",
+											"    mode: 'raw',",
+											"    raw: JSON.stringify({",
+											"        \"id\": dataSourceId,",
+											"        \"type\": \"JSON\",",
+											"        \"name\": \"TEST\",",
+											"        \"uri\": \"https://random-data-api.com/api/address/random_address\",",
+											"        \"credentials\": {",
+											"            \"type\": \"basic\",",
+											"            \"username\": \"username\",",
+											"            \"password\": \"password\"",
+											"        },",
+											"        \"tags\": [",
+											"            \"TEST1\",",
+											"            \"TEST2\"",
+											"        ]",
+											"    })",
+											"  }",
+											"};",
+											"pm.sendRequest(req)"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test('Status code is 200', () => {",
+											"    pm.expect(pm.response.code).to.be.eq(200)",
+											"})",
+											"",
+											"pm.test('Id Should be the same', () => {",
+											"    pm.expect(pm.response.json().id).to.be.eq(pm.variables.get('getDataSourceIdWithoutCreds'))",
+											"})",
+											"",
+											"pm.test('Has Credentials is true', () => {",
+											"    pm.expect(pm.response.json().hasCredentials).to.be.true",
+											"})",
+											"",
+											"pm.test('Credentails are not returned', () => {",
+											"    const json = pm.response.json()",
+											"    pm.expect(json.credentials).to.be.undefined",
+											"})"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "basic",
+									"basic": [
+										{
+											"key": "username",
+											"value": "{{USERNAME}}",
+											"type": "string"
+										},
+										{
+											"key": "password",
+											"value": "{{PASSWORD}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{BASE_URL}}/api/data_source_manager/v1/sources/{{getDataSourceIdWithoutCreds}}",
+									"host": [
+										"{{BASE_URL}}"
+									],
+									"path": [
+										"api",
+										"data_source_manager",
+										"v1",
+										"sources",
+										"{{getDataSourceIdWithoutCreds}}"
 									]
 								}
 							},
