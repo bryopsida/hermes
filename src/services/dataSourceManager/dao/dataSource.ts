@@ -8,9 +8,13 @@ import { using } from '../../../common/using'
 const tableName = 'data_sources'
 
 export enum CredentialType {
+  // eslint-disable-next-line no-unused-vars
   BASIC = 'basic',
+  // eslint-disable-next-line no-unused-vars
   DIGEST = 'digest',
+  // eslint-disable-next-line no-unused-vars
   API_KEY = 'apiKey',
+  // eslint-disable-next-line no-unused-vars
   OAUTH2 = 'oauth2',
 }
 export interface IDataSourceCredentials {
