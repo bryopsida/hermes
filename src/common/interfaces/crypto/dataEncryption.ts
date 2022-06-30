@@ -71,3 +71,13 @@ export interface IDataEncryptor {
      */
     decrypt(decryptOpts: DecryptOpts): Promise<Buffer | Stream | string>;
 }
+
+export interface IKeyStore {
+    saveSealedRootKey(rootKeyId: string, key: Buffer): Promise<void>;
+    saveSealedDataEncKey(keyId: string, key: Buffer): Promise<void>;
+    fetchSealedRootKey(rootKeyId: string): Promise<Buffer>;
+    fetchSealedDataEncKey(keyId: string): Promise<Buffer>;
+    destroySealedRootKey(rootKeyId: string): Promise<void>;
+    destroySealedDataEncKey(keyId: string): Promise<void>;
+    destroyAllKeys(): Promise<void>;
+}
