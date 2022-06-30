@@ -14,6 +14,15 @@ export interface IQueueFetchOptions {
   batchSize: number;
 }
 
+/**
+ * This task interfaces with the data source manager
+ * fetching the data sources and kicking off individual jobs
+ * to check each data source for new data and push it into the message busses.
+ *
+ * When credentials are present a data encryption key is generated and used to encrypt the credentials.
+ * The DEK is sealed with a master key specified in the config file. The task responsible for executing the request
+ * will unseal the DEK, decrypt the credentials and then use the credentials to make the request.
+ */
 export class QueueFetchesTask implements ITask {
   id: string
   private readonly log = createLogger({
