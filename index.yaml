@@ -3,6 +3,32 @@ entries:
   hermes:
   - apiVersion: v2
     appVersion: 0.1.0
+    created: "2022-06-30T22:19:27.570018438Z"
+    dependencies:
+    - alias: kafka
+      condition: kafka.enabled
+      name: kafka
+      repository: https://charts.bitnami.com/bitnami
+      version: 18.0.0
+    - alias: redis
+      condition: redis.enabled
+      name: redis
+      repository: https://charts.bitnami.com/bitnami
+      version: 16.13.1
+    - alias: mongodb
+      condition: mongodb.enabled
+      name: mongodb
+      repository: https://charts.bitnami.com/bitnami
+      version: 12.1.22
+    description: A Helm chart for Hermes, a data source watch and notification system.
+    digest: 7ae476111ab43901254b758aa2d6942040ff7e3c34cdded8f5150272e991d7dc
+    name: hermes
+    type: application
+    urls:
+    - https://github.com/bryopsida/hermes/releases/download/hermes-0.1.62/hermes-0.1.62.tgz
+    version: 0.1.62
+  - apiVersion: v2
+    appVersion: 0.1.0
     created: "2022-06-30T13:52:58.305511816Z"
     dependencies:
     - alias: kafka
@@ -1399,4 +1425,4 @@ entries:
     urls:
     - https://github.com/bryopsida/hermes/releases/download/hermes-0.1.0-alpha-2/hermes-0.1.0-alpha-2.tgz
     version: 0.1.0-alpha-2
-generated: "2022-06-30T13:52:58.306177211Z"
+generated: "2022-06-30T22:19:27.570874336Z"
