@@ -6,7 +6,6 @@ import { ProducerTask } from '../producerTask'
 import { Producer } from 'node-rdkafka'
 import { IUnprocesseedJsonData } from '../../common/models/watchModels'
 
-
 export interface FetchTaskParams {
     name: string;
     uri: string;
