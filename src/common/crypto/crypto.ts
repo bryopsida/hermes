@@ -81,7 +81,7 @@ export class Crypto implements IDataEncryptor {
     // use a strong random number generator to generate a key at the desired size.
     const key: Buffer = randomBytes(size)
     const sealedKey = await this.seal(key, await readFile(this.masterKeyPath), (await readFile(this.masterKeyContext)).toString('utf-8'))
-    await this.saveSealedKey(sealedKey)
+    await this.saveSealedRootKey(sealedKey)
     return sealedKey.keyId
   }
 
