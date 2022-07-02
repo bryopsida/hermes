@@ -1,6 +1,6 @@
 import { IKeyStore } from '../interfaces/crypto/dataEncryption'
-import { scrypt, createHash, randomBytes, createCipheriv } from 'crypto'
-import { writeFile } from 'fs/promises'
+import { scrypt, createHash, randomBytes, createCipheriv, createDecipheriv, BinaryLike } from 'crypto'
+import { writeFile, mkdir, access, readFile, unlink, rmdir } from 'fs/promises'
 
 export interface IKeyStoreValueProvider {
   (): Promise<Buffer>
@@ -29,54 +29,95 @@ export class FileKeyStore implements IKeyStore {
     this.keyStoreContextProvider = keyStoreContextProvider
   }
 
-  async saveSealedRootKey (rootKeyId: string, key: Buffer): Promise<void> {
-    // first lets get the file name which is sha256(key id + salt)
-    const hash = createHash('sha256')
-    hash.update('root')
-    hash.update(rootKeyId)
-    const salt = await this.keyStoreSaltProvider()
-    hash.update(salt)
-
-    const fileName = hash.digest('hex')
-    const context = await this.keyStoreContextProvider(rootKeyId)
-    return new Promise((resolve, reject) => {
-      return this.keyStorePasswordProvider().then(password => {
-        scrypt(password, salt, 32, (err, key) => {
-          if (err) {
-            return reject(err)
-          }
-          const iv = randomBytes(16)
-          const cipher = createCipheriv('aes-256-gcm', key, iv, {
-            authTagLength: 16
-          }).setAAD(Buffer.from(context))
-          const ciphertext = Buffer.concat([iv, cipher.update(key), cipher.final(), cipher.getAuthTag()])
-          return writeFile(this.keyStorePath + '/' + fileName, ciphertext).then(resolve)
-        })
-      }).catch(reject)
+  private async createKeyStoreDirIfNotExists (): Promise<void> {
+    await access(this.keyStorePath).catch(async () => {
+      await mkdir(this.keyStorePath, { recursive: true })
     })
   }
 
-  saveSealedDataEncKey (keyId: string, key: Buffer): Promise<void> {
-    throw new Error('Method not implemented.')
+  private async getFileName (type: string, keyId: string, salt: Buffer): Promise<string> {
+    const hash = createHash('sha256')
+    hash.update(type)
+    hash.update(keyId)
+    hash.update(salt)
+    return hash.digest('hex')
+  }
+
+  private async getScryptKey (password: BinaryLike, salt: BinaryLike, context: Buffer) : Promise<Buffer> {
+    return new Promise((resolve, reject) => {
+      scrypt(password, salt, 32, (err, key) => {
+        if (err) {
+          return reject(err)
+        }
+        return resolve(key)
+      })
+    })
+  }
+
+  private async saveSealedKey (type: string, keyId: string, key: Buffer): Promise<void> {
+    // first lets get the file name which is sha256(key id + salt)
+    const salt = await this.keyStoreSaltProvider()
+    const fileName = await this.getFileName(type, keyId, salt)
+    const context = await this.keyStoreContextProvider(keyId)
+    const password = await this.keyStorePasswordProvider()
+    const scryptKey = await this.getScryptKey(password, salt, context)
+    const iv = randomBytes(16)
+    const cipher = createCipheriv('aes-256-gcm', scryptKey, iv, {
+      authTagLength: 16
+    }).setAAD(context)
+    const ciphertext = Buffer.concat([iv, cipher.update(key), cipher.final(), cipher.getAuthTag()])
+    await this.createKeyStoreDirIfNotExists()
+    await writeFile(this.keyStorePath + '/' + fileName, ciphertext)
+  }
+
+  private async fetchSealedKey (type: string, keyId: string): Promise<Buffer> {
+    const salt = await this.keyStoreSaltProvider()
+    const fileName = await this.getFileName(type, keyId, salt)
+    const key = await readFile(this.keyStorePath + '/' + fileName)
+    const context = await this.keyStoreContextProvider(keyId)
+    const password = await this.keyStorePasswordProvider()
+    const scryptKey = await this.getScryptKey(password, salt, context)
+    const iv = key.slice(0, 16)
+    const authTag = key.slice(key.length - 16)
+    const keyCipherText = key.slice(16, key.length - 16)
+    const decipher = createDecipheriv('aes-256-gcm', scryptKey, iv, {
+      authTagLength: 16
+    }).setAAD(context)
+    decipher.setAuthTag(authTag)
+    return Buffer.concat([decipher.update(keyCipherText), decipher.final()])
+  }
+
+  private async destroyKey (type: string, keyId: string): Promise<void> {
+    const salt = await this.keyStoreSaltProvider()
+    const fileName = await this.getFileName(type, keyId, salt)
+    await unlink(this.keyStorePath + '/' + fileName)
+  }
+
+  async saveSealedRootKey (rootKeyId: string, key: Buffer): Promise<void> {
+    await this.saveSealedKey('root', rootKeyId, key)
+  }
+
+  async saveSealedDataEncKey (keyId: string, key: Buffer): Promise<void> {
+    await this.saveSealedKey('dek', keyId, key)
   }
 
   fetchSealedRootKey (rootKeyId: string): Promise<Buffer> {
-    throw new Error('Method not implemented.')
+    return this.fetchSealedKey('root', rootKeyId)
   }
 
   fetchSealedDataEncKey (keyId: string): Promise<Buffer> {
-    throw new Error('Method not implemented.')
+    return this.fetchSealedKey('dek', keyId)
   }
 
   destroySealedRootKey (rootKeyId: string): Promise<void> {
-    throw new Error('Method not implemented.')
+    return this.destroyKey('root', rootKeyId)
   }
 
   destroySealedDataEncKey (keyId: string): Promise<void> {
-    throw new Error('Method not implemented.')
+    return this.destroyKey('dek', keyId)
   }
 
   destroyAllKeys (): Promise<void> {
-    throw new Error('Method not implemented.')
+    return rmdir(this.keyStorePath)
   }
 }
