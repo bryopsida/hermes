@@ -22,12 +22,13 @@ export class Crypto implements IDataEncryptor {
     const iv = sealedKey.slice(0, 16)
     const authTag = sealedKey.slice(sealedKey.length - 16)
     const encryptedKey = sealedKey.slice(16, sealedKey.length - 16)
+    const aead = Buffer.from(keyContext || await readFile(this.masterKeyContext))
 
     const rootKeyDecipher = createDecipheriv('aes-256-gcm', await readFile(this.masterKeyPath), iv, {
       authTagLength: 16
     })
     rootKeyDecipher.setAuthTag(authTag)
-    rootKeyDecipher.setAAD(Buffer.from(keyContext || await readFile(this.masterKeyContext)))
+    rootKeyDecipher.setAAD(aead)
 
     const key = rootKeyDecipher.update(encryptedKey)
     return Buffer.concat([key, rootKeyDecipher.final()])
@@ -41,7 +42,8 @@ export class Crypto implements IDataEncryptor {
     const encryptedKey = sealedKey.slice(16, sealedKey.length - 16)
     const keyDecipher = createDecipheriv('aes-256-gcm', rootKey, iv, {
       authTagLength: 16
-    }).setAuthTag(authTag)
+    })
+    keyDecipher.setAuthTag(authTag)
     if (keyContext) {
       keyDecipher.setAAD(Buffer.from(keyContext))
     }
@@ -54,11 +56,9 @@ export class Crypto implements IDataEncryptor {
     const cipher = createCipheriv('aes-256-gcm', key, iv, {
       authTagLength: 16
     })
-    if (context) {
-      cipher.setAAD(Buffer.from(context))
-    }
-    let ciphertext = cipher.update(data)
-    ciphertext = Buffer.concat([ciphertext, cipher.final()])
+    const aead = Buffer.from(context || await readFile(this.masterKeyContext))
+    cipher.setAAD(aead)
+    const ciphertext = Buffer.concat([cipher.update(data), cipher.final()])
     const authTag = cipher.getAuthTag()
     return {
       keyId: randomUUID(),
@@ -80,7 +80,7 @@ export class Crypto implements IDataEncryptor {
   async generateRootKey (size: number, context: string|undefined): Promise<string> {
     // use a strong random number generator to generate a key at the desired size.
     const key: Buffer = randomBytes(size)
-    const sealedKey = await this.seal(key, await readFile(this.masterKeyPath), (await readFile(this.masterKeyContext)).toString('utf-8'))
+    const sealedKey = await this.seal(key, await readFile(this.masterKeyPath), context || (await readFile(this.masterKeyContext)).toString('utf-8'))
     await this.saveSealedRootKey(sealedKey)
     return sealedKey.keyId
   }
@@ -107,8 +107,8 @@ export class Crypto implements IDataEncryptor {
     const cipher = createCipheriv('aes-256-gcm', dek, iv, {
       authTagLength: 16
     })
-    if (encryptRequest.dekContext) {
-      cipher.setAAD(Buffer.from(encryptRequest.dekContext))
+    if (encryptRequest.context) {
+      cipher.setAAD(Buffer.from(encryptRequest.context))
     }
     if (encryptRequest.plaintext instanceof Stream) {
       const retText: CipherText = {
@@ -122,13 +122,12 @@ export class Crypto implements IDataEncryptor {
       }
       return retText
     }
-    const ciphertext = cipher.update(encryptRequest.plaintext)
     return {
       keyId: encryptRequest.keyId,
       rootKeyId: encryptRequest.rootKeyId,
       iv,
       algorithm: 'aes-256-gcm',
-      ciphertext: Buffer.concat([ciphertext, cipher.final()]),
+      ciphertext: Buffer.concat([cipher.update(encryptRequest.plaintext), cipher.final()]),
       authTag: cipher.getAuthTag()
     }
   }
@@ -147,7 +146,6 @@ export class Crypto implements IDataEncryptor {
     if (decryptOpts.ciphertext instanceof Stream) {
       return decryptOpts.ciphertext.pipe(decipher)
     }
-    const plaintext = decipher.update(decryptOpts.ciphertext as Buffer)
-    return Buffer.concat([plaintext, decipher.final()])
+    return Buffer.concat([decipher.update(decryptOpts.ciphertext as Buffer), decipher.final()])
   }
 }

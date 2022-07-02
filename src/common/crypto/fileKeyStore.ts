@@ -1,6 +1,6 @@
 import { IKeyStore } from '../interfaces/crypto/dataEncryption'
 import { scrypt, createHash, randomBytes, createCipheriv, createDecipheriv, BinaryLike } from 'crypto'
-import { writeFile, mkdir, access, readFile, unlink, rmdir } from 'fs/promises'
+import { writeFile, mkdir, access, readFile, unlink, rm } from 'fs/promises'
 
 export interface IKeyStoreValueProvider {
   (): Promise<Buffer>
@@ -118,6 +118,6 @@ export class FileKeyStore implements IKeyStore {
   }
 
   destroyAllKeys (): Promise<void> {
-    return rmdir(this.keyStorePath)
+    return rm(this.keyStorePath, { recursive: true, maxRetries: 10 })
   }
 }
