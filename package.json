@@ -53,6 +53,7 @@
     "bull": "^4.8.2",
     "config": "^3.3.7",
     "fastify": "4.x.x",
+    "ioredis": "^4.28.5",
     "librdkafka": "^0.0.0",
     "lodash": "^4.17.21",
     "middie": "^7.0.0",
