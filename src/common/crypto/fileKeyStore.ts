@@ -15,6 +15,10 @@ export class FileKeyStore extends BaseKeyStore {
     this.keyStorePath = keyStorePath
   }
 
+  protected hasKeyInSlot (keySlot: string): Promise<boolean> {
+    return access(this.keyStorePath + '/' + keySlot).then(() => true).catch(() => false)
+  }
+
   private async createKeyStoreDirIfNotExists (): Promise<void> {
     await access(this.keyStorePath).catch(async () => {
       await mkdir(this.keyStorePath, { recursive: true })
@@ -36,5 +40,9 @@ export class FileKeyStore extends BaseKeyStore {
 
   protected async clearKeySlots (): Promise<void> {
     await rm(this.keyStorePath, { recursive: true, force: true, maxRetries: 3 })
+  }
+
+  async close (): Promise<void> {
+    // nothing to do
   }
 }

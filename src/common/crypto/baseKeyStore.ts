@@ -20,12 +20,22 @@ export abstract class BaseKeyStore implements IKeyStore {
     this.keyStoreContextProvider = keyStoreContextProvider
   }
 
+  async hasSealedRootKey (rootKeyId: string): Promise<boolean> {
+    const keySlot = await this.getKeySlot('dek', rootKeyId, await this.keyStoreSaltProvider())
+    return this.hasKeyInSlot(keySlot)
+  }
+
   async saveSealedRootKey (rootKeyId: string, key: Buffer): Promise<void> {
     await this.saveSealedKey('root', rootKeyId, key)
   }
 
   async saveSealedDataEncKey (keyId: string, key: Buffer): Promise<void> {
     await this.saveSealedKey('dek', keyId, key)
+  }
+
+  async hasSealedDataEncKey (keyId: string): Promise<boolean> {
+    const keySlot = await this.getKeySlot('dek', keyId, await this.keyStoreSaltProvider())
+    return this.hasKeyInSlot(keySlot)
   }
 
   fetchSealedRootKey (rootKeyId: string): Promise<Buffer> {
@@ -107,6 +117,8 @@ export abstract class BaseKeyStore implements IKeyStore {
 
   protected abstract putKeyInSlot (keySlot: string, key: Buffer): Promise<void>
   protected abstract getKeyInSlot (keySlot: string): Promise<Buffer>
+  protected abstract hasKeyInSlot (keySlot: string): Promise<boolean>
   protected abstract deleteKeySlot (keySlot: string): Promise<void>
   protected abstract clearKeySlots (): Promise<void>
+  public abstract close (): Promise<void>
 }

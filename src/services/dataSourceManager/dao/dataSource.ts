@@ -4,6 +4,9 @@ import { DataSourceDTO } from '../dto/dataSource'
 import mongoose, { Connection } from 'mongoose'
 import configFactory from '../../../config/mongodbConfig'
 import { using } from '../../../common/using'
+import { randomBytes } from 'crypto'
+import { CryptoRegistrySingleton } from '../../../registries/cryptoRegistry'
+import { EncryptOpts } from '../../../common/interfaces/crypto/dataEncryption'
 
 const tableName = 'data_sources'
 
@@ -25,6 +28,10 @@ export interface IDataSourceCredentials {
   apiKeyHeader: string | undefined,
   clientId: string | undefined
   clientSecret: string | undefined
+  encrypted: boolean
+  mac: string
+  rootKeyId: string
+  keyId: string
 }
 
 export interface IDataSource {
@@ -65,6 +72,14 @@ const credentialSchema = new mongoose.Schema({
   clientSecret: {
     type: String,
     required: false
+  },
+  encrypted: {
+    type: Boolean,
+    required: true
+  },
+  mac: {
+    type: String,
+    required: true
   }
 })
 
@@ -103,6 +118,8 @@ export class DataSource implements IDataSource {
   public uri: string
   public tags: string[] = []
   public credentials: IDataSourceCredentials | undefined
+  private initialized: boolean = false
+  private initPromise: Promise<void> | undefined
 
   private static readonly log = createLogger({
     serviceName: `data-source-dao-${COMPUTED_CONSTANTS.id}`,
@@ -122,6 +139,160 @@ export class DataSource implements IDataSource {
       this.uri = dataSource.uri
       this.credentials = dataSource.credentials
     }
+    this.init()
+  }
+
+  async init () {
+    // if initialized already, return
+    if (this.initialized) {
+      return
+    }
+    // if initialization already in progress chain to that promise
+    if (this.initPromise) {
+      await this.initPromise
+    }
+    this.initPromise = this.encryptCredentials().then(() => {
+      this.initialized = true
+    }).catch((err) => {
+      DataSource.log.error(`Error occurred while encrypting credentials for data source ${this.id}`, err)
+      DataSource.log.error(`Initializing data source ${this.id} failed`)
+      this.initialized = false
+    }).finally(() => {
+      this.initPromise = undefined
+    })
+  }
+
+  private async ensureKeysExist (): Promise<void> {
+    const crypto = await CryptoRegistrySingleton.getInstance().get('defaultCrypto')
+    // if keys are defined for credentials, good, if not generate and set the properties here for usage
+    // during encryption
+    // also check that if the keys are defined on the credentials that the crypto library still has the keys, otherwise blow up
+    if (this.credentials == null) {
+      return Promise.resolve()
+    }
+    if (this.credentials.rootKeyId != null && !await crypto.hasRootKey(this.credentials.rootKeyId)) {
+      throw new Error('Root key is gone! Cannot recover credentials')
+    }
+    if (this.credentials.keyId != null && !await crypto.hasDataEncKey(this.credentials.keyId)) {
+      throw new Error('Key is gone! Cannot recover credentials')
+    }
+    if (this.credentials.rootKeyId == null && !this.credentials.encrypted) {
+      this.credentials.rootKeyId = await crypto.generateRootKey(32, this.getRootKeyContext())
+    }
+    if (this.credentials.keyId == null && !this.credentials.encrypted) {
+      this.credentials.keyId = await crypto.generateDataEncKey(32, this.credentials.rootKeyId, this.getRootKeyContext(), this.getKeyContext())
+    }
+  }
+
+  private async encryptCredentials (): Promise<void> {
+    await this.ensureKeysExist()
+    if (this.credentials && !this.credentials.encrypted) {
+      this.credentials.encrypted = true
+      this.credentials.password = await this.encrypt(this.credentials.password, 'password')
+      this.credentials.apiKey = await this.encrypt(this.credentials.apiKey, 'apiKey')
+      this.credentials.clientSecret = await this.encrypt(this.credentials.clientSecret, 'clientSecret')
+      this.credentials.apiKeyHeader = await this.encrypt(this.credentials.apiKeyHeader, 'apiKeyHeader')
+      this.credentials.mac = await this.generateMac()
+    } else if (this.credentials && this.credentials.encrypted) {
+      const result = await this.validateMac()
+      if (!result) {
+        throw new Error('MAC validation failed')
+      }
+    }
+  }
+
+  private getMacBuffer () : Buffer {
+    if (this.credentials == null) {
+      return Buffer.alloc(0)
+    }
+    return Buffer.concat([
+      DataSource.getValAsBuffer(this.credentials.username),
+      DataSource.getValAsBuffer(this.credentials.password),
+      DataSource.getValAsBuffer(this.credentials.apiKey),
+      DataSource.getValAsBuffer(this.credentials.apiKeyHeader),
+      DataSource.getValAsBuffer(this.credentials.clientSecret)])
+  }
+
+  private async generateMac () : Promise<string> {
+    const mac = await (await CryptoRegistrySingleton.getInstance().get('defaultCrypto')).mac({
+      rootKeyId: this.getRootKeyId(),
+      rootKeyContext: this.getRootKeyContext(),
+      keyId: this.getKeyId(),
+      dekContext: this.getKeyContext()
+    }, this.getMacBuffer())
+    return mac.toString('base64')
+  }
+
+  private static getValAsBuffer (val: string | undefined): Buffer {
+    if (val == null) {
+      return Buffer.alloc(0)
+    }
+    return Buffer.from(val)
+  }
+
+  /**
+   * Locks unsealing the root key (which is scoped to a data source) except when the URI and ID are still the same,
+   * changing the URI will require a complete replacement of keys and the credentials provided to be reencrypted with
+   * new keys.
+   * @returns context used when sealing the root key
+   */
+  private getRootKeyContext (): string {
+    return `<${this.uri}>-<${this.id}>`
+  }
+
+  private getRootKeyId (): string {
+    if (!this.credentials?.rootKeyId) {
+      throw new Error('Root key id not set')
+    }
+    return this.credentials?.rootKeyId
+  }
+
+  /**
+   * Prevents unsealing the data encryption key when the data source has been mutated
+   * without updating the credentials. Specifically prevents unsealing the data encryption key
+   * when the URI has been changed as to prevent retrieval of credentials via sending to alternate destinations.
+   * @returns context to be used when unsealing the data encryption key
+   */
+  private getKeyContext (): string {
+    return `<${this.uri}>-<${this.id}>`
+  }
+
+  private getKeyId (): string {
+    if (!this.credentials?.keyId) {
+      throw new Error('Key id not set')
+    }
+    return this.credentials?.keyId
+  }
+
+  private async validateMac (): Promise<boolean> {
+    if (this.credentials == null) {
+      return Promise.resolve(false)
+    }
+    const message = this.getMacBuffer()
+    return (await CryptoRegistrySingleton.getInstance().get('defaultCrypto')).validate({
+      rootKeyId: this.getRootKeyId(),
+      keyId: this.getKeyId(),
+      rootKeyContext: this.getRootKeyContext(),
+      dekContext: this.getKeyContext()
+    }, message, Buffer.from(this.credentials.mac as string, 'base64'))
+  }
+
+  private async encrypt (value: string | undefined, propName: string): Promise<string | undefined> {
+    if (value == null) {
+      return this.encrypt(randomBytes(16).toString('utf-8') + 'N/A' + randomBytes(16).toString('utf-8'), 'dummy')
+    }
+    const crypto = await CryptoRegistrySingleton.getInstance().get('defaultCrypto')
+    const opts: EncryptOpts = {
+      plaintext: Buffer.from(value, 'utf-8'),
+      rootKeyId: this.getRootKeyId(),
+      keyId: this.getKeyId(),
+      algorithm: 'aes-256-gcm',
+      rootKeyContext: this.getRootKeyContext(),
+      dekContext: this.getKeyContext(),
+      context: Buffer.from(propName)
+    }
+    const result = await crypto.encrypt(opts)
+    return Buffer.concat([result.iv, result.ciphertext as Buffer, result.authTag || Buffer.alloc(0)]).toString('base64')
   }
 
   // TODO refactor to be more dry

@@ -1,12 +1,13 @@
 import { Stream } from 'stream'
 import { readFile } from 'fs/promises'
-import { randomBytes, createCipheriv, randomUUID, createDecipheriv } from 'crypto'
-import { CipherText, EncryptOpts, IDataEncryptor, IKeyStore, SealedKey } from '../interfaces/crypto/dataEncryption'
+import { randomBytes, createCipheriv, randomUUID, createDecipheriv, createHmac } from 'crypto'
+import { CipherText, EncryptOpts, IDataEncryptor, IKeyStore, KeyOpts, SealedKey } from '../interfaces/crypto/dataEncryption'
+import { IUsableClosable } from '../using'
 
 /**
  * Implements @see IDataEncryptor interface, consumes IKeyStore for distributed key persistence.
  */
-export class Crypto implements IDataEncryptor {
+export class Crypto implements IDataEncryptor, IUsableClosable {
   private readonly masterKeyPath: string
   private readonly masterKeyContext: string
   private readonly keyStore: IKeyStore
@@ -147,5 +148,32 @@ export class Crypto implements IDataEncryptor {
       return decryptOpts.ciphertext.pipe(decipher)
     }
     return Buffer.concat([decipher.update(decryptOpts.ciphertext as Buffer), decipher.final()])
+  }
+
+  async close (): Promise<void> {
+    await this.keyStore.close()
+  }
+
+  hasDataEncKey (keyId: string): Promise<boolean> {
+    return this.keyStore.hasSealedDataEncKey(keyId)
+  }
+
+  hasRootKey (rootKeyId: string): Promise<boolean> {
+    return this.keyStore.hasSealedRootKey(rootKeyId)
+  }
+
+  async mac (keyOpts: KeyOpts, message: Buffer): Promise<Buffer> {
+    const dek = await this.unsealDekKey(keyOpts.keyId, keyOpts.rootKeyId, keyOpts.dekContext, keyOpts.rootKeyContext)
+    const hmac = createHmac('sha256', dek)
+    // drop the cipher text
+    hmac.update(message)
+    const result = hmac.digest()
+    return Promise.resolve(result)
+  }
+
+  async validate (opts: KeyOpts, message: Buffer, digest: Buffer): Promise<boolean> {
+    // need the dek to validate the ciphertext
+    // mac is done with hmac sha256 with the dek as the secret
+    return (await this.mac(opts, message)).equals(digest)
   }
 }

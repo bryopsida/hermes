@@ -1,29 +1,30 @@
 import { Stream } from 'stream'
+import { IUsableClosable } from '../../using'
 
 export type Data = string | Buffer
 export type DataOrStream = Data | Stream
 
-export interface CipherText {
-    ciphertext: DataOrStream;
-    iv: Buffer;
+export interface KeyOpts {
     keyId: string;
     rootKeyId: string;
-    authTag?: Buffer;
-    algorithm: string;
-    context?: string;
     dekContext?: string;
     rootKeyContext?: string;
 }
 
-export interface EncryptOpts {
+export interface CipherText extends KeyOpts {
+    ciphertext: DataOrStream;
+    iv: Buffer;
+    authTag?: Buffer;
+    algorithm: string;
+    context?: string;
+}
+
+export interface EncryptOpts extends KeyOpts {
     plaintext: DataOrStream;
     keyId: string;
-    rootKeyId: string;
-    rootKeyContext?: string;
     iv?: Buffer;
     algorithm?: string;
     context?: Buffer;
-    dekContext?: string;
 }
 
 export type DecryptOpts = CipherText;
@@ -59,6 +60,11 @@ export interface IDataEncryptor {
      */
     generateDataEncKey(size: number, rootKeyId: string, rootKeyContext: string|undefined, context: string|undefined): Promise<string>;
 
+    hasDataEncKey(keyId: string): Promise<boolean>;
+    hasRootKey(rootKeyId: string): Promise<boolean>;
+    validate(keyOpts: KeyOpts, message: Buffer, digest: Buffer): Promise<boolean>;
+    mac(keyOpts: KeyOpts, message: Buffer): Promise<Buffer>;
+
     /**
      * Destroys a data encryption key, any data encrypted with it will be
      * lost.
@@ -90,9 +96,11 @@ export interface IDataEncryptor {
     decrypt(decryptOpts: DecryptOpts): Promise<Buffer | Stream | string>;
 }
 
-export interface IKeyStore {
+export interface IKeyStore extends IUsableClosable {
     saveSealedRootKey(rootKeyId: string, key: Buffer): Promise<void>;
     saveSealedDataEncKey(keyId: string, key: Buffer): Promise<void>;
+    hasSealedRootKey(rootKeyId: string): Promise<boolean>;
+    hasSealedDataEncKey(keyId: string): Promise<boolean>;
     fetchSealedRootKey(rootKeyId: string): Promise<Buffer>;
     fetchSealedDataEncKey(keyId: string): Promise<Buffer>;
     destroySealedRootKey(rootKeyId: string): Promise<void>;

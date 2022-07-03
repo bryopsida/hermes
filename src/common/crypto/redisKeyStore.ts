@@ -31,4 +31,12 @@ export class RedisKeyStore extends BaseKeyStore {
   protected async clearKeySlots (): Promise<void> {
     await this.redisClient.del(`{${this.keyPrefix}:*}`)
   }
+
+  protected async hasKeyInSlot (keySlot: string): Promise<boolean> {
+    return (await this.redisClient.exists(`{${this.keyPrefix}:${keySlot}}`)) > 0
+  }
+
+  async close (): Promise<void> {
+    this.redisClient.disconnect(false)
+  }
 }
