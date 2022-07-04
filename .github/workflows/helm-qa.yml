@@ -19,10 +19,10 @@ jobs:
         with:
           fetch-depth: 0
       - name: Install Helm
-        uses: azure/setup-helm@v2.1
+        uses: azure/setup-helm@v3.0
         with:
           version: v3.7.1
-      - uses: actions/setup-python@ffcd00020c213885323d35524aa155f17870b8dd
+      - uses: actions/setup-python@364e819741b50de0a275e36302d0ab3e69ce3010
         with:
           python-version: 3.7
       - name: Install chart-testing
