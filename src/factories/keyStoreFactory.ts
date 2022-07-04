@@ -4,6 +4,8 @@ import config from 'config'
 import { RedisKeyStore } from '../common/crypto/redisKeyStore'
 import { Cluster, Redis } from 'ioredis'
 import { RedisClientFactory } from './redisClientFactory'
+import { readFile } from 'fs/promises'
+import { resolveHome } from '../common/fs/resolve'
 
 export enum KeyStoreType {
   // eslint-disable-next-line no-unused-vars
@@ -19,9 +21,9 @@ export interface KeyStoreDescription {
 }
 
 export interface KeyStoreOptions {
-  password: string
-  salt: string
-  context: string
+  passwordPath: string
+  saltPath: string
+  contextPath: string
 }
 
 export interface FileKeyStoreOptions extends KeyStoreOptions {
@@ -41,13 +43,16 @@ interface KeyStoreValueProvider {
 export class CryptoKeyStoreFactory {
   private static getValueProviders (keyStoreDescription: KeyStoreDescription) : KeyStoreValueProvider {
     const fStoreConfig = config.get<FileKeyStoreOptions>(keyStoreDescription.configScope)
-    const password = Buffer.from(fStoreConfig.password, 'base64')
-    const salt = Buffer.from(fStoreConfig.salt, 'base64')
-    const context = Buffer.from(fStoreConfig.context, 'base64')
     return {
-      passwordProvider: () => Promise.resolve(password),
-      saltProvider: () => Promise.resolve(salt),
-      contextProvider: () => Promise.resolve(context)
+      passwordProvider: async () => {
+        return Buffer.from(await readFile(resolveHome(fStoreConfig.passwordPath), 'base64'))
+      },
+      saltProvider: async () => {
+        return Buffer.from(await readFile(resolveHome(fStoreConfig.saltPath), 'base64'))
+      },
+      contextProvider: async () => {
+        return Buffer.from(await readFile(resolveHome(fStoreConfig.contextPath), 'base64'))
+      }
     }
   }
 

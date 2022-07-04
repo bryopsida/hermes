@@ -13,7 +13,7 @@ export interface CryptoCreateOptions {
 export class CryptoFactory {
   static create (opts: CryptoCreateOptions): Crypto {
     const masterKeyPath = config.get<string>(`${opts.scope}.masterKeyPath`)
-    const masterKeyContext = config.get<string>(`${opts.scope}.masterKeyContext`)
+    const masterKeyContext = config.get<string>(`${opts.scope}.masterContextPath`)
     return new Crypto(opts.keyStore || CryptoKeyStoreFactory.create({
       type: config.get<KeyStoreType>(`${opts.scope}.store.type`),
       configScope: `${opts.scope}.store`,

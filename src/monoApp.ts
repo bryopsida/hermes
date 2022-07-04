@@ -24,6 +24,7 @@ import { TartarusService } from './services/tartarus/tartarusServices'
 import { ClassificationService } from './services/classificationManager/classificationService'
 import { AuthenticationDecorator } from './decorators/fastify/authenticationDecorator'
 import { ErrorHandlerDecorator } from './decorators/fastify/errorHandlerDecorator'
+import { seedKeys } from './common/crypto/seedKeys'
 
 const cpuCount = cpus().length
 
@@ -48,7 +49,8 @@ const queueOptions = {
     : undefined
 } as QueueOptions
 
-if (cluster.isPrimary && process.env.USE_CLUSTERING === 'true') {
+// if we are in development seed keys
+function primary () {
   const primary = new Primary(process.env.WORKER_COUNT ? parseInt(process.env.WORKER_COUNT) : cpuCount)
   primary.start()
 
@@ -60,7 +62,9 @@ if (cluster.isPrimary && process.env.USE_CLUSTERING === 'true') {
     await primary.stop()
     process.exit(0)
   })
-} else {
+}
+
+function worker () {
   const logger = createLogger({
     serviceName: `worker-${computedConstants.id}`,
     level: 'debug'
@@ -145,3 +149,16 @@ if (cluster.isPrimary && process.env.USE_CLUSTERING === 'true') {
     process.exit(1)
   })
 }
+
+async function bootstrap () : Promise<void> {
+  if (process.env.NODE_ENV === 'dev' || process.env.NODE_ENV === 'development') {
+    await seedKeys()
+  }
+  if (cluster.isPrimary && process.env.USE_CLUSTERING === 'true') {
+    primary()
+  } else {
+    worker()
+  }
+}
+
+bootstrap()

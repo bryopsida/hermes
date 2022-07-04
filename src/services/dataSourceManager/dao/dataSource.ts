@@ -145,18 +145,22 @@ export class DataSource implements IDataSource {
   async init () {
     // if initialized already, return
     if (this.initialized) {
+      DataSource.log.debug('DataSource already initialized')
       return
     }
     // if initialization already in progress chain to that promise
     if (this.initPromise) {
+      DataSource.log.debug('DataSource Initialization In Progress')
       await this.initPromise
     }
     this.initPromise = this.encryptCredentials().then(() => {
+      DataSource.log.debug('Finished encrypting credentials')
       this.initialized = true
     }).catch((err) => {
       DataSource.log.error(`Error occurred while encrypting credentials for data source ${this.id}`, err)
       DataSource.log.error(`Initializing data source ${this.id} failed`)
       this.initialized = false
+      throw err
     }).finally(() => {
       this.initPromise = undefined
     })
@@ -343,6 +347,7 @@ export class DataSource implements IDataSource {
   static async upsert (dataSource: DataSource): Promise<DataSource> {
     return using<Connection, DataSource>(await this.connect(), async (conn) => {
       const model = this.getModel(conn)
+      await dataSource.init()
       await model.updateOne({ id: dataSource.id }, dataSource, { upsert: true }).exec()
       return new DataSource(await model.findOne({
         id: dataSource.id

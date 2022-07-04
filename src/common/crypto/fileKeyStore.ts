@@ -1,4 +1,5 @@
 import { writeFile, mkdir, access, readFile, unlink, rm } from 'fs/promises'
+import { resolveHome } from '../fs/resolve'
 import { BaseKeyStore, IKeyStoreContextProvider, IKeyStoreValueProvider } from './baseKeyStore'
 
 /**
@@ -12,7 +13,7 @@ export class FileKeyStore extends BaseKeyStore {
 
   constructor (keyStorePath: string, keyStorePasswordProvider: IKeyStoreValueProvider, keyStoreSaltProvider: IKeyStoreValueProvider, keyStoreContextProvider: IKeyStoreContextProvider) {
     super(keyStorePasswordProvider, keyStoreSaltProvider, keyStoreContextProvider)
-    this.keyStorePath = keyStorePath
+    this.keyStorePath = resolveHome(keyStorePath)
   }
 
   protected hasKeyInSlot (keySlot: string): Promise<boolean> {

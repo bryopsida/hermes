@@ -3,6 +3,7 @@ import { readFile } from 'fs/promises'
 import { randomBytes, createCipheriv, randomUUID, createDecipheriv, createHmac } from 'crypto'
 import { CipherText, EncryptOpts, IDataEncryptor, IKeyStore, KeyOpts, SealedKey } from '../interfaces/crypto/dataEncryption'
 import { IUsableClosable } from '../using'
+import { resolveHome } from '../fs/resolve'
 
 /**
  * Implements @see IDataEncryptor interface, consumes IKeyStore for distributed key persistence.
@@ -18,14 +19,19 @@ export class Crypto implements IDataEncryptor, IUsableClosable {
     this.keyStore = keyStore
   }
 
+  private async readFileFromPath (path: string) : Promise<Buffer> {
+    const buffer = await readFile(resolveHome(this.masterKeyContext), 'utf-8')
+    return Buffer.from(buffer, 'base64')
+  }
+
   private async unsealRootKey (keyId: string, keyContext: string|undefined): Promise<Buffer> {
     const sealedKey = await this.keyStore.fetchSealedRootKey(keyId)
     const iv = sealedKey.slice(0, 16)
     const authTag = sealedKey.slice(sealedKey.length - 16)
     const encryptedKey = sealedKey.slice(16, sealedKey.length - 16)
-    const aead = Buffer.from(keyContext || await readFile(this.masterKeyContext))
+    const aead = Buffer.from(keyContext || await this.readFileFromPath(this.masterKeyContext))
 
-    const rootKeyDecipher = createDecipheriv('aes-256-gcm', await readFile(this.masterKeyPath), iv, {
+    const rootKeyDecipher = createDecipheriv('aes-256-gcm', await this.readFileFromPath(this.masterKeyPath), iv, {
       authTagLength: 16
     })
     rootKeyDecipher.setAuthTag(authTag)
@@ -57,7 +63,7 @@ export class Crypto implements IDataEncryptor, IUsableClosable {
     const cipher = createCipheriv('aes-256-gcm', key, iv, {
       authTagLength: 16
     })
-    const aead = Buffer.from(context || await readFile(this.masterKeyContext))
+    const aead = Buffer.from(context || await this.readFileFromPath(this.masterKeyContext))
     cipher.setAAD(aead)
     const ciphertext = Buffer.concat([cipher.update(data), cipher.final()])
     const authTag = cipher.getAuthTag()
@@ -81,7 +87,7 @@ export class Crypto implements IDataEncryptor, IUsableClosable {
   async generateRootKey (size: number, context: string|undefined): Promise<string> {
     // use a strong random number generator to generate a key at the desired size.
     const key: Buffer = randomBytes(size)
-    const sealedKey = await this.seal(key, await readFile(this.masterKeyPath), context || (await readFile(this.masterKeyContext)).toString('utf-8'))
+    const sealedKey = await this.seal(key, await this.readFileFromPath(this.masterKeyPath), context || (await this.readFileFromPath(this.masterKeyContext)).toString('utf-8'))
     await this.saveSealedRootKey(sealedKey)
     return sealedKey.keyId
   }
