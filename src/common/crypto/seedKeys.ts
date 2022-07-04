@@ -22,9 +22,9 @@ function saveKey (key: Buffer, keyPath: string) : Promise<void> {
   })
 }
 
-async function ensureKey (keyPath: string) : Promise<void> {
+async function ensureKey (keyPath: string, length: number) : Promise<void> {
   if (!await fileExists(keyPath)) {
-    await saveKey(await createKey(32), keyPath)
+    await saveKey(await createKey(length), keyPath)
   }
 }
 
@@ -40,9 +40,9 @@ export async function seedKeys () : Promise<void> {
   const storeSaltPath = config.get<string>('defaultCrypto.store.saltPath')
   const storeContextPath = config.get<string>('defaultCrypto.store.contextPath')
 
-  ensureKey(masterKeyPath)
-  ensureKey(masterContextPath)
-  ensureKey(storePasswordPath)
-  ensureKey(storeSaltPath)
-  ensureKey(storeContextPath)
+  ensureKey(masterKeyPath, 32)
+  ensureKey(masterContextPath, 32)
+  ensureKey(storePasswordPath, 32)
+  ensureKey(storeSaltPath, 16)
+  ensureKey(storeContextPath, 32)
 }

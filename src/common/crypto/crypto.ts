@@ -20,7 +20,7 @@ export class Crypto implements IDataEncryptor, IUsableClosable {
   }
 
   private async readFileFromPath (path: string) : Promise<Buffer> {
-    const buffer = await readFile(resolveHome(this.masterKeyContext), 'utf-8')
+    const buffer = await readFile(resolveHome(path), 'utf-8')
     return Buffer.from(buffer, 'base64')
   }
 

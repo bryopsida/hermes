@@ -95,6 +95,9 @@ export abstract class BaseKeyStore implements IKeyStore {
   protected async fetchSealedKey (type: string, keyId: string): Promise<Buffer> {
     const salt = await this.keyStoreSaltProvider()
     const keySlot = await this.getKeySlot(type, keyId, salt)
+    if (!await this.hasKeyInSlot(keySlot)) {
+      throw new Error('Key not found')
+    }
     const key = await this.getKeyInSlot(keySlot)
     const context = await this.keyStoreContextProvider(keyId)
     const password = await this.keyStorePasswordProvider()

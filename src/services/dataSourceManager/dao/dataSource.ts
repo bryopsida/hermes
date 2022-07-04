@@ -157,7 +157,7 @@ export class DataSource implements IDataSource {
       DataSource.log.debug('Finished encrypting credentials')
       this.initialized = true
     }).catch((err) => {
-      DataSource.log.error(`Error occurred while encrypting credentials for data source ${this.id}`, err)
+      DataSource.log.error(`Error occurred while encrypting credentials for data source ${this.id}: ${err.message}`)
       DataSource.log.error(`Initializing data source ${this.id} failed`)
       this.initialized = false
       throw err
@@ -175,10 +175,10 @@ export class DataSource implements IDataSource {
       return Promise.resolve()
     }
     if (this.credentials.rootKeyId != null && !await crypto.hasRootKey(this.credentials.rootKeyId)) {
-      throw new Error('Root key is gone! Cannot recover credentials')
+      throw new Error(`Root key ${this.credentials.rootKeyId} is gone! Cannot recover credentials`)
     }
     if (this.credentials.keyId != null && !await crypto.hasDataEncKey(this.credentials.keyId)) {
-      throw new Error('Key is gone! Cannot recover credentials')
+      throw new Error(`Key ${this.credentials.keyId} is gone! Cannot recover credentials`)
     }
     if (this.credentials.rootKeyId == null && !this.credentials.encrypted) {
       this.credentials.rootKeyId = await crypto.generateRootKey(32, this.getRootKeyContext())

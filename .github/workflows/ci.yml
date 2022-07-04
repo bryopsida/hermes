@@ -46,7 +46,7 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v3
     - name: Install Build-Tools
-      run: apk add --update --no-cache python3 make g++ bash
+      run: apk add --update --no-cache python3 make g++ bash docker docker-compose && addgroup $USER docker && service docker start
     - name: Setup Cache
       uses: actions/cache@v3
       with:
