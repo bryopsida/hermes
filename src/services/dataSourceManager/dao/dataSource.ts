@@ -143,7 +143,7 @@ export class DataSource implements IDataSource {
       this.uri = dataSource.uri
       this.credentials = dataSource.credentials
     }
-    //this.init()
+    // this.init()
   }
 
   async init () {
@@ -351,7 +351,7 @@ export class DataSource implements IDataSource {
   static async upsert (dataSource: DataSource): Promise<DataSource> {
     return using<Connection, DataSource>(await this.connect(), async (conn) => {
       const model = this.getModel(conn)
-      //await dataSource.init()
+      // await dataSource.init()
       await model.updateOne({ id: dataSource.id }, dataSource, { upsert: true }).exec()
       return new DataSource(await model.findOne({
         id: dataSource.id
