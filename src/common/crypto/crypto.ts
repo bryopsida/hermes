@@ -63,7 +63,12 @@ export class Crypto implements IDataEncryptor, IUsableClosable {
     const cipher = createCipheriv('aes-256-gcm', key, iv, {
       authTagLength: 16
     })
-    const aead = Buffer.from(context || await this.readFileFromPath(this.masterKeyContext))
+    let aead
+    if (context) {
+      aead = Buffer.from(context)
+    } else {
+      aead = await this.readFileFromPath(this.masterKeyContext)
+    }
     cipher.setAAD(aead)
     const ciphertext = Buffer.concat([cipher.update(data), cipher.final()])
     const authTag = cipher.getAuthTag()
@@ -87,7 +92,10 @@ export class Crypto implements IDataEncryptor, IUsableClosable {
   async generateRootKey (size: number, context: string|undefined): Promise<string> {
     // use a strong random number generator to generate a key at the desired size.
     const key: Buffer = randomBytes(size)
-    const sealedKey = await this.seal(key, await this.readFileFromPath(this.masterKeyPath), context || (await this.readFileFromPath(this.masterKeyContext)).toString('utf-8'))
+    if (!context) {
+      context = (await this.readFileFromPath(this.masterKeyContext)).toString('utf-8')
+    }
+    const sealedKey = await this.seal(key, await this.readFileFromPath(this.masterKeyPath), context)
     await this.saveSealedRootKey(sealedKey)
     return sealedKey.keyId
   }

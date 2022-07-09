@@ -3,7 +3,6 @@ import createLogger from '../../../common/logger/factory'
 import { DataSourceDTO } from '../dto/dataSource'
 import mongoose, { Connection } from 'mongoose'
 import { randomBytes } from 'crypto'
-import { CryptoRegistrySingleton } from '../../../registries/cryptoRegistry'
 import { EncryptOpts } from '../../../common/interfaces/crypto/dataEncryption'
 import { Crypto } from '../../../common/crypto/crypto'
 
@@ -126,8 +125,6 @@ export class DataSource implements IDataSource {
   public credentials: IDataSourceCredentials | undefined
   private initialized: boolean = false
   private initPromise: Promise<void> | undefined
-  private static mongooseUrl?: string
-  private static mongooseOptions: any
 
   private static readonly log = createLogger({
     serviceName: `data-source-dao-${COMPUTED_CONSTANTS.id}`,
@@ -149,14 +146,14 @@ export class DataSource implements IDataSource {
     }
   }
 
-  async init (crypto: Crypto) {
+  async init (crypto: Crypto) : Promise<void> {
     // if initialized already, return
-    if (this.initialized) {
+    if (this.initialized === true) {
       DataSource.log.debug('DataSource already initialized')
       return
     }
     // if initialization already in progress chain to that promise
-    if (this.initPromise) {
+    if (this.initPromise != null) {
       DataSource.log.debug('DataSource Initialization In Progress')
       await this.initPromise
     }
@@ -171,14 +168,15 @@ export class DataSource implements IDataSource {
     }).finally(() => {
       this.initPromise = undefined
     })
+    return this.initPromise
   }
 
-  private async ensureKeysExist (): Promise<void> {
-    const crypto = await CryptoRegistrySingleton.getInstance().get('defaultCrypto')
+  private async ensureKeysExist (crypto: Crypto): Promise<void> {
     // if keys are defined for credentials, good, if not generate and set the properties here for usage
     // during encryption
     // also check that if the keys are defined on the credentials that the crypto library still has the keys, otherwise blow up
     if (this.credentials == null) {
+      DataSource.log.debug('No credentials defined for data source, skipping key check')
       return Promise.resolve()
     }
     if (this.credentials.rootKeyId != null && !await crypto.hasRootKey(this.credentials.rootKeyId)) {
@@ -188,24 +186,26 @@ export class DataSource implements IDataSource {
       throw new Error(`Key ${this.credentials.keyId} is gone! Cannot recover credentials`)
     }
     if (this.credentials.rootKeyId == null && !this.credentials.encrypted) {
+      DataSource.log.debug('Missing root key, generating one')
       this.credentials.rootKeyId = await crypto.generateRootKey(32, this.getRootKeyContext())
     }
     if (this.credentials.keyId == null && !this.credentials.encrypted) {
+      DataSource.log.debug('Missing key, generating one')
       this.credentials.keyId = await crypto.generateDataEncKey(32, this.credentials.rootKeyId as string, this.getRootKeyContext(), this.getKeyContext())
     }
   }
 
   private async encryptCredentials (crypto: Crypto): Promise<void> {
-    await this.ensureKeysExist()
+    await this.ensureKeysExist(crypto)
     if (this.credentials && !this.credentials.encrypted) {
       this.credentials.encrypted = true
       this.credentials.password = await this.encrypt(crypto, this.credentials.password, 'password')
       this.credentials.apiKey = await this.encrypt(crypto, this.credentials.apiKey, 'apiKey')
       this.credentials.clientSecret = await this.encrypt(crypto, this.credentials.clientSecret, 'clientSecret')
       this.credentials.apiKeyHeader = await this.encrypt(crypto, this.credentials.apiKeyHeader, 'apiKeyHeader')
-      this.credentials.mac = await this.generateMac()
+      this.credentials.mac = await this.generateMac(crypto)
     } else if (this.credentials && this.credentials.encrypted) {
-      const result = await this.validateMac()
+      const result = await this.validateMac(crypto)
       if (!result) {
         throw new Error('MAC validation failed')
       }
@@ -224,8 +224,8 @@ export class DataSource implements IDataSource {
       DataSource.getValAsBuffer(this.credentials.clientSecret)])
   }
 
-  private async generateMac () : Promise<string> {
-    const mac = await (await CryptoRegistrySingleton.getInstance().get('defaultCrypto')).mac({
+  private async generateMac (crypto: Crypto) : Promise<string> {
+    const mac = await crypto.mac({
       rootKeyId: this.getRootKeyId(),
       rootKeyContext: this.getRootKeyContext(),
       keyId: this.getKeyId(),
@@ -275,12 +275,12 @@ export class DataSource implements IDataSource {
     return this.credentials?.keyId
   }
 
-  private async validateMac (): Promise<boolean> {
+  private async validateMac (crypto: Crypto): Promise<boolean> {
     if (this.credentials == null) {
       return Promise.resolve(false)
     }
     const message = this.getMacBuffer()
-    return (await CryptoRegistrySingleton.getInstance().get('defaultCrypto')).validate({
+    return crypto.validate({
       rootKeyId: this.getRootKeyId(),
       keyId: this.getKeyId(),
       rootKeyContext: this.getRootKeyContext(),
@@ -314,6 +314,7 @@ export class DataSource implements IDataSource {
   }
 
   static async findById (conn: Connection, id: string): Promise<DataSource> {
+    DataSource.log.debug(`Finding data source with id ${id}`)
     return new DataSource(await this.getModel(conn).findOne({ id }).exec())
   }
 
@@ -331,8 +332,11 @@ export class DataSource implements IDataSource {
   }
 
   static async upsert (conn: Connection, crypto: Crypto, dataSource: DataSource): Promise<DataSource> {
+    DataSource.log.debug(`Upserting data source ${dataSource.id}`)
     const model = this.getModel(conn)
+    DataSource.log.debug('Initializing data source for upsert')
     await dataSource.init(crypto)
+    DataSource.log.debug('Finished initializing data source for upsert')
     await model.updateOne({ id: dataSource.id }, dataSource, { upsert: true }).exec()
     return new DataSource(await model.findOne({
       id: dataSource.id
@@ -376,15 +380,5 @@ export class DataSource implements IDataSource {
 
   static fromDTO (dataSourceDTO: DataSourceDTO): DataSource {
     return new DataSource(dataSourceDTO)
-  }
-
-  // TODO refactor to be more IoC friendly
-  static setMongooseUrl (mongooseUrl: string) {
-    DataSource.mongooseUrl = mongooseUrl
-  }
-
-  // TODO refactor to be more IoC friendly
-  static setMongooseOptions (mongooseOptions: any) {
-    DataSource.mongooseOptions = mongooseOptions
   }
 }

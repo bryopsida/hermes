@@ -25,6 +25,9 @@ import { ClassificationService } from './services/classificationManager/classifi
 import { AuthenticationDecorator } from './decorators/fastify/authenticationDecorator'
 import { ErrorHandlerDecorator } from './decorators/fastify/errorHandlerDecorator'
 import { seedKeys } from './common/crypto/seedKeys'
+import mongodbConfig from './config/mongodbConfig'
+import { Mongoose, connect, ConnectOptions } from 'mongoose'
+import { CryptoFactory } from './factories/cryptoFactory'
 
 const cpuCount = cpus().length
 
@@ -64,7 +67,7 @@ function primary () {
   })
 }
 
-function worker () {
+async function worker () {
   const logger = createLogger({
     serviceName: `worker-${computedConstants.id}`,
     level: 'debug'
@@ -95,10 +98,19 @@ function worker () {
   ErrorHandlerDecorator.decorate(app)
   AuthenticationDecorator.decorate(app)
 
+  // get a mongoose connection for data sources
+  // clean up
+  const dataSourceMongooseConnConfig = mongodbConfig.buildConfig('data_source')
+  const dataSourceConn : Mongoose = await connect(dataSourceMongooseConnConfig.getServerUrl(), dataSourceMongooseConnConfig.getMongooseOptions() as ConnectOptions)
+
+  const crypto = CryptoFactory.create({
+    scope: 'defaultCrypto'
+  })
+
   // TODO: fix as any cast
   // define services managed by this mono app entry point
   const services : Array<IService> = [
-    isServiceEnabled(DataSourceService.NAME) ? new DataSourceService(app as any) : undefined,
+    isServiceEnabled(DataSourceService.NAME) ? new DataSourceService(app as any, dataSourceConn.connection, crypto) : undefined,
     isServiceEnabled(TaskRunnerService.NAME) ? new TaskRunnerService(queueOptions) : undefined,
     isServiceEnabled(WatchManagementService.NAME) ? new WatchManagementService(app) : undefined,
     isServiceEnabled(TheatreService.NAME) ? new TheatreService() : undefined,

@@ -74,6 +74,7 @@ export class RedisKeyStore extends BaseKeyStore {
   }
 
   async close (): Promise<void> {
+    RedisKeyStore.logger.info('Closing redis client')
     this.redisClient.disconnect(false)
   }
 }

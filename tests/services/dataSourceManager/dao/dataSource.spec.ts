@@ -1,11 +1,11 @@
 import { randomUUID } from 'crypto'
 import { StartedTestContainer, GenericContainer } from 'testcontainers'
 import { CryptoCreateOptions, CryptoFactory } from '../../../../src/factories/cryptoFactory'
-import { CryptoRegistry, CryptoRegistrySingleton } from '../../../../src/registries/cryptoRegistry'
 import { CredentialType, DataSource } from '../../../../src/services/dataSourceManager/dao/dataSource'
 import { DataSourceDTO } from '../../../../src/services/dataSourceManager/dto/dataSource'
 import Redis from 'ioredis'
 import { Crypto } from '../../../../src/common/crypto/crypto'
+import { Mongoose, connect } from 'mongoose'
 
 // uses a mongodb and redis test container, does not mock those services
 
@@ -14,6 +14,7 @@ describe('DataSource DAO', () => {
   let redisContainer: StartedTestContainer
   let mongoContainer: StartedTestContainer
   let cryptoInstance: Crypto
+  let mongoose: Mongoose
 
   beforeAll(async () => {
     // start redis container
@@ -27,35 +28,24 @@ describe('DataSource DAO', () => {
       .withExposedPorts(27017)
       .start()
 
-    // set mongoose url, this overrides default specified via config
-    DataSource.setMongooseUrl(`mongodb://${mongoContainer.getHost()}:${mongoContainer.getMappedPort(27017)}/data_sources`)
-
     const opts: CryptoCreateOptions = {
       scope: 'defaultCrypto',
       redisClient: new Redis(redisContainer.getMappedPort(6379), redisContainer.getHost())
     }
     // seed crypto instance before reference fetched
-    cryptoInstance = await CryptoRegistrySingleton.getInstance().set('defaultCrypto', CryptoFactory.create(opts))
+    cryptoInstance = CryptoFactory.create(opts)
+    mongoose = await connect(`mongodb://${mongoContainer.getHost()}:${mongoContainer.getMappedPort(27017)}/data_sources`, {
+      user: 'mongodb',
+      pass: 'mongodb',
+      dbName: 'data_sources',
+      authSource: 'admin'
+    })
   })
   afterAll(async () => {
+    await mongoose.connection.close()
     await cryptoInstance.close()
     await redisContainer?.stop({ timeout: 15000 })
     await mongoContainer?.stop({ timeout: 15000 })
-  })
-  it('can manage a data source in the backing data store', async () => {
-    const id = randomUUID()
-    const dataSource: DataSourceDTO = {
-      id,
-      type: 'test',
-      name: 'test',
-      uri: 'http://google.com',
-      tags: [],
-      hasCredentials: false
-    }
-    const dao = DataSource.fromDTO(dataSource)
-    await DataSource.upsert(dao)
-    const fetchedDataSource = await DataSource.findById(id)
-    expect(fetchedDataSource.toDTO()).toEqual(dataSource)
   })
   it('can manage a data source with credentials', async () => {
     const id = randomUUID()
@@ -73,8 +63,8 @@ describe('DataSource DAO', () => {
       }
     }
     const dao = DataSource.fromDTO(dataSource)
-    await DataSource.upsert(dao)
-    const fetchedDataSource = await DataSource.findById(id)
+    await DataSource.upsert(mongoose.connection, cryptoInstance, dao)
+    const fetchedDataSource = await DataSource.findById(mongoose.connection, id)
     expect(fetchedDataSource.toDTO(true)).toEqual(dataSource)
   })
 })
