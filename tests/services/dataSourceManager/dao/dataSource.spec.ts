@@ -55,9 +55,9 @@ describe('DataSource DAO', () => {
       tags: [],
       hasCredentials: false
     }
-    const dataSourceDAO = new DataSource(dataSource)
-    await DataSource.upsert(dataSourceDAO)
+    const dao = DataSource.fromDTO(dataSource)
+    await DataSource.upsert(dao)
     const fetchedDataSource = await DataSource.findById(id)
-    expect(fetchedDataSource).toEqual(dataSource)
+    expect(fetchedDataSource.toDTO()).toEqual(dataSource)
   })
 })
