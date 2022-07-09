@@ -30,8 +30,8 @@ async function ensureKey (keyPath: string, length: number) : Promise<void> {
 
 export async function seedKeys () : Promise<void> {
   const env = process.env.NODE_ENV
-  if (env !== 'development' && env !== 'dev') {
-    throw new Error('seedKeys() should only be called in development! See docs on what values to setup for prod.')
+  if (env !== 'development' && env !== 'dev' && env !== 'test') {
+    throw new Error(`seedKeys() should only be called in development or test environments, not ${env}! See docs on what values to setup for prod.`)
   }
   // need to check if masterKey, masterContext, storePassword, storeSalt, storeContext are set
   const masterKeyPath = config.get<string>('defaultCrypto.masterKeyPath')

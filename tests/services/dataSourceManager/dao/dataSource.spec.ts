@@ -6,6 +6,7 @@ import { DataSourceDTO } from '../../../../src/services/dataSourceManager/dto/da
 import Redis from 'ioredis'
 import { Crypto } from '../../../../src/common/crypto/crypto'
 import { Mongoose, connect } from 'mongoose'
+import { seedKeys } from '../../../../src/common/crypto/seedKeys'
 
 // uses a mongodb and redis test container, does not mock those services
 
@@ -40,6 +41,7 @@ describe('DataSource DAO', () => {
       dbName: 'data_sources',
       authSource: 'admin'
     })
+    await seedKeys()
   })
   afterAll(async () => {
     await mongoose.connection.close()
