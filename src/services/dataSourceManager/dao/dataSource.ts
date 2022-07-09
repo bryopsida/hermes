@@ -2,11 +2,10 @@ import COMPUTED_CONSTANTS from '../../../common/computedConstants'
 import createLogger from '../../../common/logger/factory'
 import { DataSourceDTO } from '../dto/dataSource'
 import mongoose, { Connection } from 'mongoose'
-import configFactory from '../../../config/mongodbConfig'
-import { using } from '../../../common/using'
 import { randomBytes } from 'crypto'
 import { CryptoRegistrySingleton } from '../../../registries/cryptoRegistry'
 import { EncryptOpts } from '../../../common/interfaces/crypto/dataEncryption'
+import { Crypto } from '../../../common/crypto/crypto'
 
 const tableName = 'data_sources'
 
@@ -56,6 +55,14 @@ const credentialSchema = new mongoose.Schema({
   password: {
     type: String,
     required: false
+  },
+  keyId: {
+    type: String,
+    required: true
+  },
+  rootKeyId: {
+    type: String,
+    required: true
   },
   apiKey: {
     type: String,
@@ -110,9 +117,6 @@ const schema = new mongoose.Schema<IDataSource>({
   }
 })
 
-// default, todo: refactor to be more IoC friendly
-const config = configFactory.buildConfig('data_source_manager')
-
 export class DataSource implements IDataSource {
   public id: string
   public type: string
@@ -143,10 +147,9 @@ export class DataSource implements IDataSource {
       this.uri = dataSource.uri
       this.credentials = dataSource.credentials
     }
-    // this.init()
   }
 
-  async init () {
+  async init (crypto: Crypto) {
     // if initialized already, return
     if (this.initialized) {
       DataSource.log.debug('DataSource already initialized')
@@ -157,7 +160,7 @@ export class DataSource implements IDataSource {
       DataSource.log.debug('DataSource Initialization In Progress')
       await this.initPromise
     }
-    this.initPromise = this.encryptCredentials().then(() => {
+    this.initPromise = this.encryptCredentials(crypto).then(() => {
       DataSource.log.debug('Finished encrypting credentials')
       this.initialized = true
     }).catch((err) => {
@@ -192,14 +195,14 @@ export class DataSource implements IDataSource {
     }
   }
 
-  private async encryptCredentials (): Promise<void> {
+  private async encryptCredentials (crypto: Crypto): Promise<void> {
     await this.ensureKeysExist()
     if (this.credentials && !this.credentials.encrypted) {
       this.credentials.encrypted = true
-      this.credentials.password = await this.encrypt(this.credentials.password, 'password')
-      this.credentials.apiKey = await this.encrypt(this.credentials.apiKey, 'apiKey')
-      this.credentials.clientSecret = await this.encrypt(this.credentials.clientSecret, 'clientSecret')
-      this.credentials.apiKeyHeader = await this.encrypt(this.credentials.apiKeyHeader, 'apiKeyHeader')
+      this.credentials.password = await this.encrypt(crypto, this.credentials.password, 'password')
+      this.credentials.apiKey = await this.encrypt(crypto, this.credentials.apiKey, 'apiKey')
+      this.credentials.clientSecret = await this.encrypt(crypto, this.credentials.clientSecret, 'clientSecret')
+      this.credentials.apiKeyHeader = await this.encrypt(crypto, this.credentials.apiKeyHeader, 'apiKeyHeader')
       this.credentials.mac = await this.generateMac()
     } else if (this.credentials && this.credentials.encrypted) {
       const result = await this.validateMac()
@@ -285,11 +288,10 @@ export class DataSource implements IDataSource {
     }, message, Buffer.from(this.credentials.mac as string, 'base64'))
   }
 
-  private async encrypt (value: string | undefined, propName: string): Promise<string | undefined> {
+  private async encrypt (crypto: Crypto, value: string | undefined, propName: string): Promise<string | undefined> {
     if (value == null) {
-      return this.encrypt(randomBytes(16).toString('utf-8') + 'N/A' + randomBytes(16).toString('utf-8'), 'dummy')
+      return this.encrypt(crypto, randomBytes(16).toString('utf-8') + 'N/A' + randomBytes(16).toString('utf-8'), 'dummy')
     }
-    const crypto = await CryptoRegistrySingleton.getInstance().get('defaultCrypto')
     const opts: EncryptOpts = {
       plaintext: Buffer.from(value, 'utf-8'),
       rootKeyId: this.getRootKeyId(),
@@ -303,36 +305,19 @@ export class DataSource implements IDataSource {
     return Buffer.concat([result.iv, result.ciphertext as Buffer, result.authTag || Buffer.alloc(0)]).toString('base64')
   }
 
-  // TODO refactor to be more dry
-  private static connect (): Promise<Connection> {
-    return new Promise((resolve, reject) => {
-      mongoose.createConnection(DataSource.mongooseUrl || config.getServerUrl(), DataSource.mongooseOptions || config.getMongooseOptions(), (err, conn) => {
-        if (err) {
-          reject(err)
-        } else {
-          resolve(conn)
-        }
-      })
-    })
-  }
-
   private static getModel (conn: Connection): mongoose.Model<IDataSource> {
     return conn.model(tableName, schema)
   }
 
-  static async count () : Promise<number> {
-    return using<Connection, number>(await this.connect(), async (conn) => {
-      return this.getModel(conn).countDocuments()
-    })
+  static async count (conn: Connection) : Promise<number> {
+    return this.getModel(conn).countDocuments()
   }
 
-  static async findById (id: string): Promise<DataSource> {
-    return using<Connection, DataSource>(await this.connect(), async (conn) => {
-      return new DataSource(await this.getModel(conn).findOne({ id }).exec())
-    })
+  static async findById (conn: Connection, id: string): Promise<DataSource> {
+    return new DataSource(await this.getModel(conn).findOne({ id }).exec())
   }
 
-  static async findAll (offset: number, count: number): Promise<Array<DataSource>> {
+  static async findAll (conn: Connection, offset: number, count: number): Promise<Array<DataSource>> {
     if (offset == null || isNaN(offset)) {
       DataSource.log.warn('offset is not defined or NaN, defaulting to 0')
       offset = 0
@@ -342,33 +327,24 @@ export class DataSource implements IDataSource {
       count = 10
     }
     DataSource.log.debug(`Fetching data sources from offset: ${offset} and count: ${count}`)
-    const conn = await this.connect()
-    const result = (await this.getModel(conn).find().skip(offset).limit(count).exec()).map(doc => new DataSource(doc))
-    await conn.close()
-    return result
+    return (await this.getModel(conn).find().skip(offset).limit(count).exec()).map(doc => new DataSource(doc))
   }
 
-  static async upsert (dataSource: DataSource): Promise<DataSource> {
-    return using<Connection, DataSource>(await this.connect(), async (conn) => {
-      const model = this.getModel(conn)
-      // await dataSource.init()
-      await model.updateOne({ id: dataSource.id }, dataSource, { upsert: true }).exec()
-      return new DataSource(await model.findOne({
-        id: dataSource.id
-      }).exec())
-    })
+  static async upsert (conn: Connection, crypto: Crypto, dataSource: DataSource): Promise<DataSource> {
+    const model = this.getModel(conn)
+    await dataSource.init(crypto)
+    await model.updateOne({ id: dataSource.id }, dataSource, { upsert: true }).exec()
+    return new DataSource(await model.findOne({
+      id: dataSource.id
+    }).exec())
   }
 
-  static async has (id: string): Promise<boolean> {
-    return using<Connection, boolean>(await this.connect(), async (conn) => {
-      return (await this.getModel(conn).findOne({ id }).exec()) !== null
-    })
+  static async has (conn: Connection, id: string): Promise<boolean> {
+    return (await this.getModel(conn).findOne({ id }).exec()) !== null
   }
 
-  static async delete (id: string): Promise<void> {
-    return using<Connection, void>(await this.connect(), async (conn) => {
-      await this.getModel(conn).deleteOne({ id }).exec()
-    })
+  static async delete (conn: Connection, id: string): Promise<void> {
+    await this.getModel(conn).deleteOne({ id }).exec()
   }
 
   toDTO (includeCredentials?: boolean): DataSourceDTO {
@@ -379,7 +355,22 @@ export class DataSource implements IDataSource {
       uri: this.uri,
       tags: this.tags,
       hasCredentials: this.credentials != null,
-      credentials: includeCredentials ? this.credentials : undefined
+      credentials: includeCredentials ? DataSource.toCredentialDTO(this.credentials as IDataSourceCredentials) : undefined
+    }
+  }
+
+  private static toCredentialDTO (credentials: IDataSourceCredentials): IDataSourceCredentials {
+    return {
+      rootKeyId: credentials.rootKeyId,
+      keyId: credentials.keyId,
+      mac: credentials.mac,
+      apiKey: credentials.apiKey,
+      apiKeyHeader: credentials.apiKeyHeader,
+      clientSecret: credentials.clientSecret,
+      encrypted: credentials.encrypted,
+      password: credentials.password,
+      username: credentials.username,
+      type: credentials.type as CredentialType
     }
   }
 

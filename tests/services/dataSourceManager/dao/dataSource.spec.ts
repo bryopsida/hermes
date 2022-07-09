@@ -16,7 +16,6 @@ describe('DataSource DAO', () => {
   let cryptoInstance: Crypto
 
   beforeAll(async () => {
-    console.log('starting redis container')
     // start redis container
     redisContainer = await new GenericContainer('redis:latest')
       .withExposedPorts(6379)
@@ -40,9 +39,7 @@ describe('DataSource DAO', () => {
   })
   afterAll(async () => {
     await cryptoInstance.close()
-    console.log('stopping redis container')
     await redisContainer?.stop({ timeout: 15000 })
-    console.log('stopping mongo container')
     await mongoContainer?.stop({ timeout: 15000 })
   })
   it('can manage a data source in the backing data store', async () => {
@@ -59,5 +56,25 @@ describe('DataSource DAO', () => {
     await DataSource.upsert(dao)
     const fetchedDataSource = await DataSource.findById(id)
     expect(fetchedDataSource.toDTO()).toEqual(dataSource)
+  })
+  it('can manage a data source with credentials', async () => {
+    const id = randomUUID()
+    const dataSource: DataSourceDTO = {
+      id,
+      type: 'test',
+      name: 'test',
+      uri: 'http://google.com',
+      tags: [],
+      hasCredentials: true,
+      credentials: {
+        username: 'test',
+        password: 'test',
+        type: CredentialType.BASIC
+      }
+    }
+    const dao = DataSource.fromDTO(dataSource)
+    await DataSource.upsert(dao)
+    const fetchedDataSource = await DataSource.findById(id)
+    expect(fetchedDataSource.toDTO(true)).toEqual(dataSource)
   })
 })

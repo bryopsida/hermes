@@ -13,7 +13,6 @@ describe('RedisKeyStore', () => {
   let context: Buffer
 
   beforeAll(async () => {
-    console.log('starting redis container')
     // start redis container
     redisContainer = await new GenericContainer('redis:latest')
       .withExposedPorts(6379)
@@ -21,7 +20,6 @@ describe('RedisKeyStore', () => {
   })
 
   afterAll(async () => {
-    console.log('stopping redis container')
     // stop redis container
     await redisContainer?.stop()
   })
