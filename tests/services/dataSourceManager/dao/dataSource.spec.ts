@@ -18,6 +18,7 @@ describe('DataSource DAO', () => {
   let mongoose: Mongoose
 
   beforeAll(async () => {
+    await seedKeys()
     // start redis container
     redisContainer = await new GenericContainer('redis:latest')
       .withExposedPorts(6379)
@@ -41,7 +42,6 @@ describe('DataSource DAO', () => {
       dbName: 'data_sources',
       authSource: 'admin'
     })
-    await seedKeys()
   })
   afterAll(async () => {
     await mongoose.connection.close()
