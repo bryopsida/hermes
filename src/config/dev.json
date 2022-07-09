@@ -1,21 +1,4 @@
 {
-  "defaultCrypto": {
-    "masterKeyPath": "~/.hermesMasterKey",
-    "masterContextPath": "~/.hermesMasterKeyContext",
-    "store": {
-      "type": "redis",
-      "passwordPath": "~/.hermesStorePassword",
-      "saltPath": "~/.hermesStoreSalt",
-      "contextPath": "~/.hermesStoreContext",
-      "redis": {
-        "host": "localhost",
-        "port": 6379,
-        "protocol": "redis",
-        "password": "redis",
-        "cluster": false
-      }
-    }
-  },
   "auth": {
     "type": "embedded",
     "userStorePath": "../config/users.json"

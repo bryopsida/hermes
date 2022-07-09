@@ -22,16 +22,16 @@ export enum CredentialType {
 }
 export interface IDataSourceCredentials {
   type: CredentialType
-  username: string | undefined
-  password: string | undefined
-  apiKey: string | undefined
-  apiKeyHeader: string | undefined,
-  clientId: string | undefined
-  clientSecret: string | undefined
-  encrypted: boolean
-  mac: string
-  rootKeyId: string
-  keyId: string
+  username?: string
+  password?: string
+  apiKey?: string
+  apiKeyHeader?: string
+  clientId?: string
+  clientSecret?: string
+  encrypted?: boolean
+  mac?: string
+  rootKeyId?: string
+  keyId?: string
 }
 
 export interface IDataSource {
@@ -110,7 +110,9 @@ const schema = new mongoose.Schema<IDataSource>({
   }
 })
 
+// default, todo: refactor to be more IoC friendly
 const config = configFactory.buildConfig('data_source_manager')
+
 export class DataSource implements IDataSource {
   public id: string
   public type: string
@@ -120,6 +122,8 @@ export class DataSource implements IDataSource {
   public credentials: IDataSourceCredentials | undefined
   private initialized: boolean = false
   private initPromise: Promise<void> | undefined
+  private static mongooseUrl?: string
+  private static mongooseOptions: any
 
   private static readonly log = createLogger({
     serviceName: `data-source-dao-${COMPUTED_CONSTANTS.id}`,
@@ -139,7 +143,7 @@ export class DataSource implements IDataSource {
       this.uri = dataSource.uri
       this.credentials = dataSource.credentials
     }
-    this.init()
+    //this.init()
   }
 
   async init () {
@@ -184,7 +188,7 @@ export class DataSource implements IDataSource {
       this.credentials.rootKeyId = await crypto.generateRootKey(32, this.getRootKeyContext())
     }
     if (this.credentials.keyId == null && !this.credentials.encrypted) {
-      this.credentials.keyId = await crypto.generateDataEncKey(32, this.credentials.rootKeyId, this.getRootKeyContext(), this.getKeyContext())
+      this.credentials.keyId = await crypto.generateDataEncKey(32, this.credentials.rootKeyId as string, this.getRootKeyContext(), this.getKeyContext())
     }
   }
 
@@ -302,7 +306,7 @@ export class DataSource implements IDataSource {
   // TODO refactor to be more dry
   private static connect (): Promise<Connection> {
     return new Promise((resolve, reject) => {
-      mongoose.createConnection(config.getServerUrl(), config.getMongooseOptions(), (err, conn) => {
+      mongoose.createConnection(DataSource.mongooseUrl || config.getServerUrl(), DataSource.mongooseOptions || config.getMongooseOptions(), (err, conn) => {
         if (err) {
           reject(err)
         } else {
@@ -347,7 +351,7 @@ export class DataSource implements IDataSource {
   static async upsert (dataSource: DataSource): Promise<DataSource> {
     return using<Connection, DataSource>(await this.connect(), async (conn) => {
       const model = this.getModel(conn)
-      await dataSource.init()
+      //await dataSource.init()
       await model.updateOne({ id: dataSource.id }, dataSource, { upsert: true }).exec()
       return new DataSource(await model.findOne({
         id: dataSource.id
@@ -381,5 +385,15 @@ export class DataSource implements IDataSource {
 
   static fromDTO (dataSourceDTO: DataSourceDTO): DataSource {
     return new DataSource(dataSourceDTO)
+  }
+
+  // TODO refactor to be more IoC friendly
+  static setMongooseUrl (mongooseUrl: string) {
+    DataSource.mongooseUrl = mongooseUrl
+  }
+
+  // TODO refactor to be more IoC friendly
+  static setMongooseOptions (mongooseOptions: any) {
+    DataSource.mongooseOptions = mongooseOptions
   }
 }
