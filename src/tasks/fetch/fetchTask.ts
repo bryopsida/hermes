@@ -32,7 +32,7 @@ export class FetchTask extends ProducerTask {
 
   constructor (queue: Queue, kafkaProducer: Producer) {
     super(queue, FetchTask.ID, kafkaProducer)
-    this.log.debug(`Fetch task initialized on queue ${queue.name}`)
+    this.log?.debug(`Fetch task initialized on queue ${queue.name}`)
   }
 
   private isNewData (uri: string): Promise<boolean> {
