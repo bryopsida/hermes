@@ -19,6 +19,52 @@ export class Crypto implements IDataEncryptor, IUsableClosable {
     this.keyStore = keyStore
   }
 
+  encodeCipherText (cipherTxt: CipherText): Promise<string> {
+    // encoding looks like
+    // rootKeyId:keyId:iv:authTag:cipherText
+    // context is not encoded, the decryptor must know the contexts for:
+    // rootKey, key, and data, failure to provide the correct context for any one of those
+    // results in decryption failure
+
+    // get a concatenated buffer with the values.
+    const concatenatedBuffer = Buffer.concat([
+      Buffer.from(cipherTxt.rootKeyId), // 32 bytes
+      Buffer.from(cipherTxt.keyId), // 32 bytes
+      cipherTxt.iv, // 16 bytes
+      cipherTxt.authTag as Buffer, // 16 bytes
+      cipherTxt.ciphertext as Buffer // cipherText.length
+    ])
+    return Promise.resolve(concatenatedBuffer.toString('base64'))
+  }
+
+  async encryptAndEncode (encryptOpts: EncryptOpts): Promise<string> {
+    const cipherText = await this.encrypt(encryptOpts)
+    return this.encodeCipherText(cipherText)
+  }
+
+  decryptEncoded (encodedCipherText: string, rootKeyContext: string, dekContext: string, context: string): Promise<Buffer> {
+    // first decode the buffer
+    const concatenatedBuffer = Buffer.from(encodedCipherText, 'base64')
+    // now pull out values
+    const rootKeyId = concatenatedBuffer.slice(0, 32).toString('utf8')
+    const keyId = concatenatedBuffer.slice(32, 64).toString('utf8')
+    const iv = concatenatedBuffer.slice(64, 80)
+    const authTag = concatenatedBuffer.slice(80, 96)
+    const ciphertext = concatenatedBuffer.slice(96)
+    // now we can call decrypt
+    return this.decrypt({
+      algorithm: 'aes-256-gcm',
+      rootKeyId,
+      keyId,
+      iv,
+      authTag,
+      ciphertext,
+      rootKeyContext,
+      dekContext,
+      context
+    }) as Promise<Buffer>
+  }
+
   private async readFileFromPath (path: string) : Promise<Buffer> {
     const buffer = await readFile(resolveHome(path), 'utf-8')
     return Buffer.from(buffer, 'base64')

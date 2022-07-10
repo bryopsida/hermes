@@ -5,6 +5,7 @@ import axios, { AxiosRequestConfig } from 'axios'
 import { ProducerTask } from '../producerTask'
 import { Producer } from 'node-rdkafka'
 import { IUnprocesseedJsonData } from '../../common/models/watchModels'
+import { IDataEncryptor } from '../../common/interfaces/crypto/dataEncryption'
 
 export interface FetchTaskParams {
     name: string;
@@ -30,8 +31,11 @@ export class FetchTask extends ProducerTask {
     level: 'debug'
   })
 
-  constructor (queue: Queue, kafkaProducer: Producer) {
+  private readonly crypto: IDataEncryptor
+
+  constructor (queue: Queue, kafkaProducer: Producer, crypto: IDataEncryptor) {
     super(queue, FetchTask.ID, kafkaProducer)
+    this.crypto = crypto
     this.log?.debug(`Fetch task initialized on queue ${queue.name}`)
   }
 
@@ -56,12 +60,17 @@ export class FetchTask extends ProducerTask {
         case 'digest':
         case 'basic': {
           opts.auth = {
-            username: creds.username,
-            password: creds.password
+            username: (await this.crypto.decrypt({
+
+            })).toString('utf-8'),
+            password: (await this.crypto.decrypt({
+
+            })).toString('utf-8')
           }
           break
         }
         case 'apiKey': {
+          // re work for complex headers
           const headers = opts.headers as Record<string, string>
           headers[creds.apiKeyHeader] = creds.apiKey
           break

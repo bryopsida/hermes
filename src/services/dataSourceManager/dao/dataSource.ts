@@ -3,8 +3,7 @@ import createLogger from '../../../common/logger/factory'
 import { DataSourceDTO } from '../dto/dataSource'
 import mongoose, { Connection } from 'mongoose'
 import { randomBytes } from 'crypto'
-import { EncryptOpts } from '../../../common/interfaces/crypto/dataEncryption'
-import { Crypto } from '../../../common/crypto/crypto'
+import { EncryptOpts, IDataEncryptor } from '../../../common/interfaces/crypto/dataEncryption'
 
 const tableName = 'data_sources'
 
@@ -146,7 +145,7 @@ export class DataSource implements IDataSource {
     }
   }
 
-  async init (crypto: Crypto) : Promise<void> {
+  async init (crypto: IDataEncryptor) : Promise<void> {
     // if initialized already, return
     if (this.initialized === true) {
       DataSource.log.debug('DataSource already initialized')
@@ -171,7 +170,7 @@ export class DataSource implements IDataSource {
     return this.initPromise
   }
 
-  private async ensureKeysExist (crypto: Crypto): Promise<void> {
+  private async ensureKeysExist (crypto: IDataEncryptor): Promise<void> {
     // if keys are defined for credentials, good, if not generate and set the properties here for usage
     // during encryption
     // also check that if the keys are defined on the credentials that the crypto library still has the keys, otherwise blow up
@@ -195,7 +194,7 @@ export class DataSource implements IDataSource {
     }
   }
 
-  private async encryptCredentials (crypto: Crypto): Promise<void> {
+  private async encryptCredentials (crypto: IDataEncryptor): Promise<void> {
     await this.ensureKeysExist(crypto)
     if (this.credentials && !this.credentials.encrypted) {
       this.credentials.encrypted = true
@@ -224,7 +223,7 @@ export class DataSource implements IDataSource {
       DataSource.getValAsBuffer(this.credentials.clientSecret)])
   }
 
-  private async generateMac (crypto: Crypto) : Promise<string> {
+  private async generateMac (crypto: IDataEncryptor) : Promise<string> {
     const mac = await crypto.mac({
       rootKeyId: this.getRootKeyId(),
       rootKeyContext: this.getRootKeyContext(),
@@ -275,7 +274,7 @@ export class DataSource implements IDataSource {
     return this.credentials?.keyId
   }
 
-  private async validateMac (crypto: Crypto): Promise<boolean> {
+  private async validateMac (crypto: IDataEncryptor): Promise<boolean> {
     if (this.credentials == null) {
       return Promise.resolve(false)
     }
@@ -288,7 +287,7 @@ export class DataSource implements IDataSource {
     }, message, Buffer.from(this.credentials.mac as string, 'base64'))
   }
 
-  private async encrypt (crypto: Crypto, value: string | undefined, propName: string): Promise<string | undefined> {
+  private async encrypt (crypto: IDataEncryptor, value: string | undefined, propName: string): Promise<string | undefined> {
     if (value == null) {
       return this.encrypt(crypto, randomBytes(16).toString('utf-8') + 'N/A' + randomBytes(16).toString('utf-8'), 'dummy')
     }
@@ -331,7 +330,7 @@ export class DataSource implements IDataSource {
     return (await this.getModel(conn).find().skip(offset).limit(count).exec()).map(doc => new DataSource(doc))
   }
 
-  static async upsert (conn: Connection, crypto: Crypto, dataSource: DataSource): Promise<DataSource> {
+  static async upsert (conn: Connection, crypto: IDataEncryptor, dataSource: DataSource): Promise<DataSource> {
     DataSource.log.debug(`Upserting data source ${dataSource.id}`)
     const model = this.getModel(conn)
     DataSource.log.debug('Initializing data source for upsert')

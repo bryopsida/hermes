@@ -94,6 +94,32 @@ export interface IDataEncryptor {
      * @returns A Promise that resolves with the decrypted data.
      */
     decrypt(decryptOpts: DecryptOpts): Promise<Buffer | Stream | string>;
+
+    /**
+     * Takes a ciphertext object and provides a base64 encoded string of the ciphertext
+     * with the iv on the front (16 bytes) and the auth tag on the end (16 bytes).
+     * @param cipherText The ciphertext to encode.
+     * @returns A Promise that resolves with the base64 encoded ciphertext.
+     */
+    encodeCipherText(cipherTxt: CipherText) : Promise<string>;
+
+    /**
+     * Encrypts the data and encodes to a base64 string.
+     * @param encryptOpts Options and ciphertext to decrypt.
+     * @returns A Promise that resolves with the encrypted base64 string
+     */
+    encryptAndEncode(encryptOpts: EncryptOpts): Promise<string>;
+
+    /**
+     * Decrypts encoded data and returns the decrypted plaintext string
+     * @param encodedCipherText The encoded ciphertext to decrypt, this is base64 data encoded from
+     * either the encodeCipherText or encryptAndEncode functions.
+     * @param rootKeyContext base64 value of root key context, this must match the context used to seal the key.
+     * @param dekContext base64 value of data encryption key context, this must match the context used to seal the key.
+     * @param context base64 value of context used when encrypting the ciphertext, if this doesn't match decryption will fail.
+     * @returns A Promise that resolves with the decrypted plaintext string.
+     */
+    decryptEncoded(encodedCipherText: string, rootKeyContext: string, dekContext: string, context: string): Promise<Buffer>;
 }
 
 export interface IKeyStore extends IUsableClosable {
