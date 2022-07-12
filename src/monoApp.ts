@@ -111,7 +111,7 @@ async function worker () {
   // define services managed by this mono app entry point
   const services : Array<IService> = [
     isServiceEnabled(DataSourceService.NAME) ? new DataSourceService(app as any, dataSourceConn.connection, crypto) : undefined,
-    isServiceEnabled(TaskRunnerService.NAME) ? new TaskRunnerService(queueOptions) : undefined,
+    isServiceEnabled(TaskRunnerService.NAME) ? new TaskRunnerService(queueOptions, crypto) : undefined,
     isServiceEnabled(WatchManagementService.NAME) ? new WatchManagementService(app) : undefined,
     isServiceEnabled(TheatreService.NAME) ? new TheatreService() : undefined,
     isServiceEnabled(BullBoardService.NAME) ? new BullBoardService(app, queueOptions) : undefined,
@@ -133,6 +133,16 @@ async function worker () {
     ]).catch(err => {
       logger.error(`Error while shutting down: ${err}})`)
     })
+    try {
+      await crypto?.close()
+    } catch (err) {
+      logger.error(`Error while closing crypto: ${err}`)
+    }
+    try {
+      await dataSourceConn.connection.close()
+    } catch (err) {
+      logger.error(`Error while closing mongoose: ${err}`)
+    }
   }
 
   process.on('SIGINT', async () => {

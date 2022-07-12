@@ -114,9 +114,9 @@ export interface IDataEncryptor {
      * Decrypts encoded data and returns the decrypted plaintext string
      * @param encodedCipherText The encoded ciphertext to decrypt, this is base64 data encoded from
      * either the encodeCipherText or encryptAndEncode functions.
-     * @param rootKeyContext base64 value of root key context, this must match the context used to seal the key.
-     * @param dekContext base64 value of data encryption key context, this must match the context used to seal the key.
-     * @param context base64 value of context used when encrypting the ciphertext, if this doesn't match decryption will fail.
+     * @param rootKeyContext value of root key context, this must match the context used to seal the key.
+     * @param dekContext value of data encryption key context, this must match the context used to seal the key.
+     * @param context value of context used when encrypting the ciphertext, if this doesn't match decryption will fail.
      * @returns A Promise that resolves with the decrypted plaintext string.
      */
     decryptEncoded(encodedCipherText: string, rootKeyContext: string, dekContext: string, context: string): Promise<Buffer>;

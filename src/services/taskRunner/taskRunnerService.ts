@@ -11,6 +11,7 @@ import COMPUTED_CONSTANTS from '../../common/computedConstants'
 import { QueueFetchesTask } from '../../tasks/queueFetches/queueFetchesTask'
 import taskConfigFactory, { IFetchTaskConfig } from '../../config/taskConfig'
 import kafkaConfigFactory from '../../config/kafkaConfig'
+import { IDataEncryptor } from '../../common/interfaces/crypto/dataEncryption'
 
 // TODO: refactor to be more IoC friendly
 const fetchTaskConfig = taskConfigFactory<IFetchTaskConfig>('fetch')
@@ -23,6 +24,7 @@ export class TaskRunnerService implements IService {
   private readonly _queues: Map<QueueNames, Queue> = new Map()
   private readonly _tasks: Map<string, ITask> = new Map()
   private readonly _queueOptions: QueueOptions
+  private readonly _crypto: IDataEncryptor
   public readonly ID = TaskRunnerService.NAME
   public readonly ORDER: number = 1
 
@@ -31,8 +33,9 @@ export class TaskRunnerService implements IService {
     level: 'debug'
   })
 
-  constructor (queueOptions: QueueOptions) {
+  constructor (queueOptions: QueueOptions, crypto: IDataEncryptor) {
     this._queueOptions = queueOptions
+    this._crypto = crypto
   }
 
   isAlive (): Promise<boolean> {
@@ -75,7 +78,7 @@ export class TaskRunnerService implements IService {
     this._queues.set(QueueNames.FETCH_QUEUE, FETCH_QUEUE)
     const fetchTask: ITask = new FetchTask(this._queues.get(QueueNames.FETCH_QUEUE)as Queue, new Producer({
       'metadata.broker.list': kafkaConfigFactory.buildConfig(TaskRunnerService.NAME).brokers.join(',')
-    }, kafkaTopicConfig.jsonData.producer as ProducerTopicConfig))
+    }, kafkaTopicConfig.jsonData.producer as ProducerTopicConfig), this._crypto)
 
     const queueFetchTask: ITask = new QueueFetchesTask(this._queues.get(QueueNames.FETCH_QUEUE) as Queue)
     this._tasks.set(fetchTask.id, fetchTask)

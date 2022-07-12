@@ -18,13 +18,15 @@ export enum CredentialType {
   OAUTH2 = 'oauth2',
 }
 export interface IDataSourceCredentials {
-  type: CredentialType
+  type: CredentialType | string
   username?: string
   password?: string
-  apiKey?: string
-  apiKeyHeader?: string
-  clientId?: string
-  clientSecret?: string
+  /**
+   * Map of key/value pairs to be used as header values.
+   * This would be appropriate for custom header properties such as api key values.
+   * When encrypted this is in the form of a base64 encoded string of the ciphertext of the header values JSON.
+   */
+  headers?: Record<string, string> | string
   encrypted?: boolean
   mac?: string
   rootKeyId?: string
@@ -62,19 +64,7 @@ const credentialSchema = new mongoose.Schema({
     type: String,
     required: true
   },
-  apiKey: {
-    type: String,
-    required: false
-  },
-  apiKeyHeader: {
-    type: String,
-    required: false
-  },
-  clientId: {
-    type: String,
-    required: false
-  },
-  clientSecret: {
+  headers: {
     type: String,
     required: false
   },
@@ -198,10 +188,10 @@ export class DataSource implements IDataSource {
     await this.ensureKeysExist(crypto)
     if (this.credentials && !this.credentials.encrypted) {
       this.credentials.encrypted = true
+      this.credentials.type = await this.encrypt(crypto, this.credentials.type.toString(), 'type') as string
       this.credentials.password = await this.encrypt(crypto, this.credentials.password, 'password')
-      this.credentials.apiKey = await this.encrypt(crypto, this.credentials.apiKey, 'apiKey')
-      this.credentials.clientSecret = await this.encrypt(crypto, this.credentials.clientSecret, 'clientSecret')
-      this.credentials.apiKeyHeader = await this.encrypt(crypto, this.credentials.apiKeyHeader, 'apiKeyHeader')
+      this.credentials.username = await this.encrypt(crypto, this.credentials.username, 'username')
+      this.credentials.headers = await this.encrypt(crypto, this.credentials.headers != null ? JSON.stringify(this.credentials.headers as string) : undefined, 'headers') as string
       this.credentials.mac = await this.generateMac(crypto)
     } else if (this.credentials && this.credentials.encrypted) {
       const result = await this.validateMac(crypto)
@@ -216,11 +206,10 @@ export class DataSource implements IDataSource {
       return Buffer.alloc(0)
     }
     return Buffer.concat([
+      DataSource.getValAsBuffer(this.credentials.type),
       DataSource.getValAsBuffer(this.credentials.username),
       DataSource.getValAsBuffer(this.credentials.password),
-      DataSource.getValAsBuffer(this.credentials.apiKey),
-      DataSource.getValAsBuffer(this.credentials.apiKeyHeader),
-      DataSource.getValAsBuffer(this.credentials.clientSecret)])
+      DataSource.getValAsBuffer(this.credentials.headers as string)])
   }
 
   private async generateMac (crypto: IDataEncryptor) : Promise<string> {
@@ -289,10 +278,10 @@ export class DataSource implements IDataSource {
 
   private async encrypt (crypto: IDataEncryptor, value: string | undefined, propName: string): Promise<string | undefined> {
     if (value == null) {
-      return this.encrypt(crypto, randomBytes(16).toString('utf-8') + 'N/A' + randomBytes(16).toString('utf-8'), 'dummy')
+      return this.encrypt(crypto, randomBytes(16).toString('utf8') + 'N/A' + randomBytes(16).toString('utf8'), 'dummy')
     }
     const opts: EncryptOpts = {
-      plaintext: Buffer.from(value, 'utf-8'),
+      plaintext: Buffer.from(value, 'utf8'),
       rootKeyId: this.getRootKeyId(),
       keyId: this.getKeyId(),
       algorithm: 'aes-256-gcm',
@@ -300,8 +289,7 @@ export class DataSource implements IDataSource {
       dekContext: this.getKeyContext(),
       context: Buffer.from(propName)
     }
-    const result = await crypto.encrypt(opts)
-    return Buffer.concat([result.iv, result.ciphertext as Buffer, result.authTag || Buffer.alloc(0)]).toString('base64')
+    return crypto.encryptAndEncode(opts)
   }
 
   private static getModel (conn: Connection): mongoose.Model<IDataSource> {
@@ -367,9 +355,7 @@ export class DataSource implements IDataSource {
       rootKeyId: credentials.rootKeyId,
       keyId: credentials.keyId,
       mac: credentials.mac,
-      apiKey: credentials.apiKey,
-      apiKeyHeader: credentials.apiKeyHeader,
-      clientSecret: credentials.clientSecret,
+      headers: credentials.headers,
       encrypted: credentials.encrypted,
       password: credentials.password,
       username: credentials.username,

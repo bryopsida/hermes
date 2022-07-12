@@ -28,8 +28,8 @@ export class Crypto implements IDataEncryptor, IUsableClosable {
 
     // get a concatenated buffer with the values.
     const concatenatedBuffer = Buffer.concat([
-      Buffer.from(cipherTxt.rootKeyId), // 32 bytes
-      Buffer.from(cipherTxt.keyId), // 32 bytes
+      Buffer.from(cipherTxt.rootKeyId), // 36 bytes
+      Buffer.from(cipherTxt.keyId), // 36 bytes
       cipherTxt.iv, // 16 bytes
       cipherTxt.authTag as Buffer, // 16 bytes
       cipherTxt.ciphertext as Buffer // cipherText.length
@@ -46,11 +46,11 @@ export class Crypto implements IDataEncryptor, IUsableClosable {
     // first decode the buffer
     const concatenatedBuffer = Buffer.from(encodedCipherText, 'base64')
     // now pull out values
-    const rootKeyId = concatenatedBuffer.slice(0, 32).toString('utf8')
-    const keyId = concatenatedBuffer.slice(32, 64).toString('utf8')
-    const iv = concatenatedBuffer.slice(64, 80)
-    const authTag = concatenatedBuffer.slice(80, 96)
-    const ciphertext = concatenatedBuffer.slice(96)
+    const rootKeyId = concatenatedBuffer.slice(0, 36).toString('utf8')
+    const keyId = concatenatedBuffer.slice(36, 72).toString('utf8')
+    const iv = concatenatedBuffer.slice(72, 88)
+    const authTag = concatenatedBuffer.slice(88, 104)
+    const ciphertext = concatenatedBuffer.slice(104)
     // now we can call decrypt
     return this.decrypt({
       algorithm: 'aes-256-gcm',

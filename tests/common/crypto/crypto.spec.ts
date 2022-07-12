@@ -53,4 +53,18 @@ describe('Crypto', () => {
     const plainText = await crypto.decrypt(encrypted)
     expect(plainText).toEqual(data)
   })
+  it('can encrypt and decrypted encoded text', async () => {
+    const rootKeyId = await crypto.generateRootKey(32, 'encoded-test')
+    const dek = await crypto.generateDataEncKey(32, rootKeyId, 'encoded-test', 'dek')
+    const encryptedData = await crypto.encryptAndEncode({
+      plaintext: Buffer.from('test-data'),
+      keyId: dek,
+      rootKeyId,
+      rootKeyContext: 'encoded-test',
+      dekContext: 'dek',
+      context: Buffer.from('data-context')
+    })
+    const plainText = (await crypto.decryptEncoded(encryptedData, 'encoded-test', 'dek', 'data-context')).toString('utf8')
+    expect(plainText).toEqual('test-data')
+  })
 })

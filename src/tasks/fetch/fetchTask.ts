@@ -8,6 +8,7 @@ import { IUnprocesseedJsonData } from '../../common/models/watchModels'
 import { IDataEncryptor } from '../../common/interfaces/crypto/dataEncryption'
 
 export interface FetchTaskParams {
+    id: string;
     name: string;
     uri: string;
     type: string;
@@ -44,7 +45,15 @@ export class FetchTask extends ProducerTask {
     return Promise.resolve(true)
   }
 
-  private async getRequestOptions (uri: string, properties: Record<string, unknown>): Promise<AxiosRequestConfig> {
+  private getRootKeyContext (dataSourceId: string, dataSourceUri: string): string {
+    return `<${dataSourceUri}>-<${dataSourceId}>`
+  }
+
+  private getKeyContext (dataSourceId: string, dataSourceUri: string): string {
+    return `<${dataSourceUri}>-<${dataSourceId}>`
+  }
+
+  private async getRequestOptions (uri: string, dataSourceId: string, properties: Record<string, unknown>): Promise<AxiosRequestConfig> {
     const opts: AxiosRequestConfig = {
       url: uri,
       method: properties.method as string || 'GET',
@@ -56,33 +65,34 @@ export class FetchTask extends ProducerTask {
     if (properties.credentials) {
       this.log.debug('Setting credentials')
       const creds = properties.credentials as Record<string, string>
-      switch (creds.type) {
+      const type = (await this.crypto.decryptEncoded(creds.type, this.getRootKeyContext(dataSourceId, uri), this.getKeyContext(dataSourceId, uri), 'type')).toString('utf8')
+      switch (type) {
         case 'digest':
         case 'basic': {
           opts.auth = {
-            username: (await this.crypto.decrypt({
-
-            })).toString('utf-8'),
-            password: (await this.crypto.decrypt({
-
-            })).toString('utf-8')
+            username: (await this.crypto.decryptEncoded(creds.username, this.getRootKeyContext(dataSourceId, uri), this.getKeyContext(dataSourceId, uri), 'username')).toString('utf8'),
+            password: (await this.crypto.decryptEncoded(creds.password, this.getRootKeyContext(dataSourceId, uri), this.getKeyContext(dataSourceId, uri), 'password')).toString('utf8')
           }
           break
         }
-        case 'apiKey': {
-          // re work for complex headers
-          const headers = opts.headers as Record<string, string>
-          headers[creds.apiKeyHeader] = creds.apiKey
-          break
+      }
+      if (creds.headers) {
+        // try to decryypt, if it works the value is legit, if it fails, it was dummy data
+        try {
+          const headersJson = (await this.crypto.decryptEncoded(creds.headers, this.getRootKeyContext(dataSourceId, uri), this.getKeyContext(dataSourceId, uri), 'headers')).toString('utf8')
+          const headers : Record<string, string> = JSON.parse(headersJson)
+          opts.headers = { ...opts.headers, ...headers }
+        } catch (ignore) {
+          // ignore
         }
       }
     }
     return Promise.resolve(opts)
   }
 
-  private async fetchData (uri: string, properties: Record<string, unknown>): Promise<unknown> {
+  private async fetchData (uri: string, id: string, properties: Record<string, unknown>): Promise<unknown> {
     // TODO: in the future support more than get
-    const response = await axios.request(await this.getRequestOptions(uri, properties))
+    const response = await axios.request(await this.getRequestOptions(uri, id, properties))
     return response.data
   }
 
@@ -131,7 +141,7 @@ export class FetchTask extends ProducerTask {
     }
 
     this.logToJob(`New data, fetching data sources for ${job.data.name} at ${job.data.uri}`, job)
-    const data = await this.fetchData(fullUri, job.data.properties)
+    const data = await this.fetchData(fullUri, job.data.id, job.data.properties)
 
     if (!this.isJson(data)) {
       this.logToJob(`Data is not JSON for ${job.data.name} at ${job.data.uri}, data: ${data}`, job)
