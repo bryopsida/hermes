@@ -100,7 +100,7 @@ async function worker () {
 
   // get a mongoose connection for data sources
   // clean up
-  const dataSourceMongooseConnConfig = mongodbConfig.buildConfig('data_source')
+  const dataSourceMongooseConnConfig = mongodbConfig.buildConfig('data_source_manager')
   const dataSourceConn : Mongoose = await connect(dataSourceMongooseConnConfig.getServerUrl(), dataSourceMongooseConnConfig.getMongooseOptions() as ConnectOptions)
 
   const crypto = CryptoFactory.create({

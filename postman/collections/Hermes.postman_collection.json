@@ -164,6 +164,90 @@
 							"response": []
 						},
 						{
+							"name": "Add Data Source With Method Type",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"const uuid = require('uuid')",
+											"pm.variables.set('dataSourceId', uuid())"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test('Status code is 200', () => {",
+											"    pm.expect(pm.response.code).to.be.eq(200)",
+											"})",
+											"",
+											"pm.test('ID matches', () => {",
+											"    pm.expect(pm.response.json().id).to.be.eq(pm.variables.get('dataSourceId'))",
+											"})",
+											"",
+											"pm.test('Method is set', () => {",
+											"    pm.expect(pm.response.json().method).to.be.eq('POST')",
+											"})",
+											"",
+											"pm.test('Does not have credentials', () => {",
+											"    pm.expect(pm.response.json().hasCredentials).to.be.false",
+											"})",
+											"",
+											"pm.test('Credentials are not returned', () => {",
+											"    pm.expect(pm.response.json().credentials).to.be.undefined",
+											"})"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "basic",
+									"basic": [
+										{
+											"key": "username",
+											"value": "{{USERNAME}}",
+											"type": "string"
+										},
+										{
+											"key": "password",
+											"value": "{{PASSWORD}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\n    \"id\": \"{{dataSourceId}}\",\n    \"type\": \"JSON\",\n    \"method\": \"POST\",\n    \"name\": \"{{$randomProductName}}\",\n    \"uri\": \"https://random-data-api.com/api/address/random_address\",\n    \"tags\": [\n        \"{{$randomDomainName}}\",\n        \"{{$randomDomainName}}\"\n    ]\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{BASE_URL}}/api/data_source_manager/v1/sources/{{dataSourceId}}",
+									"host": [
+										"{{BASE_URL}}"
+									],
+									"path": [
+										"api",
+										"data_source_manager",
+										"v1",
+										"sources",
+										"{{dataSourceId}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
 							"name": "Add Data Source With Credentials",
 							"event": [
 								{
@@ -224,6 +308,89 @@
 								"body": {
 									"mode": "raw",
 									"raw": "{\n\n    \"id\": \"{{credDataSourceId}}\",\n    \"type\": \"JSON\",\n    \"name\": \"{{$randomProductName}}\",\n    \"uri\": \"https://random-data-api.com/api/address/random_address\",\n    \"credentials\": {\n        \"type\": \"basic\",\n        \"username\": \"{{randomUsername}}\",\n        \"password\": \"{{randomPassword}}\"\n    },\n    \"tags\": [\n        \"{{$randomDomainName}}\",\n        \"{{$randomDomainName}}\"\n    ]\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{BASE_URL}}/api/data_source_manager/v1/sources/{{credDataSourceId}}",
+									"host": [
+										"{{BASE_URL}}"
+									],
+									"path": [
+										"api",
+										"data_source_manager",
+										"v1",
+										"sources",
+										"{{credDataSourceId}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Add Data Source With Credentials And Headers",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"const uuid = require('uuid')",
+											"pm.variables.set('credDataSourceId', uuid())",
+											"pm.variables.set('randomPassword', uuid())",
+											"pm.variables.set('randomUsername', uuid())",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test('Status code is 200', () => {",
+											"    pm.expect(pm.response.code).to.be.eq(200)",
+											"})",
+											"",
+											"pm.test('ID matches', () => {",
+											"    pm.expect(pm.response.json().id).to.be.eq(pm.variables.get('credDataSourceId'))",
+											"})",
+											"",
+											"pm.test('Has Credentials', () => {",
+											"    pm.expect(pm.response.json().hasCredentials).to.be.true",
+											"})",
+											"",
+											"pm.test('Credentials are not returned', () => {",
+											"    pm.expect(pm.response.json().credentials).to.be.undefined",
+											"})"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "basic",
+									"basic": [
+										{
+											"key": "username",
+											"value": "{{USERNAME}}",
+											"type": "string"
+										},
+										{
+											"key": "password",
+											"value": "{{PASSWORD}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\n    \"id\": \"{{credDataSourceId}}\",\n    \"type\": \"JSON\",\n    \"name\": \"{{$randomProductName}}\",\n    \"uri\": \"https://random-data-api.com/api/address/random_address\",\n    \"credentials\": {\n        \"type\": \"basic\",\n        \"username\": \"{{randomUsername}}\",\n        \"password\": \"{{randomPassword}}\",\n        \"headers\": {\n            \"X-Test-1\": \"test1\",\n            \"X-Test-2\": \"test2\"\n        }\n    },\n    \"tags\": [\n        \"{{$randomDomainName}}\",\n        \"{{$randomDomainName}}\"\n    ]\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -457,9 +624,10 @@
 											"",
 											"pm.test('Credentails are returned', () => {",
 											"    const json = pm.response.json()",
-											"    pm.expect(json.credentials.type).to.be.eq('basic')",
-											"    pm.expect(json.credentials.username).to.be.eq('username')",
-											"    pm.expect(json.credentials.password).to.be.eq('password')",
+											"    pm.expect(json.credentials.type).to.not.be.undefined",
+											"    pm.expect(json.credentials.username).to.not.be.undefined",
+											"    pm.expect(json.credentials.password).to.not.be.undefined",
+											"    pm.expect(json.credentials.encrypted).to.be.true",
 											"})"
 										],
 										"type": "text/javascript"

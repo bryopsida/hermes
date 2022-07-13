@@ -148,7 +148,7 @@ export class FetchTask extends ProducerTask {
       return
     }
 
-    this.logToJob(`Publishing data for ${job.data.name} at ${job.data.uri}`, job)
+    this.logToJob(`Publishing data for ${job.data.name} at ${job.data.uri}, data = ${JSON.stringify(data)}`, job)
     await this.publish(data, job)
     this.logToJob(`Done with job ${job.id} on queue ${job.queue.name}`, job)
     return data

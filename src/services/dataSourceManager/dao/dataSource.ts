@@ -36,6 +36,7 @@ export interface IDataSourceCredentials {
 export interface IDataSource {
     id: string;
     type: string;
+    method?: string;
     name: string;
     uri: string;
     credentials?: IDataSourceCredentials;
@@ -87,6 +88,10 @@ const schema = new mongoose.Schema<IDataSource>({
     type: String,
     required: true
   },
+  method: {
+    type: String,
+    required: false
+  },
   name: {
     type: String,
     required: true
@@ -108,6 +113,7 @@ const schema = new mongoose.Schema<IDataSource>({
 export class DataSource implements IDataSource {
   public id: string
   public type: string
+  public method?: string
   public name: string
   public uri: string
   public tags: string[] = []
@@ -125,10 +131,12 @@ export class DataSource implements IDataSource {
       this.id = ''
       this.type = ''
       this.name = ''
+      this.method = ''
       this.uri = ''
     } else {
       this.id = dataSource.id
       this.type = dataSource.type
+      this.method = dataSource.method
       this.name = dataSource.name
       this.uri = dataSource.uri
       this.credentials = dataSource.credentials
@@ -341,6 +349,7 @@ export class DataSource implements IDataSource {
   toDTO (includeCredentials?: boolean): DataSourceDTO {
     return {
       id: this.id,
+      method: this.method,
       type: this.type,
       name: this.name,
       uri: this.uri,
