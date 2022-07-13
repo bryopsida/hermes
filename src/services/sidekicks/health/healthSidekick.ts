@@ -1,4 +1,5 @@
 import { FastifyInstance } from 'fastify'
+import computedConstants from '../../../common/computedConstants'
 import { IService } from '../../../common/interfaces/service'
 import { IHealthSidekick } from '../../../common/interfaces/sidekicks/health'
 import createLogger from '../../../common/logger/factory'
@@ -7,7 +8,7 @@ import { registerHealthRoutes } from './routes/healthController'
 // TODO: this should account for health on other processes when using clustering to prevent flip/flops
 export class HealthSideKick implements IHealthSidekick {
   private readonly logger = createLogger({
-    serviceName: 'health-sidekick',
+    serviceName: `health-sidekick-${computedConstants.id}`,
     level: 'debug'
   })
 
