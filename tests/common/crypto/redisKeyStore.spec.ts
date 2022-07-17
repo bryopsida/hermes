@@ -11,6 +11,7 @@ describe('RedisKeyStore', () => {
   let password: Buffer
   let salt: Buffer
   let context: Buffer
+  let redisClient: Redis.Redis
 
   beforeAll(async () => {
     // start redis container
@@ -21,20 +22,26 @@ describe('RedisKeyStore', () => {
 
   afterAll(async () => {
     // stop redis container
-    await redisContainer?.stop()
+    const logs = await redisContainer.logs()
+    logs.destroy()
+    await redisContainer.stop({
+      timeout: 5000,
+      removeVolumes: true
+    })
   })
 
   beforeEach(async () => {
     // create key store
-    const client = new Redis(redisContainer.getMappedPort(6379), redisContainer.getHost())
+    redisClient = new Redis(redisContainer.getMappedPort(6379), redisContainer.getHost())
     password = randomBytes(32)
     salt = randomBytes(16)
     context = randomBytes(32)
-    keyStore = new RedisKeyStore(client, randomUUID(), () => Promise.resolve(password), () => Promise.resolve(salt), () => Promise.resolve(context))
+    keyStore = new RedisKeyStore(redisClient, randomUUID(), () => Promise.resolve(password), () => Promise.resolve(salt), () => Promise.resolve(context))
   })
   afterEach(async () => {
     // close key store
     await keyStore.close()
+    redisClient.disconnect(false)
   })
 
   it('can manage a DEK', async () => {

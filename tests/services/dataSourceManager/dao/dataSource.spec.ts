@@ -46,6 +46,10 @@ describe('DataSource DAO', () => {
   afterAll(async () => {
     await mongoose.connection.close()
     await cryptoInstance.close()
+    const redisLogs = await redisContainer.logs()
+    redisLogs.destroy()
+    const mongoLogs = await mongoContainer.logs()
+    mongoLogs.destroy()
     await redisContainer?.stop({ timeout: 15000 })
     await mongoContainer?.stop({ timeout: 15000 })
   })
