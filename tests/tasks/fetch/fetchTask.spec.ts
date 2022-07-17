@@ -41,6 +41,7 @@ describe('FetchTask', () => {
   })
 
   afterAll(async () => {
+    redisClient.disconnect(false)
     await redisContainer?.stop({ timeout: 15000 })
   })
 
