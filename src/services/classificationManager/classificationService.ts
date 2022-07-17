@@ -1,24 +1,22 @@
+import { FastifyInstance } from 'fastify'
 import { IService } from '../../common/interfaces/service'
+import classificationManagerRoutes from './routes/classificationRoutes'
 
-// What does a classifier do?
-// It isn't an alert condition, instead it's a query
-// that looks at the data and extracts a value or values from it.
-// it then updates metadata in the object. So what do you need to define a classifier?
-// 1) A name
-// 2) Unique ID
-// 3) A query
-// 4) A query type (graphql)
-// 5) A destination path
-// 6) A destination type
-//
-
-// TODO
 export class ClassificationService implements IService {
   public static readonly NAME : string = 'classification_manager'
   private _isAlive: boolean = false
+  private readonly _fastify: FastifyInstance
 
-  constructor () {
+  constructor (fastify: FastifyInstance) {
     this.ID = ClassificationService.NAME
+    this._fastify = fastify
+    this.register()
+  }
+
+  private register (): void {
+    this._fastify.register(classificationManagerRoutes, {
+      prefix: '/api/classification_manager/v1'
+    })
   }
 
   start (): Promise<void> {

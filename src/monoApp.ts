@@ -116,7 +116,7 @@ async function worker () {
     isServiceEnabled(TheatreService.NAME) ? new TheatreService() : undefined,
     isServiceEnabled(BullBoardService.NAME) ? new BullBoardService(app, queueOptions) : undefined,
     isServiceEnabled(TartarusService.NAME) ? new TartarusService() : undefined,
-    isServiceEnabled(ClassificationService.NAME) ? new ClassificationService() : undefined
+    isServiceEnabled(ClassificationService.NAME) ? new ClassificationService(app) : undefined
   ].filter(s => s != null).sort() as Array<IService>
 
   if (isSideKickEnabled(HealthSideKick.NAME)) {
