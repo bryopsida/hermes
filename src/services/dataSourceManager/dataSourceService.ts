@@ -1,14 +1,16 @@
 import { IService } from '../../common/interfaces/service'
 import { FastifyInstance } from 'fastify'
 import dataSourceRoutes from './routes/dataSource'
-import mongoose from 'mongoose'
+import { Connection } from 'mongoose'
+import { IDataEncryptor } from '../../common/interfaces/crypto/dataEncryption'
 
 export class DataSourceService implements IService {
   public static readonly NAME = 'data_source_manager'
   public readonly ID = DataSourceService.NAME
   public readonly ORDER = 1
-  constructor (private readonly fastify: FastifyInstance) {
-    this.registerRoutes()
+
+  constructor (private readonly fastify: FastifyInstance, private readonly mongoose: Connection, private readonly crypto: IDataEncryptor) {
+    this.register()
   }
 
   isAlive (): Promise<boolean> {
@@ -23,8 +25,12 @@ export class DataSourceService implements IService {
     return true
   }
 
-  private registerRoutes (): void {
-    this.fastify.register(dataSourceRoutes, { prefix: '/api/data_source_manager/v1' })
+  private register (): void {
+    this.fastify.register(dataSourceRoutes, {
+      mongoose: this.mongoose,
+      prefix: '/api/data_source_manager/v1',
+      crypto: this.crypto
+    })
   }
 
   start (): Promise<void> {
@@ -36,6 +42,6 @@ export class DataSourceService implements IService {
   }
 
   async destroy (): Promise<void> {
-    await mongoose.disconnect()
+    await this.mongoose.close()
   }
 }

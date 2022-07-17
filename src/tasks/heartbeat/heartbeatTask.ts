@@ -5,6 +5,9 @@ import COMPUTED_CONSTANTS from '../../common/computedConstants'
 import { ProducerTask } from '../producerTask'
 export interface HeartbeatTaskParams {}
 
+/**
+ * Periodically sends a message to the kafka topic, can be to confirm connectivity/comms
+ */
 export class HeartbeatTask extends ProducerTask {
   id = 'heartbeat'
 

@@ -43,7 +43,8 @@ export class DataSourceClient {
     }
     const url = `${this.baseUrl}/sources?offset=${offset}&limit=${count}`
     this.logger?.debug(`Fetching data sources from url: ${url}`)
-    const response = await axios.get<IPaginatedResponse<DataSourceDTO>>(url, await this.getAxiosRequestOptions())
+    const reqOpts = await this.getAxiosRequestOptions()
+    const response = await axios.get<IPaginatedResponse<DataSourceDTO>>(url, reqOpts)
     return response.data
   }
 
@@ -61,10 +62,15 @@ export class DataSourceClient {
     await axios.delete(url, await this.getAxiosRequestOptions())
   }
 
-  public async getDataSource (dataSourceId: string): Promise<DataSourceDTO> {
+  public async getDataSource (dataSourceId: string, includeCredentials?: boolean): Promise<DataSourceDTO> {
     const url = `${this.baseUrl}/sources/${dataSourceId}`
     this.logger?.debug(`Fetching data source from: ${url}`)
-    const response = await axios.get<DataSourceDTO>(url, await this.getAxiosRequestOptions())
+    const response = await axios.get<DataSourceDTO>(url, {
+      params: {
+        includeCredentials: includeCredentials ? 'true' : 'false'
+      },
+      ...(await this.getAxiosRequestOptions())
+    })
     return response.data
   }
 }

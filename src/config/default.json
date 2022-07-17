@@ -1,4 +1,25 @@
 {
+  "defaultCrypto": {
+    "masterKeyPath": "~/.hermesMasterKey",
+    "masterContextPath": "~/.hermesMasterKeyContext",
+    "store": {
+      "type": "redis",
+      "passwordPath": "~/.hermesStorePassword",
+      "saltPath": "~/.hermesStoreSalt",
+      "contextPath": "~/.hermesStoreContext",
+      "redis": {
+        "host": "localhost",
+        "port": 6379,
+        "protocol": "redis",
+        "password": "redis",
+        "cluster": false
+      }
+    }
+  },
+  "fastify": {
+    "port": 3000,
+    "address": "0.0.0.0"
+  },
   "hostname": "localhost",
   "port": 3000,
   "bullboard": {
@@ -90,7 +111,7 @@
     "tasks": {
       "fetch": {
         "batchSize": 1000,
-        "sourceApiUrl": "http://localhost:3000/api/data_source_manager/v1"
+        "sourceApiUrl": "http://127.0.0.1:3000/api/data_source_manager/v1"
       }
     }
   },

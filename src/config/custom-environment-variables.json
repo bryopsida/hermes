@@ -1,4 +1,16 @@
 {
+  "defaultCrypto": {
+    "masterKeyPath": "HERMES_MASTER_KEY_PATH",
+    "masterContextPath": "HERMES_MASTER_CONTEXT_PATH",
+    "store": {
+      "passwordPath": "HERMES_KEY_STORE_PASSWORD_PATH",
+      "saltPath": "HERMES_KEY_STORE_SALT_PATH",
+      "contextPath": "HERMES_KEY_STORE_CONTEXT_PATH",
+      "redis": {
+        "password": "HERMES_REDIS_KEY_STORE_PASSWORD"
+      }
+    }
+  },
   "logging": {
     "level": "HERMES_LOG_LEVEL",
     "pretty": "HERMES_LOG_PRETTY"

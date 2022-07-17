@@ -1,0 +1,1369 @@
+{
+	"info": {
+		"_postman_id": "b914fac5-9a2f-4b2e-97be-37446f1c624a",
+		"name": "Hermes",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "227389"
+	},
+	"item": [
+		{
+			"name": "Data Sources",
+			"item": [
+				{
+					"name": "Pagination",
+					"item": [
+						{
+							"name": "List Data Sources",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test('Status code is 200', () => {",
+											"    pm.expect(pm.response.code).to.be.eq(200)",
+											"})",
+											"",
+											"pm.test('Provides total count', () => {",
+											"    pm.expect(typeof pm.response.json().totalCount).is.eq('number')",
+											"})",
+											"",
+											"pm.test('Provides array of items', () => {",
+											"    pm.expect(Array.isArray(pm.response.json().items)).to.be.true",
+											"})"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "basic",
+									"basic": [
+										{
+											"key": "username",
+											"value": "{{USERNAME}}",
+											"type": "string"
+										},
+										{
+											"key": "password",
+											"value": "{{PASSWORD}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{BASE_URL}}/api/data_source_manager/v1/sources?offset=0&limit=50",
+									"host": [
+										"{{BASE_URL}}"
+									],
+									"path": [
+										"api",
+										"data_source_manager",
+										"v1",
+										"sources"
+									],
+									"query": [
+										{
+											"key": "offset",
+											"value": "0"
+										},
+										{
+											"key": "limit",
+											"value": "50"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Create",
+					"item": [
+						{
+							"name": "Add Data Source",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"const uuid = require('uuid')",
+											"pm.variables.set('dataSourceId', uuid())"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test('Status code is 200', () => {",
+											"    pm.expect(pm.response.code).to.be.eq(200)",
+											"})",
+											"",
+											"pm.test('ID matches', () => {",
+											"    pm.expect(pm.response.json().id).to.be.eq(pm.variables.get('dataSourceId'))",
+											"})",
+											"",
+											"pm.test('Does not have credentials', () => {",
+											"    pm.expect(pm.response.json().hasCredentials).to.be.false",
+											"})",
+											"",
+											"pm.test('Credentials are not returned', () => {",
+											"    pm.expect(pm.response.json().credentials).to.be.undefined",
+											"})"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "basic",
+									"basic": [
+										{
+											"key": "username",
+											"value": "{{USERNAME}}",
+											"type": "string"
+										},
+										{
+											"key": "password",
+											"value": "{{PASSWORD}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\n    \"id\": \"{{dataSourceId}}\",\n    \"type\": \"JSON\",\n    \"name\": \"{{$randomProductName}}\",\n    \"uri\": \"https://random-data-api.com/api/address/random_address\",\n    \"tags\": [\n        \"{{$randomDomainName}}\",\n        \"{{$randomDomainName}}\"\n    ]\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{BASE_URL}}/api/data_source_manager/v1/sources/{{dataSourceId}}",
+									"host": [
+										"{{BASE_URL}}"
+									],
+									"path": [
+										"api",
+										"data_source_manager",
+										"v1",
+										"sources",
+										"{{dataSourceId}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Add Data Source With Method Type",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"const uuid = require('uuid')",
+											"pm.variables.set('dataSourceId', uuid())"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test('Status code is 200', () => {",
+											"    pm.expect(pm.response.code).to.be.eq(200)",
+											"})",
+											"",
+											"pm.test('ID matches', () => {",
+											"    pm.expect(pm.response.json().id).to.be.eq(pm.variables.get('dataSourceId'))",
+											"})",
+											"",
+											"pm.test('Method is set', () => {",
+											"    pm.expect(pm.response.json().method).to.be.eq('POST')",
+											"})",
+											"",
+											"pm.test('Does not have credentials', () => {",
+											"    pm.expect(pm.response.json().hasCredentials).to.be.false",
+											"})",
+											"",
+											"pm.test('Credentials are not returned', () => {",
+											"    pm.expect(pm.response.json().credentials).to.be.undefined",
+											"})"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "basic",
+									"basic": [
+										{
+											"key": "username",
+											"value": "{{USERNAME}}",
+											"type": "string"
+										},
+										{
+											"key": "password",
+											"value": "{{PASSWORD}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\n    \"id\": \"{{dataSourceId}}\",\n    \"type\": \"JSON\",\n    \"method\": \"POST\",\n    \"name\": \"{{$randomProductName}}\",\n    \"uri\": \"https://random-data-api.com/api/address/random_address\",\n    \"tags\": [\n        \"{{$randomDomainName}}\",\n        \"{{$randomDomainName}}\"\n    ]\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{BASE_URL}}/api/data_source_manager/v1/sources/{{dataSourceId}}",
+									"host": [
+										"{{BASE_URL}}"
+									],
+									"path": [
+										"api",
+										"data_source_manager",
+										"v1",
+										"sources",
+										"{{dataSourceId}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Add Data Source With Credentials",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"const uuid = require('uuid')",
+											"pm.variables.set('credDataSourceId', uuid())",
+											"pm.variables.set('randomPassword', uuid())",
+											"pm.variables.set('randomUsername', uuid())",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test('Status code is 200', () => {",
+											"    pm.expect(pm.response.code).to.be.eq(200)",
+											"})",
+											"",
+											"pm.test('ID matches', () => {",
+											"    pm.expect(pm.response.json().id).to.be.eq(pm.variables.get('credDataSourceId'))",
+											"})",
+											"",
+											"pm.test('Has Credentials', () => {",
+											"    pm.expect(pm.response.json().hasCredentials).to.be.true",
+											"})",
+											"",
+											"pm.test('Credentials are not returned', () => {",
+											"    pm.expect(pm.response.json().credentials).to.be.undefined",
+											"})"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "basic",
+									"basic": [
+										{
+											"key": "username",
+											"value": "{{USERNAME}}",
+											"type": "string"
+										},
+										{
+											"key": "password",
+											"value": "{{PASSWORD}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\n    \"id\": \"{{credDataSourceId}}\",\n    \"type\": \"JSON\",\n    \"name\": \"{{$randomProductName}}\",\n    \"uri\": \"https://random-data-api.com/api/address/random_address\",\n    \"credentials\": {\n        \"type\": \"basic\",\n        \"username\": \"{{randomUsername}}\",\n        \"password\": \"{{randomPassword}}\"\n    },\n    \"tags\": [\n        \"{{$randomDomainName}}\",\n        \"{{$randomDomainName}}\"\n    ]\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{BASE_URL}}/api/data_source_manager/v1/sources/{{credDataSourceId}}",
+									"host": [
+										"{{BASE_URL}}"
+									],
+									"path": [
+										"api",
+										"data_source_manager",
+										"v1",
+										"sources",
+										"{{credDataSourceId}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Add Data Source With Credentials And Headers",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"const uuid = require('uuid')",
+											"pm.variables.set('credDataSourceId', uuid())",
+											"pm.variables.set('randomPassword', uuid())",
+											"pm.variables.set('randomUsername', uuid())",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test('Status code is 200', () => {",
+											"    pm.expect(pm.response.code).to.be.eq(200)",
+											"})",
+											"",
+											"pm.test('ID matches', () => {",
+											"    pm.expect(pm.response.json().id).to.be.eq(pm.variables.get('credDataSourceId'))",
+											"})",
+											"",
+											"pm.test('Has Credentials', () => {",
+											"    pm.expect(pm.response.json().hasCredentials).to.be.true",
+											"})",
+											"",
+											"pm.test('Credentials are not returned', () => {",
+											"    pm.expect(pm.response.json().credentials).to.be.undefined",
+											"})"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "basic",
+									"basic": [
+										{
+											"key": "username",
+											"value": "{{USERNAME}}",
+											"type": "string"
+										},
+										{
+											"key": "password",
+											"value": "{{PASSWORD}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\n    \"id\": \"{{credDataSourceId}}\",\n    \"type\": \"JSON\",\n    \"name\": \"{{$randomProductName}}\",\n    \"uri\": \"https://random-data-api.com/api/address/random_address\",\n    \"credentials\": {\n        \"type\": \"basic\",\n        \"username\": \"{{randomUsername}}\",\n        \"password\": \"{{randomPassword}}\",\n        \"headers\": {\n            \"X-Test-1\": \"test1\",\n            \"X-Test-2\": \"test2\"\n        }\n    },\n    \"tags\": [\n        \"{{$randomDomainName}}\",\n        \"{{$randomDomainName}}\"\n    ]\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{BASE_URL}}/api/data_source_manager/v1/sources/{{credDataSourceId}}",
+									"host": [
+										"{{BASE_URL}}"
+									],
+									"path": [
+										"api",
+										"data_source_manager",
+										"v1",
+										"sources",
+										"{{credDataSourceId}}"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Fetch",
+					"item": [
+						{
+							"name": "Get Data Source",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"const uuid = require('uuid')",
+											"const dataSourceId = uuid()",
+											"pm.variables.set('getDataSourceId', dataSourceId)",
+											"const req = {",
+											"  url: `${pm.variables.get('BASE_URL')}/api/data_source_manager/v1/sources/${dataSourceId}`,",
+											"  method: 'PUT',",
+											"  header: {",
+											"    'Content-Type': 'application/json',",
+											"  },",
+											"  auth:{",
+											"    type: 'basic',",
+											"    basic: [",
+											"        { key: \"username\", value: pm.variables.get('USERNAME') },",
+											"        { key: \"password\", value: pm.variables.get('PASSWORD') }",
+											"    ]",
+											"  },",
+											"  body: {",
+											"    mode: 'raw',",
+											"    raw: JSON.stringify({",
+											"        \"id\": dataSourceId,",
+											"        \"type\": \"JSON\",",
+											"        \"name\": \"TEST\",",
+											"        \"uri\": \"https://random-data-api.com/api/address/random_address\",",
+											"        \"tags\": [",
+											"            \"TEST1\",",
+											"            \"TEST2\"",
+											"        ]",
+											"    })",
+											"  }",
+											"};",
+											"pm.sendRequest(req)"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test('Status code is 200', () => {",
+											"    pm.expect(pm.response.code).to.be.eq(200)",
+											"})",
+											"",
+											"pm.test('Id Should be the same', () => {",
+											"    pm.expect(pm.response.json().id).to.be.eq(pm.variables.get('getDataSourceId'))",
+											"})"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "basic",
+									"basic": [
+										{
+											"key": "username",
+											"value": "{{USERNAME}}",
+											"type": "string"
+										},
+										{
+											"key": "password",
+											"value": "{{PASSWORD}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{BASE_URL}}/api/data_source_manager/v1/sources/{{getDataSourceId}}",
+									"host": [
+										"{{BASE_URL}}"
+									],
+									"path": [
+										"api",
+										"data_source_manager",
+										"v1",
+										"sources",
+										"{{getDataSourceId}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Fetching Non Existant Source 404s",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test('Status code is 404', () => {",
+											"    pm.expect(pm.response.code).to.be.eq(404)",
+											"})"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "basic",
+									"basic": [
+										{
+											"key": "username",
+											"value": "{{USERNAME}}",
+											"type": "string"
+										},
+										{
+											"key": "password",
+											"value": "{{PASSWORD}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{BASE_URL}}/api/data_source_manager/v1/sources/{{$randomUUID}}",
+									"host": [
+										"{{BASE_URL}}"
+									],
+									"path": [
+										"api",
+										"data_source_manager",
+										"v1",
+										"sources",
+										"{{$randomUUID}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Can Fetch Credentials",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"const uuid = require('uuid')",
+											"const dataSourceId = uuid()",
+											"pm.variables.set('getDataSourceIdWithCreds', dataSourceId)",
+											"const req = {",
+											"  url: `${pm.variables.get('BASE_URL')}/api/data_source_manager/v1/sources/${dataSourceId}`,",
+											"  method: 'PUT',",
+											"  header: {",
+											"    'Content-Type': 'application/json',",
+											"  },",
+											"  auth:{",
+											"    type: 'basic',",
+											"    basic: [",
+											"        { key: \"username\", value: pm.variables.get('USERNAME') },",
+											"        { key: \"password\", value: pm.variables.get('PASSWORD') }",
+											"    ]",
+											"  },",
+											"  body: {",
+											"    mode: 'raw',",
+											"    raw: JSON.stringify({",
+											"        \"id\": dataSourceId,",
+											"        \"type\": \"JSON\",",
+											"        \"name\": \"TEST\",",
+											"        \"uri\": \"https://random-data-api.com/api/address/random_address\",",
+											"        \"credentials\": {",
+											"            \"type\": \"basic\",",
+											"            \"username\": \"username\",",
+											"            \"password\": \"password\"",
+											"        },",
+											"        \"tags\": [",
+											"            \"TEST1\",",
+											"            \"TEST2\"",
+											"        ]",
+											"    })",
+											"  }",
+											"};",
+											"pm.sendRequest(req)"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test('Status code is 200', () => {",
+											"    pm.expect(pm.response.code).to.be.eq(200)",
+											"})",
+											"",
+											"pm.test('Id Should be the same', () => {",
+											"    pm.expect(pm.response.json().id).to.be.eq(pm.variables.get('getDataSourceIdWithCreds'))",
+											"})",
+											"",
+											"pm.test('Has Credentials is true', () => {",
+											"    pm.expect(pm.response.json().hasCredentials).to.be.true",
+											"})",
+											"",
+											"pm.test('Credentails are returned', () => {",
+											"    const json = pm.response.json()",
+											"    pm.expect(json.credentials.type).to.not.be.undefined",
+											"    pm.expect(json.credentials.username).to.not.be.undefined",
+											"    pm.expect(json.credentials.password).to.not.be.undefined",
+											"    pm.expect(json.credentials.encrypted).to.be.true",
+											"})"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "basic",
+									"basic": [
+										{
+											"key": "username",
+											"value": "{{USERNAME}}",
+											"type": "string"
+										},
+										{
+											"key": "password",
+											"value": "{{PASSWORD}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{BASE_URL}}/api/data_source_manager/v1/sources/{{getDataSourceIdWithCreds}}?includeCredentials=true",
+									"host": [
+										"{{BASE_URL}}"
+									],
+									"path": [
+										"api",
+										"data_source_manager",
+										"v1",
+										"sources",
+										"{{getDataSourceIdWithCreds}}"
+									],
+									"query": [
+										{
+											"key": "includeCredentials",
+											"value": "true"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Credentials Are Not Returned By Default",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"const uuid = require('uuid')",
+											"const dataSourceId = uuid()",
+											"pm.variables.set('getDataSourceIdWithoutCreds', dataSourceId)",
+											"const req = {",
+											"  url: `${pm.variables.get('BASE_URL')}/api/data_source_manager/v1/sources/${dataSourceId}`,",
+											"  method: 'PUT',",
+											"  header: {",
+											"    'Content-Type': 'application/json',",
+											"  },",
+											"  auth:{",
+											"    type: 'basic',",
+											"    basic: [",
+											"        { key: \"username\", value: pm.variables.get('USERNAME') },",
+											"        { key: \"password\", value: pm.variables.get('PASSWORD') }",
+											"    ]",
+											"  },",
+											"  body: {",
+											"    mode: 'raw',",
+											"    raw: JSON.stringify({",
+											"        \"id\": dataSourceId,",
+											"        \"type\": \"JSON\",",
+											"        \"name\": \"TEST\",",
+											"        \"uri\": \"https://random-data-api.com/api/address/random_address\",",
+											"        \"credentials\": {",
+											"            \"type\": \"basic\",",
+											"            \"username\": \"username\",",
+											"            \"password\": \"password\"",
+											"        },",
+											"        \"tags\": [",
+											"            \"TEST1\",",
+											"            \"TEST2\"",
+											"        ]",
+											"    })",
+											"  }",
+											"};",
+											"pm.sendRequest(req)"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test('Status code is 200', () => {",
+											"    pm.expect(pm.response.code).to.be.eq(200)",
+											"})",
+											"",
+											"pm.test('Id Should be the same', () => {",
+											"    pm.expect(pm.response.json().id).to.be.eq(pm.variables.get('getDataSourceIdWithoutCreds'))",
+											"})",
+											"",
+											"pm.test('Has Credentials is true', () => {",
+											"    pm.expect(pm.response.json().hasCredentials).to.be.true",
+											"})",
+											"",
+											"pm.test('Credentails are not returned', () => {",
+											"    const json = pm.response.json()",
+											"    pm.expect(json.credentials).to.be.undefined",
+											"})"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "basic",
+									"basic": [
+										{
+											"key": "username",
+											"value": "{{USERNAME}}",
+											"type": "string"
+										},
+										{
+											"key": "password",
+											"value": "{{PASSWORD}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{BASE_URL}}/api/data_source_manager/v1/sources/{{getDataSourceIdWithoutCreds}}",
+									"host": [
+										"{{BASE_URL}}"
+									],
+									"path": [
+										"api",
+										"data_source_manager",
+										"v1",
+										"sources",
+										"{{getDataSourceIdWithoutCreds}}"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Delete",
+					"item": [
+						{
+							"name": "Delete Data Source",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"const uuid = require('uuid')",
+											"const dataSourceId = uuid()",
+											"pm.variables.set('deleteDataSourceId', dataSourceId)",
+											"const req = {",
+											"  url: `${pm.variables.get('BASE_URL')}/api/data_source_manager/v1/sources/${dataSourceId}`,",
+											"  method: 'PUT',",
+											"  header: {",
+											"    'Content-Type': 'application/json',",
+											"  },",
+											"  auth:{",
+											"    type: 'basic',",
+											"    basic: [",
+											"        { key: \"username\", value: pm.variables.get('USERNAME') },",
+											"        { key: \"password\", value: pm.variables.get('PASSWORD') }",
+											"    ]",
+											"  },",
+											"  body: {",
+											"    mode: 'raw',",
+											"    raw: JSON.stringify({",
+											"        \"id\": dataSourceId,",
+											"        \"type\": \"JSON\",",
+											"        \"name\": \"TEST\",",
+											"        \"uri\": \"https://random-data-api.com/api/address/random_address\",",
+											"        \"tags\": [",
+											"            \"TEST1\",",
+											"            \"TEST2\"",
+											"        ]",
+											"    })",
+											"  }",
+											"};",
+											"pm.sendRequest(req)"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test('Status code is 200', () => {",
+											"    pm.expect(pm.response.code).to.be.eq(200)",
+											"})",
+											"",
+											"pm.test('Is success', () => {",
+											"    pm.expect(pm.response.json().success).to.be.true",
+											"})",
+											"",
+											"pm.test('Returns deleted object', () => {",
+											"    pm.expect(pm.response.json().source.id).to.be.eq(pm.variables.get('deleteDataSourceId'))",
+											"})"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "basic",
+									"basic": [
+										{
+											"key": "username",
+											"value": "{{USERNAME}}",
+											"type": "string"
+										},
+										{
+											"key": "password",
+											"value": "{{PASSWORD}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{BASE_URL}}/api/data_source_manager/v1/sources/{{deleteDataSourceId}}",
+									"host": [
+										"{{BASE_URL}}"
+									],
+									"path": [
+										"api",
+										"data_source_manager",
+										"v1",
+										"sources",
+										"{{deleteDataSourceId}}"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Health",
+			"item": [
+				{
+					"name": "Is Ready",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status Code Should be 200', () => {",
+									"    pm.expect(pm.response.code).to.be.eq(200)",
+									"})",
+									"",
+									"pm.test('Should be ready', () => {",
+									"    pm.expect(pm.response.json().ready).to.be.true",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{BASE_URL}}/api/health/v1/ready",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"api",
+								"health",
+								"v1",
+								"ready"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Is Alive",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status Code is 200', () => {",
+									"    pm.expect(pm.response.code).to.be.eq(200)",
+									"})",
+									"",
+									"pm.test('Is Alive', () => {",
+									"    pm.expect(pm.response.json().alive).to.be.true",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{BASE_URL}}/api/health/v1/alive",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"api",
+								"health",
+								"v1",
+								"alive"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Watches",
+			"item": [
+				{
+					"name": "Pagination",
+					"item": [
+						{
+							"name": "Can get a page",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test('Status code is 200', () => {",
+											"    pm.expect(pm.response.code).to.be.eq(200)",
+											"})",
+											"",
+											"pm.test('Response has total count', () => {",
+											"    pm.expect(typeof pm.response.json().totalCount).to.be.eq('number')",
+											"})",
+											"",
+											"pm.test('Response has items array', () => {",
+											"    pm.expect(Array.isArray(pm.response.json().items)).to.be.true",
+											"})"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "basic",
+									"basic": [
+										{
+											"key": "username",
+											"value": "{{USERNAME}}",
+											"type": "string"
+										},
+										{
+											"key": "password",
+											"value": "{{PASSWORD}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{BASE_URL}}/api/watch_manager/v1/watches",
+									"host": [
+										"{{BASE_URL}}"
+									],
+									"path": [
+										"api",
+										"watch_manager",
+										"v1",
+										"watches"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Create",
+					"item": [
+						{
+							"name": "Can create a watch",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"const uuid = require('uuid')",
+											"pm.variables.set('watchId', uuid())"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 200\", () => {",
+											"    pm.expect(pm.response.code).to.be.eq(200)",
+											"})",
+											"",
+											"pm.test(\"Id matches\", () => {",
+											"    pm.expect(pm.response.json().id).to.be.eq(pm.variables.get('watchId'))",
+											"})"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "basic",
+									"basic": [
+										{
+											"key": "username",
+											"value": "{{USERNAME}}",
+											"type": "string"
+										},
+										{
+											"key": "password",
+											"value": "{{PASSWORD}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"id\": \"{{watchId}}\",\n    \"name\": \"{{$randomProduct}}\",\n    \"description\": \"{{$randomLoremParagraph}}\",\n    \"graphql\": \"{{$randomLoremParagraph}}\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{BASE_URL}}/api/watch_manager/v1/watches/{{watchId}}",
+									"host": [
+										"{{BASE_URL}}"
+									],
+									"path": [
+										"api",
+										"watch_manager",
+										"v1",
+										"watches",
+										"{{watchId}}"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Fetch",
+					"item": [
+						{
+							"name": "Can fetch a watch",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"const uuid = require('uuid')",
+											"const watchId = uuid()",
+											"pm.variables.set('getWatchId', watchId)",
+											"const req = {",
+											"  url: `${pm.variables.get('BASE_URL')}/api/watch_manager/v1/watches/${watchId}`,",
+											"  method: 'PUT',",
+											"  header: {",
+											"    'Content-Type': 'application/json',",
+											"  },",
+											"  auth:{",
+											"    type: 'basic',",
+											"    basic: [",
+											"        { key: \"username\", value: pm.variables.get('USERNAME') },",
+											"        { key: \"password\", value: pm.variables.get('PASSWORD') }",
+											"    ]",
+											"  },",
+											"  body: {",
+											"    mode: 'raw',",
+											"    raw: JSON.stringify({",
+											"        \"id\": watchId,",
+											"        \"name\": \"TEST\",",
+											"        \"description\": \"TEST\",",
+											"        \"graphql\": \"TEST\"",
+											"    })",
+											"  }",
+											"};",
+											"pm.sendRequest(req)"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test('Status code is 200', () => {",
+											"    pm.expect(pm.response.code).to.be.eq(200)",
+											"})",
+											"",
+											"pm.test('Id matches', () => {",
+											"    pm.expect(pm.response.json().id).to.be.eq(pm.variables.get('getWatchId'))",
+											"})"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "basic",
+									"basic": [
+										{
+											"key": "username",
+											"value": "{{USERNAME}}",
+											"type": "string"
+										},
+										{
+											"key": "password",
+											"value": "{{PASSWORD}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{BASE_URL}}/api/watch_manager/v1/watches/{{getWatchId}}",
+									"host": [
+										"{{BASE_URL}}"
+									],
+									"path": [
+										"api",
+										"watch_manager",
+										"v1",
+										"watches",
+										"{{getWatchId}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Fetching non-existant watch results in 404",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test('Status code is 404', () => {",
+											"    pm.expect(pm.response.code).to.be.eq(404)",
+											"})"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "basic",
+									"basic": [
+										{
+											"key": "username",
+											"value": "{{USERNAME}}",
+											"type": "string"
+										},
+										{
+											"key": "password",
+											"value": "{{PASSWORD}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{BASE_URL}}/api/watch_manager/v1/watches/{{$randomUUID}}",
+									"host": [
+										"{{BASE_URL}}"
+									],
+									"path": [
+										"api",
+										"watch_manager",
+										"v1",
+										"watches",
+										"{{$randomUUID}}"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Delete",
+					"item": [
+						{
+							"name": "Can delete a watch",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"const uuid = require('uuid')",
+											"const watchId = uuid()",
+											"pm.variables.set('deleteWatchId', watchId)",
+											"const req = {",
+											"  url: `${pm.variables.get('BASE_URL')}/api/watch_manager/v1/watches/${watchId}`,",
+											"  method: 'PUT',",
+											"  header: {",
+											"    'Content-Type': 'application/json',",
+											"  },",
+											"  auth:{",
+											"    type: 'basic',",
+											"    basic: [",
+											"        { key: \"username\", value: pm.variables.get('USERNAME') },",
+											"        { key: \"password\", value: pm.variables.get('PASSWORD') }",
+											"    ]",
+											"  },",
+											"  body: {",
+											"    mode: 'raw',",
+											"    raw: JSON.stringify({",
+											"        \"id\": watchId,",
+											"        \"name\": \"TEST\",",
+											"        \"description\": \"TEST\",",
+											"        \"graphql\": \"TEST\"",
+											"    })",
+											"  }",
+											"};",
+											"pm.sendRequest(req)"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test('Status code is 200', () => {",
+											"    pm.expect(pm.response.code).to.be.eq(200)",
+											"})"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "basic",
+									"basic": [
+										{
+											"key": "username",
+											"value": "{{USERNAME}}",
+											"type": "string"
+										},
+										{
+											"key": "password",
+											"value": "{{PASSWORD}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{BASE_URL}}/api/watch_manager/v1/watches/{{deleteWatchId}}",
+									"host": [
+										"{{BASE_URL}}"
+									],
+									"path": [
+										"api",
+										"watch_manager",
+										"v1",
+										"watches",
+										"{{deleteWatchId}}"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "NEW_SOURCE_ID",
+			"value": "{{RAN",
+			"disabled": true
+		}
+	]
+}

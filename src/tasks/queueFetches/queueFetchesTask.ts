@@ -14,6 +14,15 @@ export interface IQueueFetchOptions {
   batchSize: number;
 }
 
+/**
+ * This task interfaces with the data source manager
+ * fetching the data sources and kicking off individual jobs
+ * to check each data source for new data and push it into the message busses.
+ *
+ * When credentials are present a data encryption key is generated and used to encrypt the credentials.
+ * The DEK is sealed with a master key specified in the config file. The task responsible for executing the request
+ * will unseal the DEK, decrypt the credentials and then use the credentials to make the request.
+ */
 export class QueueFetchesTask implements ITask {
   id: string
   private readonly log = createLogger({
@@ -55,12 +64,20 @@ export class QueueFetchesTask implements ITask {
         if (dataSourceResponse) {
           for (const dataSource of dataSourceResponse.items) {
             this.log.debug(`Queueing fetch job for data source id: ${dataSource.id}, type: ${dataSource.type}, name: ${dataSource.name}, uri: ${dataSource.uri}`)
-            await this.queue.add('fetch', {
+            const fetchTaskParams: FetchTaskParams = {
+              id: dataSource.id,
               name: dataSource.name,
               uri: dataSource.uri,
               type: dataSource.type,
-              properties: {}
-            } as FetchTaskParams)
+              properties: {
+                hasCredentials: dataSource.hasCredentials
+              }
+            }
+            if (dataSource.hasCredentials) {
+              const fullDataSource = await client.getDataSource(dataSource.id, true)
+              fetchTaskParams.properties.credentials = fullDataSource.credentials
+            }
+            await this.queue.add('fetch', fetchTaskParams)
             fetchJobsQueued++
           }
         } else {

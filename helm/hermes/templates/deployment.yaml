@@ -42,6 +42,26 @@ spec:
               - key: accounts.json
                 path: accounts.json
         {{- end }}
+        - name: key-store-volume
+          secret:
+            secretName: {{ .Values.keyStoreSecretName | default (printf "%s-internal-key-store" .Release.Name) }}
+            optional: false
+            items:
+              - key: key-store-password
+                path: password
+              - key: key-store-salt
+                path: salt
+              - key: key-store-context
+                path: context
+        - name: master-key-volume
+          secret:
+            secretName: {{ .Values.masterKeySecretName | default (printf "%s-internal-master-key" .Release.Name) }}
+            optional: false
+            items:
+              - key: master-key
+                path: key
+              - key: master-key-context
+                path: context
       containers:
         - name: {{ .Chart.Name }}
           livenessProbe:
@@ -82,6 +102,23 @@ spec:
               secretKeyRef:
                 name: "{{ .Release.Name }}-internal-redis"
                 key: "redisPassword"
+          {{/* Key Store Values */}}
+          - name: HERMES_MASTER_KEY_PATH
+            value: /var/run/secrets/hermes/master/key
+          - name: HERMES_MASTER_KEY_CONTEXT_PATH
+            value: /var/run/secrets/hermes/master/context
+          - name: HERMES_KEY_STORE_PASSWORD_PATH
+            value: /var/run/secrets/hermes/key-store/password
+          - name: HERMES_KEY_STORE_SALT_PATH
+            value: /var/run/secrets/hermes/key-store/salt
+          - name: HERMES_KEY_STORE_CONTEXT_PATH
+            value: /var/run/secrets/hermes/key-store/context
+          - name: HERMES_REDIS_KEY_STORE_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: "{{ .Release.Name }}-internal-redis"
+                key: "redisPassword"
+          {{/* End Key Store Values */}}
           - name: HERMES_WATCHES_MONGODB_USERNAME
             value: "root"
           - name: HERMES_WATCHES_MONGODB_PASSWORD
@@ -119,6 +156,12 @@ spec:
               mountPath: /var/run/accounts/
               readOnly: true
             {{- end }}
+            - name: key-store-volume
+              mountPath: /var/run/secrets/hermes/key-store/
+              readOnly: true
+            - name: master-key-volume
+              mountPath: /var/run/secrets/hermes/master/
+              readOnly: true
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
       {{- with .Values.nodeSelector }}

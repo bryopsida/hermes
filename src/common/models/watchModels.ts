@@ -13,6 +13,7 @@ export interface IWatchedJsonData {
     sourceUri: string;
     fetchTimestamp: number;
     data: unknown;
+    metadata: Map<string, unknown>;
 }
 
 export interface IJsonWatchResult {
@@ -20,4 +21,5 @@ export interface IJsonWatchResult {
     matchedQueries: Array<IGraphQuery>;
     matched: boolean;
     processTimestamp: number;
+    metadata: Map<string, unknown>;
 }

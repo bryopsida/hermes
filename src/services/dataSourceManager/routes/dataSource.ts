@@ -14,8 +14,8 @@ export default function dataSourceRoutes (fastify: FastifyInstance, options: Fas
           Querystring: IQeuryLimit,
           Reply: IPaginatedResponse<DataSourceDTO>
       }>('/sources', async (request, reply) => {
-        const dataSource = await DataSource.findAll(request.query.offset, request.query.limit)
-        const count = await DataSource.count()
+        const dataSource = await DataSource.findAll(options.mongoose, request.query.offset, request.query.limit)
+        const count = await DataSource.count(options.mongoose)
         reply.send({
           offset: request.query.offset,
           limit: request.query.limit,
@@ -26,16 +26,19 @@ export default function dataSourceRoutes (fastify: FastifyInstance, options: Fas
 
     fastify.get<{
       Reply: DataSourceDTO,
+      Querystring: {
+        includeCredentials?: boolean
+      },
       Params: {
         id: string
       }
     }>('/sources/:id', async (request, reply) => {
       const params = request.params as { id: string }
-      const dataSource = await DataSource.findById(params.id)
-      if (dataSource == null) {
+      const dataSource = await DataSource.findById(options.mongoose, params.id)
+      if (dataSource == null || dataSource.id == null || dataSource.id === '') {
         await reply.code(404).send()
       } else {
-        await reply.code(200).send(dataSource.toDTO())
+        await reply.code(200).send(dataSource.toDTO(request.query.includeCredentials))
       }
     })
 
@@ -47,7 +50,7 @@ export default function dataSourceRoutes (fastify: FastifyInstance, options: Fas
           }
       }>('/sources/:id', async (request, reply) => {
         try {
-          const dataSource = (await DataSource.upsert(DataSource.fromDTO(request.body))).toDTO()
+          const dataSource = (await DataSource.upsert(options.mongoose, options.crypto, DataSource.fromDTO(request.body))).toDTO()
           reply.send(dataSource)
         } catch (err) {
           console.error(err)
@@ -64,12 +67,16 @@ export default function dataSourceRoutes (fastify: FastifyInstance, options: Fas
       }>('/sources/:id', async (request : FastifyRequest, reply: FastifyReply) => {
         const req:FastifyRequest = request
         const params = req.params as {id: string}
-        const hasRecord = await DataSource.has(params.id)
+        const record = await DataSource.findById(options.mongoose, params.id)
+        const hasRecord = record != null && record.id != null && record.id !== ''
 
         if (!hasRecord) {
           reply.status(404).send()
         } else {
-          reply.send(await DataSource.delete(params.id))
+          reply.send({
+            success: true,
+            source: record.toDTO()
+          })
         }
       })
   } catch (err) {

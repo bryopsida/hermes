@@ -24,6 +24,10 @@ import { TartarusService } from './services/tartarus/tartarusServices'
 import { ClassificationService } from './services/classificationManager/classificationService'
 import { AuthenticationDecorator } from './decorators/fastify/authenticationDecorator'
 import { ErrorHandlerDecorator } from './decorators/fastify/errorHandlerDecorator'
+import { seedKeys } from './common/crypto/seedKeys'
+import mongodbConfig from './config/mongodbConfig'
+import { Mongoose, connect, ConnectOptions } from 'mongoose'
+import { CryptoFactory } from './factories/cryptoFactory'
 
 const cpuCount = cpus().length
 
@@ -48,7 +52,8 @@ const queueOptions = {
     : undefined
 } as QueueOptions
 
-if (cluster.isPrimary && process.env.USE_CLUSTERING === 'true') {
+// if we are in development seed keys
+function primary () {
   const primary = new Primary(process.env.WORKER_COUNT ? parseInt(process.env.WORKER_COUNT) : cpuCount)
   primary.start()
 
@@ -60,7 +65,9 @@ if (cluster.isPrimary && process.env.USE_CLUSTERING === 'true') {
     await primary.stop()
     process.exit(0)
   })
-} else {
+}
+
+async function worker () {
   const logger = createLogger({
     serviceName: `worker-${computedConstants.id}`,
     level: 'debug'
@@ -91,11 +98,20 @@ if (cluster.isPrimary && process.env.USE_CLUSTERING === 'true') {
   ErrorHandlerDecorator.decorate(app)
   AuthenticationDecorator.decorate(app)
 
+  // get a mongoose connection for data sources
+  // clean up
+  const dataSourceMongooseConnConfig = mongodbConfig.buildConfig('data_source_manager')
+  const dataSourceConn : Mongoose = await connect(dataSourceMongooseConnConfig.getServerUrl(), dataSourceMongooseConnConfig.getMongooseOptions() as ConnectOptions)
+
+  const crypto = CryptoFactory.create({
+    scope: 'defaultCrypto'
+  })
+
   // TODO: fix as any cast
   // define services managed by this mono app entry point
   const services : Array<IService> = [
-    isServiceEnabled(DataSourceService.NAME) ? new DataSourceService(app as any) : undefined,
-    isServiceEnabled(TaskRunnerService.NAME) ? new TaskRunnerService(queueOptions) : undefined,
+    isServiceEnabled(DataSourceService.NAME) ? new DataSourceService(app as any, dataSourceConn.connection, crypto) : undefined,
+    isServiceEnabled(TaskRunnerService.NAME) ? new TaskRunnerService(queueOptions, crypto) : undefined,
     isServiceEnabled(WatchManagementService.NAME) ? new WatchManagementService(app) : undefined,
     isServiceEnabled(TheatreService.NAME) ? new TheatreService() : undefined,
     isServiceEnabled(BullBoardService.NAME) ? new BullBoardService(app, queueOptions) : undefined,
@@ -117,6 +133,16 @@ if (cluster.isPrimary && process.env.USE_CLUSTERING === 'true') {
     ]).catch(err => {
       logger.error(`Error while shutting down: ${err}})`)
     })
+    try {
+      await crypto?.close()
+    } catch (err) {
+      logger.error(`Error while closing crypto: ${err}`)
+    }
+    try {
+      await dataSourceConn.connection.close()
+    } catch (err) {
+      logger.error(`Error while closing mongoose: ${err}`)
+    }
   }
 
   process.on('SIGINT', async () => {
@@ -145,3 +171,16 @@ if (cluster.isPrimary && process.env.USE_CLUSTERING === 'true') {
     process.exit(1)
   })
 }
+
+async function bootstrap () : Promise<void> {
+  if (process.env.NODE_ENV === 'dev' || process.env.NODE_ENV === 'development') {
+    await seedKeys()
+  }
+  if (cluster.isPrimary && process.env.USE_CLUSTERING === 'true') {
+    primary()
+  } else {
+    worker()
+  }
+}
+
+bootstrap()

@@ -3,6 +3,7 @@ import { FastifyInstance } from 'fastify'
 import computedConstants from './common/computedConstants'
 import { IService } from './common/interfaces/service'
 import createLogger from './common/logger/factory'
+import config from 'config'
 
 export class HermesWorker {
   readonly logger = createLogger({
@@ -33,8 +34,8 @@ export class HermesWorker {
     await Promise.all(this.services.map(service => service.start()))
     this.logger.info('Finished starting sub services')
     const listenOpts = {
-      port: process.env.HERMES_SERVER_LISTEN_PORT ? parseInt(process.env.HERMES_SERVER_LISTEN_PORT) : 3000,
-      host: process.env.HERMES_SERVER_LISTEN_HOST || '0.0.0.0'
+      port: config.get<number>('fastify.port'),
+      host: config.get<string>('fastify.address')
     }
     this.logger.info(`Binding to ${listenOpts.host}:${listenOpts.port}`)
     await this.app.listen(listenOpts)

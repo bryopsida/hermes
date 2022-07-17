@@ -1,4 +1,7 @@
-imagePullPolicy: IfNotPresent
+image:
+  repository: ghcr.io/bryopsida/hermes-mono
+  pullPolicy: Always
+  tag: local
 replicaCount: 1
 ingress:
   hosts:

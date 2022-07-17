@@ -14,7 +14,7 @@ export abstract class BaseTask implements ITask {
     queue.process(name, this.run.bind(this))
     this.shouldBeQueued().then((should) => {
       if (should) {
-        this.log.debug(`Queueing ${this.id}`)
+        this.log?.debug(`Queueing ${this.id}`)
         this.queue.add(this.id, {})
       }
     })
