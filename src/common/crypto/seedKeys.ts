@@ -2,13 +2,6 @@ import { randomBytes } from 'crypto'
 import { access, writeFile } from 'fs/promises'
 import config from 'config'
 import { resolveHome } from '../fs/resolve'
-import computedConstants from '../computedConstants'
-import createLogger from '../logger/factory'
-
-const logger = createLogger({
-  serviceName: `seed-key-${computedConstants.id}`,
-  level: 'debug'
-})
 
 async function fileExists (path: string) : Promise<boolean> {
   try {
@@ -24,7 +17,6 @@ function createKey (size: number) : Promise<Buffer> {
 }
 
 function saveKey (key: Buffer, keyPath: string) : Promise<void> {
-  logger.debug('Saving key to %s', keyPath)
   return writeFile(resolveHome(keyPath), key.toString('base64'), {
     flag: 'w+'
   })
@@ -47,8 +39,6 @@ export async function seedKeys () : Promise<void> {
   const storePasswordPath = config.get<string>('defaultCrypto.store.passwordPath')
   const storeSaltPath = config.get<string>('defaultCrypto.store.saltPath')
   const storeContextPath = config.get<string>('defaultCrypto.store.contextPath')
-
-  logger.debug(`Ensuring keys are present at: ${masterKeyPath}, ${masterContextPath}, ${storePasswordPath}, ${storeSaltPath}, ${storeContextPath}`)
 
   ensureKey(masterKeyPath, 32)
   ensureKey(masterContextPath, 32)
