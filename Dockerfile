@@ -25,7 +25,7 @@ RUN npm ci --only=production
 
 
 FROM node:17-alpine
-RUN apk add --update --no-cache dumb-init curl librdkafka
+RUN apk add --update --no-cache dumb-init librdkafka
 ENV NODE_ENV production
 USER node
 WORKDIR /usr/src/app
