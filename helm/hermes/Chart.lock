@@ -4,9 +4,9 @@ dependencies:
   version: 18.0.3
 - name: redis
   repository: https://charts.bitnami.com/bitnami
-  version: 17.0.1
+  version: 17.0.2
 - name: mongodb
   repository: https://charts.bitnami.com/bitnami
   version: 12.1.26
-digest: sha256:8f51d90bd1ff3f11c43fe14dad248bff64d389bf1102ad28b4b12d01f1c3d77e
-generated: "2022-07-13T13:45:37.262687861Z"
+digest: sha256:38ad188f7ea2090afe43732feb10d1f3902d4ca1e38cff63c0289bfd1f0e2c73
+generated: "2022-07-19T05:39:30.879335163Z"
