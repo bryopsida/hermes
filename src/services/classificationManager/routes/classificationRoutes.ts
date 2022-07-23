@@ -1,7 +1,7 @@
 import { FastifyInstance, FastifyPluginOptions, FastifyReply, FastifyRequest } from 'fastify'
 import { IQeuryLimit } from '../../../common/interfaces/commonRest'
 import { IPaginatedResponse } from '../../../common/models/paginatedResponse'
-import { ClassificationDAO, IClassificationDAO } from '../dao/classifcation'
+import { ClassificationDAO, IClassificationDAO } from '../dao/classification'
 import { ClassificationDTO } from '../dto/classification'
 
 export default function classificationManagerRoutes (fastify: FastifyInstance, options: FastifyPluginOptions, done: Function) {
