@@ -1,4 +1,5 @@
 import { FastifyInstance } from 'fastify'
+import { Connection } from 'mongoose'
 import { IService } from '../../common/interfaces/service'
 import classificationManagerRoutes from './routes/classificationRoutes'
 
@@ -6,16 +7,19 @@ export class ClassificationService implements IService {
   public static readonly NAME : string = 'classification_manager'
   private _isAlive: boolean = false
   private readonly _fastify: FastifyInstance
+  private readonly _conn: Connection
 
-  constructor (fastify: FastifyInstance) {
+  constructor (fastify: FastifyInstance, connection: Connection) {
     this.ID = ClassificationService.NAME
     this._fastify = fastify
+    this._conn = connection
     this.register()
   }
 
   private register (): void {
     this._fastify.register(classificationManagerRoutes, {
-      prefix: '/api/classification_manager/v1'
+      prefix: '/api/classification_manager/v1',
+      mongoose: this._conn
     })
   }
 

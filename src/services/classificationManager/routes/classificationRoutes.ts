@@ -1,6 +1,7 @@
 import { FastifyInstance, FastifyPluginOptions, FastifyReply, FastifyRequest } from 'fastify'
 import { IQeuryLimit } from '../../../common/interfaces/commonRest'
 import { IPaginatedResponse } from '../../../common/models/paginatedResponse'
+import { IDataSource } from '../../dataSourceManager/dao/dataSource'
 import { ClassificationDAO, IClassificationDAO } from '../dao/classification'
 import { ClassificationDTO } from '../dto/classification'
 
@@ -10,11 +11,34 @@ export default function classificationManagerRoutes (fastify: FastifyInstance, o
   ]))
 
   fastify.get<{
-        Querystring: IQeuryLimit,
-        Reply: IPaginatedResponse<ClassificationDTO>
-    }>('/classifiers', async (request, reply) => {
-      const classifiers: Array<IClassificationDAO> = await ClassificationDAO.findAll(options.mongoose, request.query.offset, request.query.limit)
-      const count = await ClassificationDAO.count(options.mongoose)
+        Querystring: IQeuryLimit & IDataSource,
+        Reply: IPaginatedResponse<ClassificationDTO>,
+    }>('/classifiers', {
+      schema: {
+        querystring: {
+          type: 'object',
+          properties: {
+            offset: { type: 'number', default: 0 },
+            limit: { type: 'number', default: 10 },
+            id: { type: 'string' },
+            name: { type: 'string' },
+            tags: { type: 'array', items: { type: 'string' } },
+            type: { type: 'string' },
+            uri: { type: 'string' }
+          },
+          required: ['offset', 'limit']
+        }
+      }
+    }, async (request, reply) => {
+      let classifiers : Array<IClassificationDAO>
+      let count = 0
+      if (request.query.id == null) {
+        classifiers = await ClassificationDAO.findAll(options.mongoose, request.query.offset, request.query.limit)
+        count = await ClassificationDAO.count(options.mongoose)
+      } else {
+        classifiers = await ClassificationDAO.getClassificationsMatchedToSource(options.mongoose, request.query, request.query.offset, request.query.limit)
+        count = await ClassificationDAO.getCountOfSourcesMatched(options.mongoose, request.query)
+      }
       reply.send({
         offset: request.query.offset,
         limit: request.query.limit,
@@ -44,7 +68,24 @@ export default function classificationManagerRoutes (fastify: FastifyInstance, o
           Parameters: {
               id: string
           }
-      }>('/classifiers/:id', async (request, reply) => {
+      }>('/classifiers/:id', {
+        schema: {
+          body: {
+            type: 'object',
+            properties: {
+              id: { type: 'string' },
+              name: { type: 'string' },
+              type: { type: 'string' },
+              tags: { type: 'array', items: { type: 'string' } },
+              category: { type: 'string' },
+              queryExpression: { type: 'string' },
+              resultBucketName: { type: 'string' },
+              sourceMatcher: { type: 'string' }
+            },
+            required: ['id', 'name', 'type', 'tags', 'category', 'queryExpression', 'resultBucketName', 'sourceMatcher']
+          }
+        }
+      }, async (request, reply) => {
         try {
           const classification = (await ClassificationDAO.upsert(options.mongoose, ClassificationDAO.fromDTO(request.body as ClassificationDTO))).toDTO()
           reply.send(classification)
@@ -68,9 +109,9 @@ export default function classificationManagerRoutes (fastify: FastifyInstance, o
         if (!hasRecord) {
           reply.status(404).send()
         } else {
+          await ClassificationDAO.delete(options.mongoose, params.id)
           reply.send({
-            success: true,
-            source: record.toDTO()
+            success: true
           })
         }
       })

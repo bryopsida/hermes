@@ -1337,6 +1337,654 @@
 					]
 				}
 			]
+		},
+		{
+			"name": "Classifiers",
+			"item": [
+				{
+					"name": "Pagination",
+					"item": [
+						{
+							"name": "Can get a page",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test('Status code is 200', () => {",
+											"    pm.expect(pm.response.code).to.be.eq(200)",
+											"})",
+											"",
+											"pm.test('Response has total count', () => {",
+											"    pm.expect(typeof pm.response.json().totalCount).to.be.eq('number')",
+											"})",
+											"",
+											"pm.test('Response has items array', () => {",
+											"    pm.expect(Array.isArray(pm.response.json().items)).to.be.true",
+											"})"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "basic",
+									"basic": [
+										{
+											"key": "username",
+											"value": "{{USERNAME}}",
+											"type": "string"
+										},
+										{
+											"key": "password",
+											"value": "{{PASSWORD}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{BASE_URL}}/api/classification_manager/v1/classifiers?offset=0&limit=5",
+									"host": [
+										"{{BASE_URL}}"
+									],
+									"path": [
+										"api",
+										"classification_manager",
+										"v1",
+										"classifiers"
+									],
+									"query": [
+										{
+											"key": "offset",
+											"value": "0"
+										},
+										{
+											"key": "limit",
+											"value": "5"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Can get a page of matches",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test('Status code is 200', () => {",
+											"    pm.expect(pm.response.code).to.be.eq(200)",
+											"})",
+											"",
+											"pm.test('Response has total count', () => {",
+											"    pm.expect(typeof pm.response.json().totalCount).to.be.eq('number')",
+											"})",
+											"",
+											"pm.test('Response has items array', () => {",
+											"    pm.expect(Array.isArray(pm.response.json().items)).to.be.true",
+											"})"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"const uuid = require('uuid')",
+											"pm.variables.set('dataSourceId', uuid())",
+											"pm.variables.set('dataSourceName', uuid())",
+											"pm.variables.set('dataSourceType', uuid())",
+											"pm.variables.set('dataSourceTags', [uuid()])",
+											"pm.variables.set('dataSourceUri', uuid())"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "basic",
+									"basic": [
+										{
+											"key": "username",
+											"value": "{{USERNAME}}",
+											"type": "string"
+										},
+										{
+											"key": "password",
+											"value": "{{PASSWORD}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{BASE_URL}}/api/classification_manager/v1/classifiers?offset=0&limit=5&id={{dataSourceId}}&name={{dataSourceName}}&type={{dataSourceType}}&uri={{dataSourceUri}}&tags={{dataSourceTags}}",
+									"host": [
+										"{{BASE_URL}}"
+									],
+									"path": [
+										"api",
+										"classification_manager",
+										"v1",
+										"classifiers"
+									],
+									"query": [
+										{
+											"key": "offset",
+											"value": "0"
+										},
+										{
+											"key": "limit",
+											"value": "5"
+										},
+										{
+											"key": "id",
+											"value": "{{dataSourceId}}"
+										},
+										{
+											"key": "name",
+											"value": "{{dataSourceName}}"
+										},
+										{
+											"key": "type",
+											"value": "{{dataSourceType}}"
+										},
+										{
+											"key": "uri",
+											"value": "{{dataSourceUri}}"
+										},
+										{
+											"key": "tags",
+											"value": "{{dataSourceTags}}"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Requires Authentication",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test('It should respond with 401', ()=> {",
+											"    pm.expect(pm.response.code).to.be.eq(401)",
+											"})"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{BASE_URL}}/api/classification_manager/v1/classifiers?offset=0&limit=5",
+									"host": [
+										"{{BASE_URL}}"
+									],
+									"path": [
+										"api",
+										"classification_manager",
+										"v1",
+										"classifiers"
+									],
+									"query": [
+										{
+											"key": "offset",
+											"value": "0"
+										},
+										{
+											"key": "limit",
+											"value": "5"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Create",
+					"item": [
+						{
+							"name": "Can create a classification",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"const uuid = require('uuid')",
+											"pm.variables.set('classificationId', uuid())"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 200\", () => {",
+											"    pm.expect(pm.response.code).to.be.eq(200)",
+											"})",
+											"",
+											"pm.test(\"Id matches\", () => {",
+											"    pm.expect(pm.response.json().id).to.be.eq(pm.variables.get('classificationId'))",
+											"})"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "basic",
+									"basic": [
+										{
+											"key": "username",
+											"value": "{{USERNAME}}",
+											"type": "string"
+										},
+										{
+											"key": "password",
+											"value": "{{PASSWORD}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"id\": \"{{classificationId}}\",\n    \"name\": \"{{$randomProduct}}\",\n    \"type\": \"{{$randomCatchPhrase}}\",\n    \"tags\": [\"{{$randomCatchPhrase}}\"],\n    \"category\": \"{{$randomProduct}}\",\n    \"queryExpression\": \"{{$randomCatchPhrase}}\",\n    \"sourceMatcher\": \"{{$randomCatchPhrase}}\",\n    \"resultBucketName\": \"{{$randomBsAdjective}}\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{BASE_URL}}/api/classification_manager/v1/classifiers/{{classificationId}}",
+									"host": [
+										"{{BASE_URL}}"
+									],
+									"path": [
+										"api",
+										"classification_manager",
+										"v1",
+										"classifiers",
+										"{{classificationId}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Requires Authentication",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test('It should respond with 401', ()=> {",
+											"    pm.expect(pm.response.code).to.be.eq(401)",
+											"})"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"id\": \"{{$randomUUID}}\",\n    \"name\": \"{{$randomProduct}}\",\n    \"type\": \"{{$randomCatchPhrase}}\",\n    \"tags\": [\"{{$randomCatchPhrase}}\"],\n    \"category\": \"{{$randomProduct}}\",\n    \"queryExpression\": \"{{$randomCatchPhrase}}\",\n    \"sourceMatcher\": \"{{$randomCatchPhrase}}\",\n    \"resultBucketName\": \"{{$randomBsAdjective}}\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{BASE_URL}}/api/classification_manager/v1/classifiers/{{createClassifierId}}",
+									"host": [
+										"{{BASE_URL}}"
+									],
+									"path": [
+										"api",
+										"classification_manager",
+										"v1",
+										"classifiers",
+										"{{createClassifierId}}"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Fetch",
+					"item": [
+						{
+							"name": "Can fetch a classification",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"const uuid = require('uuid')",
+											"const classifierId = uuid()",
+											"pm.variables.set('getClassifierId', classifierId)",
+											"const req = {",
+											"  url: `${pm.variables.get('BASE_URL')}/api/classification_manager/v1/classifiers/${classifierId}`,",
+											"  method: 'PUT',",
+											"  header: {",
+											"    'Content-Type': 'application/json',",
+											"  },",
+											"  auth:{",
+											"    type: 'basic',",
+											"    basic: [",
+											"        { key: \"username\", value: pm.variables.get('USERNAME') },",
+											"        { key: \"password\", value: pm.variables.get('PASSWORD') }",
+											"    ]",
+											"  },",
+											"  body: {",
+											"    mode: 'raw',",
+											"    raw: JSON.stringify({",
+											"        \"id\": classifierId,",
+											"        \"name\": \"TEST\",",
+											"        \"type\": \"TEST\",",
+											"        \"tags\": [\"TEST\"],",
+											"        \"category\": \"TEST\",",
+											"        \"queryExpression\": \"TEST\",",
+											"        \"sourceMatcher\": \"TEST\",",
+											"        \"resultBucketName\": \"TEST\"",
+											"",
+											"    })",
+											"  }",
+											"};",
+											"pm.sendRequest(req)"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test('Status code is 200', () => {",
+											"    pm.expect(pm.response.code).to.be.eq(200)",
+											"})",
+											"",
+											"pm.test('Id matches', () => {",
+											"    pm.expect(pm.response.json().id).to.be.eq(pm.variables.get('getClassifierId'))",
+											"})"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "basic",
+									"basic": [
+										{
+											"key": "username",
+											"value": "{{USERNAME}}",
+											"type": "string"
+										},
+										{
+											"key": "password",
+											"value": "{{PASSWORD}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{BASE_URL}}/api/classification_manager/v1/classifiers/{{getClassifierId}}",
+									"host": [
+										"{{BASE_URL}}"
+									],
+									"path": [
+										"api",
+										"classification_manager",
+										"v1",
+										"classifiers",
+										"{{getClassifierId}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Fetching non-existant classifier results in 404",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test('Status code is 404', () => {",
+											"    pm.expect(pm.response.code).to.be.eq(404)",
+											"})"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "basic",
+									"basic": [
+										{
+											"key": "username",
+											"value": "{{USERNAME}}",
+											"type": "string"
+										},
+										{
+											"key": "password",
+											"value": "{{PASSWORD}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{BASE_URL}}/api/classification_manager/v1/classifiers/{{$randomUUID}}",
+									"host": [
+										"{{BASE_URL}}"
+									],
+									"path": [
+										"api",
+										"classification_manager",
+										"v1",
+										"classifiers",
+										"{{$randomUUID}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Requires Authentication",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test('It should respond with 401', ()=> {",
+											"    pm.expect(pm.response.code).to.be.eq(401)",
+											"})"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{BASE_URL}}/api/classification_manager/v1/classifiers/{{fetchClassifierId}}",
+									"host": [
+										"{{BASE_URL}}"
+									],
+									"path": [
+										"api",
+										"classification_manager",
+										"v1",
+										"classifiers",
+										"{{fetchClassifierId}}"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Delete",
+					"item": [
+						{
+							"name": "Can delete a watch Copy",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"const uuid = require('uuid')",
+											"const classifierId = uuid()",
+											"pm.variables.set('deleteClassifierId', classifierId)",
+											"const req = {",
+											"  url: `${pm.variables.get('BASE_URL')}/api/classification_manager/v1/classifiers/${classifierId}`,",
+											"  method: 'PUT',",
+											"  header: {",
+											"    'Content-Type': 'application/json',",
+											"  },",
+											"  auth:{",
+											"    type: 'basic',",
+											"    basic: [",
+											"        { key: \"username\", value: pm.variables.get('USERNAME') },",
+											"        { key: \"password\", value: pm.variables.get('PASSWORD') }",
+											"    ]",
+											"  },",
+											"  body: {",
+											"    mode: 'raw',",
+											"    raw: JSON.stringify({",
+											"        \"id\": classifierId,",
+											"        \"name\": \"TEST\",",
+											"        \"type\": \"TEST\",",
+											"        \"tags\": [\"TEST\"],",
+											"        \"category\": \"TEST\",",
+											"        \"queryExpression\": \"TEST\",",
+											"        \"sourceMatcher\": \"TEST\",",
+											"        \"resultBucketName\": \"TEST\"",
+											"",
+											"    })",
+											"  }",
+											"};",
+											"pm.sendRequest(req)"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test('Status code is 200', () => {",
+											"    pm.expect(pm.response.code).to.be.eq(200)",
+											"})"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "basic",
+									"basic": [
+										{
+											"key": "username",
+											"value": "{{USERNAME}}",
+											"type": "string"
+										},
+										{
+											"key": "password",
+											"value": "{{PASSWORD}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{BASE_URL}}/api/classification_manager/v1/classifiers/{{deleteClassifierId}}",
+									"host": [
+										"{{BASE_URL}}"
+									],
+									"path": [
+										"api",
+										"classification_manager",
+										"v1",
+										"classifiers",
+										"{{deleteClassifierId}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Requires Authentication",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test('It should respond with 401', ()=> {",
+											"    pm.expect(pm.response.code).to.be.eq(401)",
+											"})"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{BASE_URL}}/api/classification_manager/v1/classifiers/{{deleteClassifierId}}",
+									"host": [
+										"{{BASE_URL}}"
+									],
+									"path": [
+										"api",
+										"classification_manager",
+										"v1",
+										"classifiers",
+										"{{deleteClassifierId}}"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				}
+			]
 		}
 	],
 	"event": [

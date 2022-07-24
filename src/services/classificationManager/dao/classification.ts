@@ -185,7 +185,7 @@ export class ClassificationDAO implements IClassificationDAO {
     return {
       $expr: {
         $regexMatch: {
-          input: ['id', dataSource.id, 'name', dataSource.name, 'type', dataSource.type, 'tags', dataSource.tags.join(','), 'uri', dataSource.uri].join('\n'),
+          input: ['id', dataSource.id, 'name', dataSource.name, 'type', dataSource.type, 'tags', dataSource.tags?.join(','), 'uri', dataSource.uri].join('\n'),
           regex: '$sourceMatcher'
         }
       }
