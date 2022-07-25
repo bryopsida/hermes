@@ -1,11 +1,14 @@
 import COMPUTED_CONSTANTS from '../../common/computedConstants'
 import { IActorConfig } from '../../common/interfaces/actor'
 import createLogger from '../../common/logger/factory'
-import { IUnprocesseedJsonData, IWatchedJsonData } from '../../common/models/watchModels'
+import { IUnprocesseedJsonData, IProcessedJsonData } from '../../common/models/watchModels'
 import { KafkaConsumer } from 'node-rdkafka'
 import { KafkaConsumerActor } from '../kafkaConsumerActor'
 
-export class JsonProcessorActor extends KafkaConsumerActor<IUnprocesseedJsonData, IWatchedJsonData> {
+/**
+ * Actor that enhances fetched data with metadata computed from classifications
+ */
+export class JsonProcessorActor extends KafkaConsumerActor<IUnprocesseedJsonData, IProcessedJsonData> {
   public readonly log = createLogger({
     serviceName: `theatre-${COMPUTED_CONSTANTS.id}`,
     level: 'debug'
@@ -24,8 +27,8 @@ export class JsonProcessorActor extends KafkaConsumerActor<IUnprocesseedJsonData
     this.log.info(`${this.name} actor created`)
   }
 
-  actOn (message: IUnprocesseedJsonData): Promise<IWatchedJsonData> {
+  actOn (message: IUnprocesseedJsonData): Promise<IProcessedJsonData> {
     this.log.debug('json processor actor acting on message')
-    return Promise.resolve({} as IWatchedJsonData)
+    return Promise.resolve({} as IProcessedJsonData)
   }
 }
