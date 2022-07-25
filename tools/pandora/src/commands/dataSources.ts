@@ -1,7 +1,7 @@
 import { Writable } from 'stream'
-import { DataSourceClient } from '../../../../clients/dataSourcesClient'
-import { IPaginatedResponse } from '../../../../common/models/paginatedResponse'
-import { DataSourceDTO } from '../../../../services/dataSourceManager/dto/dataSource'
+import { DataSourceClient } from '../../../../src/clients/dataSourcesClient'
+import { IPaginatedResponse } from '../../../../src/common/models/paginatedResponse'
+import { DataSourceDTO } from '../../../../src/services/dataSourceManager/dto/dataSource'
 
 export class DataSourceCommand {
   private readonly dataSourceClient: DataSourceClient

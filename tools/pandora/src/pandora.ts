@@ -1,13 +1,16 @@
 #! /usr/bin/env node
 import { Command } from 'commander'
-import { DataSourceClient } from '../../../clients/dataSourcesClient'
+import { DataSourceClient } from '../../../src/clients/dataSourcesClient'
+import { ClassifierClient } from '../../../src/clients/classifiersClient'
 import { DataSourceCommand } from './commands/dataSources'
 import { EnvironmentCommand } from './commands/environment'
 import { ConfigurationManager } from './utils/config'
 import { randomUUID } from 'crypto'
-import { DataSourceDTO } from '../../../services/dataSourceManager/dto/dataSource'
+import { DataSourceDTO } from '../../../src/services/dataSourceManager/dto/dataSource'
 import fs from 'fs/promises'
-import { IDataSourceCredentials } from '../../../services/dataSourceManager/dao/dataSource'
+import { IDataSourceCredentials } from '../../../src/services/dataSourceManager/dao/dataSource'
+import { ClassifiersCommand } from './commands/classifiers'
+import { IClassification } from '../../../src/services/classificationManager/classification'
 
 const configurationManager = new ConfigurationManager()
 const environmentCommand = new EnvironmentCommand(configurationManager)
@@ -46,6 +49,31 @@ async function buildDataSourceCommandObj (): Promise<DataSourceCommand> {
     }
   })
   return new DataSourceCommand(dataSourceClient)
+}
+
+async function buildClassifiersCommandObj (): Promise<ClassifiersCommand> {
+  const env = await configurationManager.getCurrentContext()
+  const context = await configurationManager.getContext(env)
+  if (!context) {
+    console.error('Failed to get context for current environment')
+    process.exit(1)
+  }
+  const classifierClient = new ClassifierClient({
+    baseUrl: `${context.baseUrl}/api/classification_manager/v1`,
+    loggerEnabled: false,
+    credentialProvider: async (options) => {
+      if (context.auth) {
+        const username = await fs.readFile(context.auth.usernameFilePath, 'utf8')
+        const password = await fs.readFile(context.auth.passwordFilePath, 'utf8')
+        options.auth = {
+          username,
+          password
+        }
+      }
+      return Promise.resolve(options)
+    }
+  })
+  return new ClassifiersCommand(classifierClient)
 }
 
 function buildEnvironmentCommand (): Command {
@@ -124,8 +152,56 @@ function buildDataSourcesCommand (): Command {
   return cmd
 }
 
+function buildClassifiersCommand (): Command {
+  const cmd = new Command('classifiers')
+
+  cmd
+    .command('list')
+    .description('List all classifiers')
+    .action(async () => {
+      const classCmd = await buildClassifiersCommandObj()
+      await classCmd.getClassifiers(process.stdout)
+    })
+  cmd
+    .command('add')
+    .description('Add a classifier')
+    .argument('<name>', 'The name of the classifier')
+    .argument('<type>', 'The type of the classifier')
+    .argument('<category>', 'The category of the classifier')
+    .argument('<sourceMatcher>', 'Regular expression used to match to relevant data sources')
+    .argument('<queryExpression>', 'The JsonNata query to use against matched data sources')
+    .argument('<resultBucketName>', 'The name of the bucket the result of the JsonNata query should be stored in')
+    .action(async (name, type, category, sourceMatcher, queryExpression, resultBucketName) => {
+      const classCmd = await buildClassifiersCommandObj()
+      const classifier : IClassification = {
+        id: randomUUID(),
+        type,
+        name,
+        category,
+        sourceMatcher,
+        queryExpression,
+        resultBucketName,
+        tags: []
+      }
+      await classCmd.addClassifier(process.stdout, classifier)
+      console.log(`Succesfully added classifier: ${name}`)
+    })
+  cmd
+    .command('remove')
+    .description('Remove a classifier')
+    .argument('<id>', 'The id of the classifier')
+    .action(async (id) => {
+      const classCmd = await buildClassifiersCommandObj()
+      await classCmd.removeClassifier(id)
+      console.log('Successfully removed classifier: ' + id)
+    })
+
+  return cmd
+}
+
 program
   .addCommand(buildEnvironmentCommand())
   .addCommand(buildDataSourcesCommand())
+  .addCommand(buildClassifiersCommand())
 
 program.parse()
