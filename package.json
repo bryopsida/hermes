@@ -28,7 +28,6 @@
     "minikube:start": "minikube start --cpus=4 --memory=8192 --disk-size=40G",
     "minikube:stop": "minikube stop",
     "minikube:delete": "minikube delete",
-    "test:e2e": "jest --testPathPattern='tests/.*\\.rest\\.spec\\.ts'",
     "test:postman:docker": "newman run postman/collections/Hermes.postman_collection.json -e postman/envs/hermes.docker.dev.postman_environment.json",
     "test:postman:k8s": "newman run postman/collections/Hermes.postman_collection.json -e postman/envs/hermes.k8s.dev.postman_environment.json"
   },
