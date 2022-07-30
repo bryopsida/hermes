@@ -1,5 +1,4 @@
 import { KafkaConsumerActor } from './kafkaConsumerActor'
-import { Producer } from 'node-rdkafka'
 
 /**
  * Actor that extends a consumer actor with intent to transform the acted on message

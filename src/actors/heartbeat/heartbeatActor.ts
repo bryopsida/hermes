@@ -4,12 +4,15 @@ import createLogger from '../../common/logger/factory'
 import { KafkaConsumer } from 'node-rdkafka'
 import { IHeartbeat } from '../../common/interfaces/heartbeat'
 import { KafkaConsumerActor } from '../kafkaConsumerActor'
+import kafkaConfig from '../../config/kafkaConfig'
 
 export class HeartbeatActor extends KafkaConsumerActor<IHeartbeat, boolean> {
   protected readonly log = createLogger({
     serviceName: `theatre-${COMPUTED_CONSTANTS.id}`,
     level: 'debug'
   })
+
+  private static readonly NAME = 'heartbeatActor'
 
   readonly name: string
   readonly topic: string
@@ -18,9 +21,9 @@ export class HeartbeatActor extends KafkaConsumerActor<IHeartbeat, boolean> {
   kafkaConsumer?: KafkaConsumer
 
   constructor (config: IActorConfig) {
-    super()
+    super(kafkaConfig.buildConfig(HeartbeatActor.NAME))
     this.config = config
-    this.name = 'heartbeatActor'
+    this.name = HeartbeatActor.NAME
     this.topic = 'heartbeats'
     this.log.info(`${this.name} actor created`)
   }

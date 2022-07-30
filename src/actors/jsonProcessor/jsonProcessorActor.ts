@@ -7,6 +7,7 @@ import { ClassifierClient } from '../../clients/classifiersClient'
 import { IDataSource } from '../../services/dataSourceManager/dao/dataSource'
 import { KafkaTransformerActor } from '../kafkaTransformerActor'
 import { ITaskClient } from '../../factories/taskClientFactory'
+import kafkaConfig from '../../config/kafkaConfig'
 
 /**
  * Actor that enhances fetched data with metadata computed from classifications
@@ -17,6 +18,8 @@ export class JsonProcessorActor extends KafkaTransformerActor<IUnprocesseedJsonD
     level: 'debug'
   })
 
+  private static readonly NAME = 'jsonProcessorActor'
+
   readonly config: IActorConfig
   readonly name: string
   readonly topic: string
@@ -25,9 +28,9 @@ export class JsonProcessorActor extends KafkaTransformerActor<IUnprocesseedJsonD
   kafkaConsumer?: KafkaConsumer
 
   constructor (config : IActorConfig, taskClient: ITaskClient, classifierClient: ClassifierClient) {
-    super()
+    super(kafkaConfig.buildConfig(JsonProcessorActor.NAME))
     this.config = config
-    this.name = 'jsonProcessorActor'
+    this.name = JsonProcessorActor.NAME
     this.topic = 'jsonData'
     this.taskClient = taskClient
     this.classifierClient = classifierClient

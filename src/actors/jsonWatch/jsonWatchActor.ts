@@ -4,6 +4,7 @@ import createLogger from '../../common/logger/factory'
 import { IJsonWatchResult, IProcessedJsonData } from '../../common/models/watchModels'
 import { KafkaConsumer } from 'node-rdkafka'
 import { KafkaConsumerActor } from '../kafkaConsumerActor'
+import kafkaConfigFactory from '../../config/kafkaConfig'
 
 export class JsonWatchActor extends KafkaConsumerActor<IProcessedJsonData, IJsonWatchResult> {
   public readonly log = createLogger({
@@ -11,15 +12,17 @@ export class JsonWatchActor extends KafkaConsumerActor<IProcessedJsonData, IJson
     level: 'debug'
   })
 
+  private static readonly NAME = 'jsonWatchActor'
+
   readonly config: IActorConfig
   readonly name: string
   readonly topic: string
   kafkaConsumer?: KafkaConsumer
 
   constructor (config : IActorConfig) {
-    super()
+    super(kafkaConfigFactory.buildConfig(JsonWatchActor.NAME))
     this.config = config
-    this.name = 'jsonWatchActor'
+    this.name = JsonWatchActor.NAME
     this.topic = 'processed.jsonData'
     this.log.info(`${this.name} actor created`)
   }
