@@ -7,8 +7,8 @@ export abstract class KafkaActor<M, R> implements IActor<M, R> {
   protected abstract readonly log: Logger
   public abstract readonly topic: string
   protected abstract readonly config: IActorConfig
-  protected abstract kafkaConsumer?: KafkaConsumer
-  protected abstract kafkaProducer?: Producer
+  protected kafkaConsumer?: KafkaConsumer
+  protected kafkaProducer?: Producer
 
   /**
    * Act on a incoming message.

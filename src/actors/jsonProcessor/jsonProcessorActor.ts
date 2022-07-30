@@ -3,10 +3,10 @@ import { IActorConfig } from '../../common/interfaces/actor'
 import createLogger from '../../common/logger/factory'
 import { IUnprocesseedJsonData, IProcessedJsonData } from '../../common/models/watchModels'
 import { KafkaConsumer } from 'node-rdkafka'
-import { Queue } from 'bull'
 import { ClassifierClient } from '../../clients/classifiersClient'
 import { IDataSource } from '../../services/dataSourceManager/dao/dataSource'
 import { KafkaTransformerActor } from '../kafkaTransformerActor'
+import { ITaskClient } from '../../factories/taskClientFactory'
 
 /**
  * Actor that enhances fetched data with metadata computed from classifications
@@ -20,16 +20,16 @@ export class JsonProcessorActor extends KafkaTransformerActor<IUnprocesseedJsonD
   readonly config: IActorConfig
   readonly name: string
   readonly topic: string
-  readonly normalizeQueue: Queue
+  readonly taskClient: ITaskClient
   readonly classifierClient: ClassifierClient
   kafkaConsumer?: KafkaConsumer
 
-  constructor (config : IActorConfig, normalizeQueue: Queue, classifierClient: ClassifierClient) {
+  constructor (config : IActorConfig, taskClient: ITaskClient, classifierClient: ClassifierClient) {
     super()
     this.config = config
     this.name = 'jsonProcessorActor'
     this.topic = 'jsonData'
-    this.normalizeQueue = normalizeQueue
+    this.taskClient = taskClient
     this.classifierClient = classifierClient
     this.log.info(`${this.name} actor created`)
   }
@@ -58,15 +58,16 @@ export class JsonProcessorActor extends KafkaTransformerActor<IUnprocesseedJsonD
     }
     do {
       const pagedResult = await this.classifierClient.getClassifiers(offset, count, message.dataSource as IDataSource)
-      pagedResult.items.forEach((classifier) => {
-        normalizePromises.push(this.normalizeQueue.add({
+      pagedResult.items.forEach(async (classifier) => {
+        const taskEntry = await this.taskClient.addTask({
           target: message,
           classifier
-        }).then((jobResult) => {
+        })
+        normalizePromises.push(taskEntry.getResult().then((jobResult) => {
           if (!processedJson.metadata[classifier.resultBucketName]) {
             processedJson.metadata[classifier.resultBucketName] = []
           }
-          processedJson.metadata[classifier.resultBucketName].push(jobResult.data)
+          processedJson.metadata[classifier.resultBucketName].push(jobResult.result)
         }).catch((err) => {
           this.log.error(`Error processing job for classifier ${classifier.id}`, err)
         }))

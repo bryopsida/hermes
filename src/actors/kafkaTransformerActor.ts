@@ -9,7 +9,6 @@ export abstract class KafkaTransformerActor<M, R> extends KafkaConsumerActor<M, 
   abstract transform (message: M): Promise<R>
   abstract getNextTopic(): Promise<string>
   abstract getKey(message: M, result: R): Promise<string>
-  protected abstract kafkaProducer: Producer
 
   public async actOn (message: M): Promise<R> {
     const transformedResult = await this.transform(message)
