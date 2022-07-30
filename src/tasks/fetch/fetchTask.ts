@@ -6,6 +6,7 @@ import { ProducerTask } from '../producerTask'
 import { Producer } from 'node-rdkafka'
 import { IUnprocesseedJsonData } from '../../common/models/watchModels'
 import { IDataEncryptor } from '../../common/interfaces/crypto/dataEncryption'
+import { IDataSource } from '../../services/dataSourceManager/dao/dataSource'
 
 export interface FetchTaskParams {
     id: string;

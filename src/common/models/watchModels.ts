@@ -1,6 +1,9 @@
+import { IDataSource } from '../../services/dataSourceManager/dao/dataSource'
+
 export interface IUnprocesseedJsonData {
     jobId: string;
     sourceQueue: string;
+    dataSource?: IDataSource
     timestamp: number;
     data: unknown;
 }

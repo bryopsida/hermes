@@ -1,14 +1,14 @@
-import { LibrdKafkaError, Message, KafkaConsumer, ConsumerTopicConfig } from 'node-rdkafka'
+import { LibrdKafkaError, Message, KafkaConsumer, ConsumerTopicConfig, Producer } from 'node-rdkafka'
 import { Logger } from 'pino'
 import kafkaTopicConfig from '../common/topics/kafkaTopicConfig'
-import { IActor, IActorConfig } from '../common/interfaces/actor'
+import { IActorConfig } from '../common/interfaces/actor'
+import { KafkaActor } from './kafkaActor'
 
-export abstract class KafkaConsumerActor<M, R> implements IActor<M, R> {
+export abstract class KafkaConsumerActor<M, R> extends KafkaActor<M, R> {
   public abstract readonly name: string
   protected abstract readonly log: Logger
   public abstract readonly topic: string
   protected abstract readonly config: IActorConfig
-  protected abstract kafkaConsumer?: KafkaConsumer
 
   private onError (error: LibrdKafkaError) {
     this.log.error(`${this.name} actor error: ${JSON.stringify(error)}`)
