@@ -19,14 +19,14 @@ jobs:
         with:
           fetch-depth: 0
       - name: Install Helm
-        uses: azure/setup-helm@v3.1
+        uses: azure/setup-helm@v3.3
         with:
           version: v3.7.1
-      - uses: actions/setup-python@c474c82340438924daab9282d07300bfe7e3692d
+      - uses: actions/setup-python@a93d5412cbea8e722be8a13812f0923da907d4cf
         with:
           python-version: 3.7
       - name: Install chart-testing
-        uses: helm/chart-testing-action@729b0c144cc1447215a65964682fd6d8ee7a5152
+        uses: helm/chart-testing-action@09ed88797198755e5031f25be13da255e7e33aad
         with:
           version: v3.4.0
       - name: Run lint
@@ -85,7 +85,7 @@ jobs:
           version: v0.11.1 
 
       - name: Install chart-testing
-        uses: helm/chart-testing-action@729b0c144cc1447215a65964682fd6d8ee7a5152 
+        uses: helm/chart-testing-action@09ed88797198755e5031f25be13da255e7e33aad 
         with:
           version: v3.4.0 
 
