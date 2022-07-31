@@ -23,7 +23,7 @@
   "hostname": "localhost",
   "port": 3000,
   "bullboard": {
-    "enabled": true
+    "enabled": false
   },
   "auth": {
     "type": "embedded",

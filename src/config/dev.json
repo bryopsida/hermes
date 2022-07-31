@@ -2,5 +2,8 @@
   "auth": {
     "type": "embedded",
     "userStorePath": "../config/users.json"
+  },
+  "bullboard": {
+    "enabled": true
   }
 }
