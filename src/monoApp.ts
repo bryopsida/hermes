@@ -26,7 +26,7 @@ import { AuthenticationDecorator } from './decorators/fastify/authenticationDeco
 import { ErrorHandlerDecorator } from './decorators/fastify/errorHandlerDecorator'
 import { seedKeys } from './common/crypto/seedKeys'
 import mongodbConfig from './config/mongodbConfig'
-import { Mongoose, connect, ConnectOptions } from 'mongoose'
+import { ConnectOptions, createConnection, Connection } from 'mongoose'
 import { CryptoFactory } from './factories/cryptoFactory'
 
 const cpuCount = cpus().length
@@ -101,7 +101,9 @@ async function worker () {
   // get a mongoose connection for data sources
   // clean up
   const dataSourceMongooseConnConfig = mongodbConfig.buildConfig('data_source_manager')
-  const dataSourceConn : Mongoose = await connect(dataSourceMongooseConnConfig.getServerUrl(), dataSourceMongooseConnConfig.getMongooseOptions() as ConnectOptions)
+  const classifcationMongooseConnConfig = mongodbConfig.buildConfig('classification_manager')
+  const dataSourceConn : Connection = createConnection(dataSourceMongooseConnConfig.getServerUrl(), dataSourceMongooseConnConfig.getMongooseOptions() as ConnectOptions)
+  const classificationConn : Connection = createConnection(classifcationMongooseConnConfig.getServerUrl(), classifcationMongooseConnConfig.getMongooseOptions() as ConnectOptions)
 
   const crypto = CryptoFactory.create({
     scope: 'defaultCrypto'
@@ -110,13 +112,13 @@ async function worker () {
   // TODO: fix as any cast
   // define services managed by this mono app entry point
   const services : Array<IService> = [
-    isServiceEnabled(DataSourceService.NAME) ? new DataSourceService(app as any, dataSourceConn.connection, crypto) : undefined,
+    isServiceEnabled(DataSourceService.NAME) ? new DataSourceService(app as any, dataSourceConn, crypto) : undefined,
     isServiceEnabled(TaskRunnerService.NAME) ? new TaskRunnerService(queueOptions, crypto) : undefined,
     isServiceEnabled(WatchManagementService.NAME) ? new WatchManagementService(app) : undefined,
     isServiceEnabled(TheatreService.NAME) ? new TheatreService() : undefined,
     isServiceEnabled(BullBoardService.NAME) ? new BullBoardService(app, queueOptions) : undefined,
     isServiceEnabled(TartarusService.NAME) ? new TartarusService() : undefined,
-    isServiceEnabled(ClassificationService.NAME) ? new ClassificationService() : undefined
+    isServiceEnabled(ClassificationService.NAME) ? new ClassificationService(app, classificationConn) : undefined
   ].filter(s => s != null).sort() as Array<IService>
 
   if (isSideKickEnabled(HealthSideKick.NAME)) {
@@ -139,7 +141,8 @@ async function worker () {
       logger.error(`Error while closing crypto: ${err}`)
     }
     try {
-      await dataSourceConn.connection.close()
+      await dataSourceConn.close()
+      await classificationConn.close()
     } catch (err) {
       logger.error(`Error while closing mongoose: ${err}`)
     }

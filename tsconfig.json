@@ -19,10 +19,10 @@
     "include": [
         "src",
         "src/config/*.json"
-    ],
+, "tools"    ],
     "exclude": [
         "node_modules",
-        "src/tools/pandora",
+        "tools/pandora",
         "test"
     ]
 }

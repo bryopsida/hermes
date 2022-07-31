@@ -1,25 +1,21 @@
+import { IDataSource } from '../../services/dataSourceManager/dao/dataSource'
+
 export interface IUnprocesseedJsonData {
     jobId: string;
     sourceQueue: string;
+    dataSource?: IDataSource
     timestamp: number;
     data: unknown;
 }
-export interface IGraphQuery {
+export interface IProcessedJsonData extends IUnprocesseedJsonData {
+    metadata: Record<string, Array<unknown>>;
+}
+export interface IQuery {
     query: string;
+    queryEngine: string;
     watchId: number;
 }
-export interface IWatchedJsonData {
-    graphQueries: Array<IGraphQuery>;
-    sourceUri: string;
-    fetchTimestamp: number;
-    data: unknown;
-    metadata: Map<string, unknown>;
-}
-
-export interface IJsonWatchResult {
-    data: unknown;
-    matchedQueries: Array<IGraphQuery>;
+export interface IJsonWatchResult extends IProcessedJsonData {
+    matchedQueries: Array<IQuery>;
     matched: boolean;
-    processTimestamp: number;
-    metadata: Map<string, unknown>;
 }

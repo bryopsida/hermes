@@ -1,11 +1,15 @@
 import { HeartbeatActor } from '../../actors/heartbeat/heartbeatActor'
 import { JsonProcessorActor } from '../../actors/jsonProcessor/jsonProcessorActor'
 import { JsonWatchActor } from '../../actors/jsonWatch/jsonWatchActor'
+import { ClassifierClient } from '../../clients/classifiersClient'
 import COMPUTED_CONSTANTS from '../../common/computedConstants'
 import { IActor } from '../../common/interfaces/actor'
 import { IService } from '../../common/interfaces/service'
 import createLogger from '../../common/logger/factory'
-import kafkaConfigFactory from '../../config/kafkaConfig'
+import kafkaConfigFactory, { IKafkaConfig } from '../../config/kafkaConfig'
+import { ITaskClientFactory, TaskClientFactory } from '../../factories/taskClientFactory'
+import config from 'config'
+import { ClientCredentialProviderFactory } from '../../factories/clientCredentialProvider'
 
 export class TheatreService implements IService {
   private readonly log = createLogger({
@@ -19,12 +23,30 @@ export class TheatreService implements IService {
   public readonly ID = TheatreService.NAME
   public readonly ORDER = 1
 
+  private readonly kafkaConfig: IKafkaConfig
+  private readonly taskClientFactory: ITaskClientFactory
+  private readonly classifierClient: ClassifierClient
+
   constructor () {
     this.log.info('Theatre service created')
-    const config = kafkaConfigFactory.buildConfig(TheatreService.NAME)
-    this.actors.push(new JsonWatchActor(config))
-    this.actors.push(new HeartbeatActor(config))
-    this.actors.push(new JsonProcessorActor(config))
+    this.kafkaConfig = kafkaConfigFactory.buildConfig(TheatreService.NAME)
+    this.taskClientFactory = new TaskClientFactory()
+    this.classifierClient = new ClassifierClient({
+      baseUrl: config.get<string>('theatre.classifierApi.baseUrl'),
+      credentialProvider: ClientCredentialProviderFactory.create(config, {
+        scope: 'theatre.classifierApi',
+        username: 'username',
+        password: 'password'
+
+      })
+    })
+    this.createActors()
+  }
+
+  private async createActors () : Promise<void> {
+    this.actors.push(new JsonWatchActor(this.kafkaConfig))
+    this.actors.push(new HeartbeatActor(this.kafkaConfig))
+    this.actors.push(new JsonProcessorActor(this.kafkaConfig, await this.taskClientFactory.createClient({} as any), this.classifierClient))
   }
 
   isAlive (): Promise<boolean> {

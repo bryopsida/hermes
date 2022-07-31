@@ -18,12 +18,12 @@ export class RedisKeyStore extends BaseKeyStore {
   }
 
   protected async putKeyInSlot (keySlot: string, key: Buffer): Promise<void> {
-    RedisKeyStore.logger.info(`Putting key in slot ${this.keyPrefix}:${keySlot}`)
+    RedisKeyStore.logger.trace(`Putting key in slot ${this.keyPrefix}:${keySlot}`)
     await this.redisClient.set(`{${this.keyPrefix}:${keySlot}}`, key.toString('base64'))
   }
 
   protected async getKeyInSlot (keySlot: string): Promise<Buffer> {
-    RedisKeyStore.logger.info(`Getting key in slot ${this.keyPrefix}:${keySlot}`)
+    RedisKeyStore.logger.trace(`Getting key in slot ${this.keyPrefix}:${keySlot}`)
     const val = await this.redisClient.get(`{${this.keyPrefix}:${keySlot}}`)
     if (val) {
       return Buffer.from(val, 'base64')

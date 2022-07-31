@@ -24,6 +24,12 @@
       "password": "HERMES_WATCHES_MONGODB_PASSWORD"
     }
   },
+  "classification_manager": {
+    "mongo": {
+      "username": "HERMES_CLASSIFICATIONS_MONGODB_USERNAME",
+      "password": "HERMES_CLASSIFICATIONS_MONGODB_PASSWORD"
+    }
+  },
   "data_source_manager": {
     "mongo": {
       "username": "HERMES_DATA_SOURCES_MONGODB_USERNAME",
